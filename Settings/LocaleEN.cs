@@ -84,7 +84,8 @@ namespace ZoningToolkit
                 { "ZoneTools.UI.UpdateRoad", "Update Road" },
 
                 { "ZoneTools.UI.Tooltip.UpdateRoad",
-                  "Toggle update tool (for existing roads)." },
+                  "Toggle update tool (for existing roads).\n\n" +
+                  "If it won’t enable, open any road build tool once." },
 
                 { "ZoneTools.UI.Tooltip.ModeDefault", "Both (default)" },
                 { "ZoneTools.UI.Tooltip.ModeLeft",    "Left"          },
