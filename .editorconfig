@@ -1,4 +1,4 @@
-root = true
+﻿root = true
 
 [*.cs]
 charset = utf-8
@@ -66,7 +66,7 @@ dotnet_naming_style.k_prefix_pascal.required_capitalization = pascal_case
 dotnet_naming_style.camel.required_capitalization = camel_case
 
 # =========================
-# Rules (symbols � styles)
+# Rules (symbols × styles)
 # =========================
 # Interfaces: IName
 dotnet_naming_rule.interfaces_must_start_with_i.symbols = interfaces
