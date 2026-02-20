@@ -12,6 +12,7 @@ namespace ZoningToolkit.Systems
     using Unity.Jobs;
     using ZoningToolkit.Components;
 
+
     /// <summary>
     /// Job: mark a road entity (and its edge endpoints) as highlighted + updated.
     /// </summary>

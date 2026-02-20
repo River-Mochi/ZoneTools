@@ -68,7 +68,7 @@ Your existing road should keep zoning facing the same original direction you set
 <!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/zone-tool-redux.1888663/" />
 <!--Version of the mod-->
-<ModVersion Value="1.1.2" />
+<ModVersion Value="1.1.3" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -76,8 +76,7 @@ Your existing road should keep zoning facing the same original direction you set
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog Value="" />
 <ChangeLog>
-- update images
-- Auto open toggle now also auto closes when road tool is closed.
+- fix edge case for update button.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />

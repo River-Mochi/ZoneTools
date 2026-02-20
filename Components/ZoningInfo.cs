@@ -30,7 +30,7 @@ namespace ZoningToolkit.Components
 
         public override readonly int GetHashCode() => zoningMode.GetHashCode();
 
-        public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
+        public readonly void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
         {
             writer.Write((uint)zoningMode);
         }
