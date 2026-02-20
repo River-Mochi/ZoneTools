@@ -1,4 +1,4 @@
-const path = require("path");
+﻿const path = require("path");
 const MOD = require("./mod.json");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CSSPresencePlugin } = require("./tools/css-presence");
@@ -85,6 +85,7 @@ module.exports = {
     },
   },
   output: {
+    uniqueName: MOD.id,
     path: path.resolve(__dirname, OUTPUT_DIR),
     library: {
       type: "module",
