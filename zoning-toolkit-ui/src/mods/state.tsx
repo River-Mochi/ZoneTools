@@ -84,11 +84,16 @@ export const setupSubscriptions = (): void => {
             "zoning_mode",
             (zoningMode) => {
                 debugLog("[ZoneTools] zoning_mode update from C#:", zoningMode);
-                useModUIStore.getState().updateZoningMode(zoningMode);
+
+                // IMPORTANT: do NOT call updateZoningMode() here.
+                // would trigger JS->C# and can cause an echo loop.
+                useModUIStore.setState({ zoningMode });
             },
         );
         allSubscriptions.set(zoningModeEventKey, subscription);
     }
+
+
 
     // tool_enabled (bool)
     const toolEnabledEventKey = `${NS}.tool_enabled`;

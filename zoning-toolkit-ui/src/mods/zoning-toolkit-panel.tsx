@@ -8,7 +8,7 @@ import { Panel, PanelSection, PanelSectionRow } from "cs2/ui";
 import engine from "cohtml/cohtml";
 
 import updateToolIcon from "../../assets/icons/replace_tool_icon.svg";
-import { useModUIStore, withStore } from "./state";
+import { ModUIState, useModUIStore, withStore } from "./state";
 import panelStyles from "./zoning-toolkit-panel.module.scss";
 import VanillaBindings from "./vanilla-bindings";
 import { getModeFromString, zoneModeIconMap, ZoningMode } from "./zoning-toolkit-utils";
@@ -43,21 +43,31 @@ interface ZoningModeButtonConfig {
     tooltipFallback: string;
 }
 
-export class ZoningToolkitPanelInternal extends React.Component {
+export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUIState>> {
     private handleZoneModeSelect(zoningMode: ZoningMode): void {
+        // Use injected store actions if present; fall back to direct store access.
+        if (this.props.updateZoningMode) {
+            this.props.updateZoningMode(zoningMode.toString());
+            return;
+        }
         useModUIStore.getState().updateZoningMode(zoningMode.toString());
     }
 
     private handleZoneToolSelect(enabled: boolean): void {
+        if (this.props.updateIsToolEnabled) {
+            this.props.updateIsToolEnabled(enabled);
+            return;
+        }
         useModUIStore.getState().updateIsToolEnabled(enabled);
     }
 
     public render(): JSX.Element | null {
-        const store = useModUIStore.getState();
-        const currentZoningMode = getModeFromString(store.zoningMode);
-        const isToolEnabled = store.isToolEnabled;
-        const uiVisible = store.uiVisible;
-        const photomodeActive = store.photomodeActive;
+        const zoningModeString = this.props.zoningMode ?? "Default";
+        const currentZoningMode = getModeFromString(zoningModeString);
+
+        const isToolEnabled = !!this.props.isToolEnabled;
+        const uiVisible = !!this.props.uiVisible;
+        const photomodeActive = !!this.props.photomodeActive;
 
         // Hide in photo mode or when not visible (Shift+Z / FAB toggle driven by C# -> UI state)
         const panelStyle = {
@@ -98,12 +108,8 @@ export class ZoningToolkitPanelInternal extends React.Component {
         );
 
         return (
-            <Draggable bounds="parent" grid={[5, 5]}>
-                <Panel
-                    className={panelStyles.panel}
-                    header="Zone Tools"
-                    style={panelStyle}
-                >
+            <Draggable bounds="parent" grid={[5, 5]} enableUserSelectHack={false}>
+                <Panel className={panelStyles.panel} header="Zone Tools" style={panelStyle}>
                     <PanelSection>
                         {/* Row 1: icons only */}
                         <PanelSectionRow
@@ -126,11 +132,7 @@ export class ZoningToolkitPanelInternal extends React.Component {
 
                         {/* Row 2: localized label + icon */}
                         <PanelSectionRow
-                            left={
-                                <span className={panelStyles.rowLabelNoWrap}>
-                                    {updateRoadLabel}
-                                </span>
-                            }
+                            left={<span className={panelStyles.rowLabelNoWrap}>{updateRoadLabel}</span>}
                             right={
                                 <ToolButton
                                     focusKey={VanillaBindings.common.focus.disabled}

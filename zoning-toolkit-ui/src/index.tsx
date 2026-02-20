@@ -1,4 +1,4 @@
-// src/index.tsx
+﻿// src/index.tsx
 // Entry point for the Zone Tools UI (panel + GameTopLeft button).
 
 import React from "react";
@@ -17,11 +17,15 @@ const register: ModRegistrar = (moduleRegistry) => {
     // While launching game in UI development mode (include --uiDeveloperMode in the launch options)
     // - Access the dev tools by opening localhost:9444 in chrome browser.
     // - use the useModding() hook to access exposed UI, api and native coherent engine interfaces.
-    // Mount React UI into GameTopLeft.
-    moduleRegistry.append("GameTopLeft", () => <ZoningToolkitUi />);
+
+    // Mount the floating panel into the main Game UI so it can be positioned anywhere on screen.
+    moduleRegistry.append("Game", () => <ZoningToolkitPanelHost />);
+
+    // Keep the mod trigger button in GameTopLeft.
+    moduleRegistry.append("GameTopLeft", () => <ZoningToolkitMenuButton />);
 };
 
-function ZoningToolkitUi() {
+function ZoningToolkitPanelHost() {
     React.useEffect(() => {
         setupSubscriptions();
         return () => {
@@ -29,13 +33,7 @@ function ZoningToolkitUi() {
         };
     }, []);
 
-    return (
-        <>
-            <ZoningToolkitPanel />
-            <ZoningToolkitMenuButton />
-        </>
-    );
+    return <ZoningToolkitPanel />;
 }
 
 export default register;
-
