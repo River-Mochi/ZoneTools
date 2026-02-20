@@ -108,7 +108,9 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         );
 
         return (
-            <Draggable bounds="parent" grid={[5, 5]} enableUserSelectHack={false}>
+            <Draggable bounds="parent" grid={[5, 5]}
+            // prevent moz-selection warning
+                enableUserSelectHack={false}>
                 <Panel className={panelStyles.panel} header="Zone Tools" style={panelStyle}>
                     <PanelSection>
                         {/* Row 1: icons only */}

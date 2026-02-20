@@ -11,7 +11,7 @@ namespace ZoningToolkit.Utils
 
     public static class EntityUtils
     {
-        // Works for your tool systems (ZoneToolSystemExistingRoads is a ToolBaseSystem).
+        // Works for tool systems (ZoneToolSystemExistingRoads is a ToolBaseSystem).
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void listEntityComponents(this ToolBaseSystem system, Entity entity)
         {
@@ -23,7 +23,7 @@ namespace ZoningToolkit.Utils
 #endif
         }
 
-        // Works for UI systems too.
+        // Works for UI systems.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void listEntityComponents(this UISystemBase uiSystemBase, Entity entity)
         {
