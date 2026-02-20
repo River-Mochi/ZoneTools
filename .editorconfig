@@ -1,4 +1,4 @@
-﻿root = true
+root = true
 
 [*.cs]
 charset = utf-8

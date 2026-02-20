@@ -1,4 +1,4 @@
-﻿// eslint.config.mjs
+// eslint.config.mjs
 // Flat config for Zone Tools UI (ESLint 9 + React + TypeScript).
 // IMPORTANT: We only lint mod source under /src.
 // We explicitly ignore Node/CommonJS build scripts (webpack.config.js, tools/*) and toolchain types.

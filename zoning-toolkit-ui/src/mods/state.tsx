@@ -1,4 +1,4 @@
-﻿// src/mods/state.tsx
+// src/mods/state.tsx
 // Global UI state for Zone Tools (Zustand store + Cohtml event wiring + HOC).
 
 import engine, { EventHandle } from "cohtml/cohtml";

@@ -1,4 +1,4 @@
-﻿// src/mods/zoning-toolkit-panel.tsx
+// src/mods/zoning-toolkit-panel.tsx
 // Floating panel for Zone Tools (zoning mode picker + update tool toggle).
 // Zone Tools header stays English; row label + tooltips are localized via engine.translate() keys.
 
