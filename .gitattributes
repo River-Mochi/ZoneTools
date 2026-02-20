@@ -1,4 +1,4 @@
-﻿* text=auto
+* text=auto
 
 *.sln     text eol=crlf
 *.cs      text eol=crlf
