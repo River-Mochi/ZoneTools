@@ -1,4 +1,4 @@
-* text=auto
+﻿* text=auto
 
 *.sln     text eol=crlf
 *.cs      text eol=crlf
@@ -7,6 +7,9 @@
 *.targets text eol=crlf
 *.xml     text eol=crlf
 
+
+*.pubxml  text eol=lf
+*.mjs     text eol=lf
 *.js   text eol=lf
 *.ts   text eol=lf
 *.tsx  text eol=lf
