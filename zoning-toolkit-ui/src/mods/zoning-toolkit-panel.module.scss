@@ -3,6 +3,12 @@
 // Keep minimal so vanilla handles visuals/layout as much as possible.
 
 .panel {
+    position: absolute;
+    /* Default: bottom-right, nudged left/up to avoid toolbars */
+    right: 285rem;
+    bottom: 125rem;
+    top: auto;
+    left: auto;
     max-width: 300rem;
     user-select: none;
 }

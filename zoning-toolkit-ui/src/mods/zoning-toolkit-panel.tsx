@@ -7,7 +7,7 @@ import { Panel, PanelSection, PanelSectionRow } from "cs2/ui";
 import engine from "cohtml/cohtml";
 
 import updateToolIcon from "../../assets/icons/replace_tool_icon.svg";
-import { useModUIStore, withStore } from "./state";
+import { ModUIState, useModUIStore, withStore } from "./state";
 import panelStyles from "./zoning-toolkit-panel.module.scss";
 import VanillaBindings from "./vanilla-bindings";
 import { getModeFromString, zoneModeIconMap, ZoningMode } from "./zoning-toolkit-utils";
@@ -41,73 +41,40 @@ interface ZoningModeButtonConfig {
     tooltipFallback: string;
 }
 
-export class ZoningToolkitPanelInternal extends React.Component {
-    private readonly m_InitialPosition: { x: number; y: number };
-
-    public constructor(props: {}) {
-        super(props);
-
-        // Default near bottom-right, nudged left/up so it won't sit directly on top of toolbars.
-        // These numbers are screen-pixel-ish coordinates used by the UI runtime.
-        // Tweak if needed after seeing it in-game.
-        const fallbackWidth = 1920;
-        const fallbackHeight = 1080;
-
-        const w = typeof window !== "undefined" ? window.innerWidth : fallbackWidth;
-        const h = typeof window !== "undefined" ? window.innerHeight : fallbackHeight;
-
-        // Roughly: panel width ~ 450px, height ~ 250px. Add margin.
-        this.m_InitialPosition = {
-            x: Math.max(0, w - 520),
-            y: Math.max(0, h - 360),
-        };
-    }
-
+export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUIState>> {
     private handleZoneModeSelect(zoningMode: ZoningMode): void {
+        if (this.props.updateZoningMode) {
+            this.props.updateZoningMode(zoningMode.toString());
+            return;
+        }
         useModUIStore.getState().updateZoningMode(zoningMode.toString());
     }
 
     private handleZoneToolSelect(enabled: boolean): void {
+        if (this.props.updateIsToolEnabled) {
+            this.props.updateIsToolEnabled(enabled);
+            return;
+        }
         useModUIStore.getState().updateIsToolEnabled(enabled);
     }
 
     public render(): JSX.Element | null {
-        const store = useModUIStore.getState();
-        const currentZoningMode = getModeFromString(store.zoningMode);
-        const isToolEnabled = store.isToolEnabled;
-        const uiVisible = store.uiVisible;
-        const photomodeActive = store.photomodeActive;
+        const zoningModeString = this.props.zoningMode ?? "Default";
+        const currentZoningMode = getModeFromString(zoningModeString);
 
-        // Hide in photo mode or when not visible (Shift+Z / FAB toggle driven by C# -> UI state)
+        const isToolEnabled = !!this.props.isToolEnabled;
+        const uiVisible = !!this.props.uiVisible;
+        const photomodeActive = !!this.props.photomodeActive;
+
         const panelStyle = {
             display: !uiVisible || photomodeActive ? "none" : undefined,
         };
 
         const zoningModeButtonConfigs: ZoningModeButtonConfig[] = [
-            {
-                icon: zoneModeIconMap[ZoningMode.DEFAULT],
-                mode: ZoningMode.DEFAULT,
-                tooltipKey: kLocale_Tooltip_ModeDefault,
-                tooltipFallback: "Default (both)",
-            },
-            {
-                icon: zoneModeIconMap[ZoningMode.LEFT],
-                mode: ZoningMode.LEFT,
-                tooltipKey: kLocale_Tooltip_ModeLeft,
-                tooltipFallback: "Left",
-            },
-            {
-                icon: zoneModeIconMap[ZoningMode.RIGHT],
-                mode: ZoningMode.RIGHT,
-                tooltipKey: kLocale_Tooltip_ModeRight,
-                tooltipFallback: "Right",
-            },
-            {
-                icon: zoneModeIconMap[ZoningMode.NONE],
-                mode: ZoningMode.NONE,
-                tooltipKey: kLocale_Tooltip_ModeNone,
-                tooltipFallback: "None",
-            },
+            { icon: zoneModeIconMap[ZoningMode.DEFAULT], mode: ZoningMode.DEFAULT, tooltipKey: kLocale_Tooltip_ModeDefault, tooltipFallback: "Default (both)" },
+            { icon: zoneModeIconMap[ZoningMode.LEFT], mode: ZoningMode.LEFT, tooltipKey: kLocale_Tooltip_ModeLeft, tooltipFallback: "Left" },
+            { icon: zoneModeIconMap[ZoningMode.RIGHT], mode: ZoningMode.RIGHT, tooltipKey: kLocale_Tooltip_ModeRight, tooltipFallback: "Right" },
+            { icon: zoneModeIconMap[ZoningMode.NONE], mode: ZoningMode.NONE, tooltipKey: kLocale_Tooltip_ModeNone, tooltipFallback: "None" },
         ];
 
         const updateRoadLabel = translate(kLocale_UpdateRoadLabel, "Update Road");
@@ -119,13 +86,11 @@ export class ZoningToolkitPanelInternal extends React.Component {
         return (
             <Panel
                 draggable
-                initialPosition={this.m_InitialPosition}
                 className={panelStyles.panel}
                 header="Zone Tools"
                 style={panelStyle}
             >
                 <PanelSection>
-                    {/* Row 1: icons only */}
                     <PanelSectionRow
                         left={null}
                         right={
@@ -144,7 +109,6 @@ export class ZoningToolkitPanelInternal extends React.Component {
                         }
                     />
 
-                    {/* Row 2: localized label + icon */}
                     <PanelSectionRow
                         left={<span className={panelStyles.rowLabelNoWrap}>{updateRoadLabel}</span>}
                         right={
