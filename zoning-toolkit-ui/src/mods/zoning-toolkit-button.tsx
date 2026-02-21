@@ -1,4 +1,4 @@
-﻿// src/mods/zoning-toolkit-button.tsx
+// src/mods/zoning-toolkit-button.tsx
 // GameTopLeft floating action button that toggles the Zone Tools panel.
 
 import React, { CSSProperties } from "react";
