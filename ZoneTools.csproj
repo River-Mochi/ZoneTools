@@ -107,7 +107,7 @@
 
 		<Message Text="ZONE TOOLS UI: npm ci (first-time or lockfile changed)..." Importance="high" />
 
-		<Exec Command="$(NpmCmd) ci"
+		<Exec Command="$(NpmCmd) ci --no-fund"
 			  WorkingDirectory="$(ProjectDir)zoning-toolkit-ui"
 			  IgnoreExitCode="true">
 			<Output TaskParameter="ExitCode" PropertyName="NpmCiExit" />
