@@ -42,6 +42,27 @@ interface ZoningModeButtonConfig {
 }
 
 export class ZoningToolkitPanelInternal extends React.Component {
+    private readonly m_InitialPosition: { x: number; y: number };
+
+    public constructor(props: {}) {
+        super(props);
+
+        // Default near bottom-right, nudged left/up so it won't sit directly on top of toolbars.
+        // These numbers are screen-pixel-ish coordinates used by the UI runtime.
+        // Tweak if needed after seeing it in-game.
+        const fallbackWidth = 1920;
+        const fallbackHeight = 1080;
+
+        const w = typeof window !== "undefined" ? window.innerWidth : fallbackWidth;
+        const h = typeof window !== "undefined" ? window.innerHeight : fallbackHeight;
+
+        // Roughly: panel width ~ 450px, height ~ 250px. Add margin.
+        this.m_InitialPosition = {
+            x: Math.max(0, w - 520),
+            y: Math.max(0, h - 360),
+        };
+    }
+
     private handleZoneModeSelect(zoningMode: ZoningMode): void {
         useModUIStore.getState().updateZoningMode(zoningMode.toString());
     }
@@ -95,22 +116,16 @@ export class ZoningToolkitPanelInternal extends React.Component {
             "Toggle update tool (for existing roads). Roads with zoned buildings are skipped.",
         );
 
-        // Best-effort default position near bottom-right.
-        // CS2 UI coordinates are effectively “px-ish”; tweak offsets if needed.
-        const initialPosition = {
-            x: Math.max(0, window.innerWidth - 520),
-            y: Math.max(0, window.innerHeight - 360),
-        };
-
         return (
             <Panel
                 draggable
-                initialPosition={initialPosition}
+                initialPosition={this.m_InitialPosition}
                 className={panelStyles.panel}
                 header="Zone Tools"
                 style={panelStyle}
             >
                 <PanelSection>
+                    {/* Row 1: icons only */}
                     <PanelSectionRow
                         left={null}
                         right={
@@ -129,6 +144,7 @@ export class ZoningToolkitPanelInternal extends React.Component {
                         }
                     />
 
+                    {/* Row 2: localized label + icon */}
                     <PanelSectionRow
                         left={<span className={panelStyles.rowLabelNoWrap}>{updateRoadLabel}</span>}
                         right={
