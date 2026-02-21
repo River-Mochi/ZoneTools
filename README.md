@@ -1,4 +1,4 @@
-﻿# Zone Tools
+# Zone Tools
 
 A Cities: Skylines II mod that lets you control zoning on roads: **both sides**, **left**, **right**, or **none**.  
 Works for **new roads** and for **updating existing roads**.
