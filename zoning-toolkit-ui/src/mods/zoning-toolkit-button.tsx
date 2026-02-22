@@ -16,26 +16,24 @@ class ZoningToolkitMenuButtonInternal extends React.Component {
         togglePanelFromUI();
     };
 
-
     public render(): JSX.Element | null {
         const store = useModUIStore.getState();
         const photomodeActive = store.photomodeActive;
 
-        // Menu button should be hidden in photo mode.
         const buttonStyle: CSSProperties = {
             display: photomodeActive ? "none" : undefined,
         };
 
         return (
             <DescriptionTooltip
-                description="Control/modify zoning along roads. Allows zoning on both sides of roads, on any one side, or no sides at all."
+                description="Control/modify zoning along roads. Shortcut: Shift + Z"
                 direction="right"
                 title="Zone Tools"
             >
                 <Button
                     style={buttonStyle}
                     variant="floating"
-                    onClick={this.handleMenuButtonClick}
+                    onSelect={this.handleMenuButtonClick}
                 >
                     <img
                         src={menuIcon}
@@ -47,8 +45,4 @@ class ZoningToolkitMenuButtonInternal extends React.Component {
     }
 }
 
-// Wrapped with the Zustand store HOC so it can re-render when store changes,
-// even though the state is read via useModUIStore.getState().
-export const ZoningToolkitMenuButton = withStore(
-    ZoningToolkitMenuButtonInternal,
-);
+export const ZoningToolkitMenuButton = withStore(ZoningToolkitMenuButtonInternal);

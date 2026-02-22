@@ -1,16 +1,28 @@
 // src/mods/zoning-toolkit-panel.module.scss
-// Floating, draggable Zone Tools panel styling.
-// Keep minimal so vanilla handles visuals/layout as much as possible.
+// Floating Zone Tools panel styling.
+// Notes:
+// - Do not pin with bottom/right when using cs2/ui Panel draggable.
+// - Keep fixed size to avoid giant stretching panels.
 
 .panel {
-    position: absolute;
-    /* Default: bottom-right, nudged left/up to avoid toolbars */
-    right: 285rem;
-    bottom: 125rem;
-    top: auto;
-    left: auto;
-    max-width: 300rem;
+    width: 320rem;
+    max-width: 320rem;
+    min-width: 320rem;
+    /* Prevent giant stretch */
+    max-height: 180rem;
+    overflow: hidden;
+    /* Avoid resize behavior */
+    resize: none;
     user-select: none;
+}
+
+.content {
+    padding: 8rem;
+    max-height: 180rem;
+    overflow: hidden;
+    /* Prevent flex-fill stretching */
+    flex: 0 0 auto;
+    min-height: 0;
 }
 
 .panelToolModeRow {

@@ -1,95 +1,122 @@
 // File: Systems/ZoneToolSystem.ExistingRoads.PrefabSafety.cs
-// Purpose: Provide a non-null prefab for ToolBaseSystem.GetPrefab() and dump PrefabIDs for debugging.
+// Purpose: Provide a non-null prefab for ToolBaseSystem.GetPrefab() and optional PrefabID dump helpers.
+// Notes:
+// - Avoid automatic debug dumping during loading; logging can throw in some setups.
+// - Debug dump helpers remain available for manual use in DEBUG builds.
+// - Retry resolution a limited number of times until PrefabSystem is populated.
 
 namespace ZoningToolkit.Systems
 {
+    using Game.Prefabs;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Reflection;
-    using Game.Prefabs;
 
     internal sealed partial class ZoneToolSystemExistingRoads
     {
         private PrefabBase? m_SafePrefabForUI;
-        private bool m_TriedResolveSafePrefabForUI;
+        private int m_SafePrefabResolveAttempts;
 
 #if DEBUG
+        // Default OFF. Enable only when actively debugging prefab IDs.
+        private const bool kEnableAutoDebugDump = false;
         private bool m_DidDebugDump;
 #endif
 
-        private void EnsureSafePrefabForUI()
+        private void EnsureSafePrefabForUI( )
         {
             if (m_SafePrefabForUI != null)
             {
                 return;
             }
 
-            if (m_TriedResolveSafePrefabForUI)
+            // Avoid runaway work if something is truly broken.
+            // Resolution attempts occur only when GetPrefab() is asked for.
+            if (m_SafePrefabResolveAttempts >= 32)
             {
                 return;
             }
 
-            m_TriedResolveSafePrefabForUI = true;
+            m_SafePrefabResolveAttempts++;
 
-            // Prefer “tool-ish” candidates first. These are just *attempts*.
-            // If these don't exist in a given version/mod set, TryGetPrefab will fail and we move on.
+            // 1) Best-effort: borrow a prefab from NetToolSystem if it has one.
+            // Avoid recursion: active tool can be this tool.
+            TryAssignSafePrefabFromToolSystem();
+
+            if (m_SafePrefabForUI != null)
+            {
+                return;
+            }
+
+            // 2) Prefer “tool-ish” candidates first. Best-effort attempts.
             TryAssignSafePrefab(new PrefabID("FencePrefab", "Quay"));
             TryAssignSafePrefab(new PrefabID("FencePrefab", "Quay01"));
             TryAssignSafePrefab(new PrefabID("FencePrefab", "RetainingWall"));
             TryAssignSafePrefab(new PrefabID("FencePrefab", "RetainingWall01"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Tunnel"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Tunnel01"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Elevated"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Elevated01"));
 
-            // Fallback: pick the first prefab ID we can discover via reflection (guaranteed non-null GetPrefab()).
-            if (m_SafePrefabForUI == null && TryGetAnyPrefabIdKey(out PrefabID anyId))
+            if (m_SafePrefabForUI != null)
+            {
+                return;
+            }
+
+            // 3) Fallback: pick the first prefab ID discoverable via reflection.
+            if (TryGetAnyPrefabIdKey(out PrefabID anyId))
             {
                 TryAssignSafePrefab(anyId);
             }
 
-            if (m_SafePrefabForUI == null)
-            {
-                Mod.s_Log.Warn($"{Mod.ModTag} PrefabSafety failed: no prefab resolved");
-            }
-            else
-            {
-                Mod.s_Log.Info($"{Mod.ModTag} PrefabSafety selected: {m_SafePrefabForUI.name}");
-            }
-
 #if DEBUG
-            // One-time debug dump after we know PrefabSystem is alive.
-            if (!m_DidDebugDump)
+            if (kEnableAutoDebugDump && !m_DidDebugDump && m_SafePrefabForUI != null)
             {
                 m_DidDebugDump = true;
+
                 DebugDumpPrefabIds("Crosswalk");
                 DebugDumpPrefabIds("Wide Sidewalk");
-                DebugDumpPrefabIds("Quay");
-                DebugDumpPrefabIds("Fence");
-                DebugDumpPrefabIds("Road");
-                DebugDumpPrefabIds("Lane");
-
-                // Also show some “donor” examples so we can choose a better stable candidate later.
                 DebugDumpAnyPrefabDonors(max: 25);
             }
 #endif
         }
 
-        private PrefabBase GetSafePrefabForUI()
+        private PrefabBase GetSafePrefabForUI( )
         {
-            // ToolSystem calls GetPrefab() and assumes it can be null in vanilla tools,
-            // but some mod/UIs choke on null. We guarantee non-null here.
-            if (m_SafePrefabForUI == null)
+            EnsureSafePrefabForUI();
+
+            // Last-chance retry once more (PrefabSystem might populate slightly later).
+            if (m_SafePrefabForUI == null && TryGetAnyPrefabIdKey(out PrefabID anyId))
             {
-                Mod.s_Log.Warn($"{Mod.ModTag} GetPrefab fallback still null; forcing reflection pick.");
-                if (TryGetAnyPrefabIdKey(out PrefabID anyId))
-                {
-                    TryAssignSafePrefab(anyId);
-                }
+                TryAssignSafePrefab(anyId);
             }
 
+            // Returning null is technically allowed by runtime even if signature is non-nullable,
+            // but it defeats the purpose. Keep retrying via EnsureSafePrefabForUI() call sites.
             return m_SafePrefabForUI!;
+        }
+
+        private void TryAssignSafePrefabFromToolSystem( )
+        {
+            if (m_SafePrefabForUI != null)
+            {
+                return;
+            }
+
+            // Prefer the NetToolSystem's prefab if available.
+            // This is a cheap, no-reflection path.
+            try
+            {
+                if (m_NetToolSystem != null)
+                {
+                    PrefabBase prefab = m_NetToolSystem.GetPrefab();
+                    if (prefab != null)
+                    {
+                        m_SafePrefabForUI = prefab;
+                    }
+                }
+            }
+            catch
+            {
+                // No logging here.
+            }
         }
 
         private void TryAssignSafePrefab(PrefabID id)
@@ -123,9 +150,9 @@ namespace ZoningToolkit.Systems
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Mod.s_Log.Warn($"{Mod.ModTag} PrefabSafety key scan failed: {ex.GetType().Name}");
+                // No logging here; this can be called early.
             }
 
             return false;
@@ -205,7 +232,6 @@ namespace ZoningToolkit.Systems
                             continue;
                         }
 
-                        // Print a small sampling of real, resolvable prefabs.
                         Mod.s_Log.Info($"{Mod.ModTag} Donor candidate: {pid} -> {prefab.name}");
                         printed++;
                     }

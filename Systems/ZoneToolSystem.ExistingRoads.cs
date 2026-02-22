@@ -39,7 +39,7 @@ namespace ZoningToolkit.Systems
 
         public override string toolID => "Zone Tools Zoning Tool";
 
-        protected override void OnCreate()
+        protected override void OnCreate( )
         {
             base.OnCreate();
 
@@ -57,11 +57,9 @@ namespace ZoningToolkit.Systems
             m_Hovered = Entity.Null;
 
             toolEnabled = false;
-
-            EnsureSafePrefabForUI();
         }
 
-        protected override void OnDestroy()
+        protected override void OnDestroy( )
         {
             if (m_Selected.IsCreated)
             {
@@ -71,7 +69,7 @@ namespace ZoningToolkit.Systems
             base.OnDestroy();
         }
 
-        protected override void OnStartRunning()
+        protected override void OnStartRunning( )
         {
             base.OnStartRunning();
 
@@ -87,7 +85,7 @@ namespace ZoningToolkit.Systems
             EnsureSafePrefabForUI();
         }
 
-        protected override void OnStopRunning()
+        protected override void OnStopRunning( )
         {
             base.OnStopRunning();
 
@@ -100,7 +98,7 @@ namespace ZoningToolkit.Systems
             m_Hovered = Entity.Null;
         }
 
-        public override void InitializeRaycast()
+        public override void InitializeRaycast( )
         {
             base.InitializeRaycast();
 
@@ -108,21 +106,9 @@ namespace ZoningToolkit.Systems
             m_ToolRaycastSystem.netLayerMask = Layer.Road;
         }
 
-        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
-        {
-            base.OnGameLoadingComplete(purpose, mode);
-
-#if DEBUG
-            DebugDumpPrefabIds("Crosswalk");
-            DebugDumpPrefabIds("Wide");
-            DebugDumpPrefabIds("Sidewalk");
-            DebugDumpPrefabIds("Fence");
-#endif
-        }
-
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            EnsureSafePrefabForUI();
+
 
             if (!toolEnabled)
             {
@@ -151,8 +137,9 @@ namespace ZoningToolkit.Systems
             return inputDeps;
         }
 
-        public override PrefabBase GetPrefab()
+        public override PrefabBase GetPrefab( )
         {
+            EnsureSafePrefabForUI();
             return GetSafePrefabForUI();
         }
 
@@ -161,7 +148,7 @@ namespace ZoningToolkit.Systems
             return false;
         }
 
-        internal void EnableTool()
+        internal void EnableTool( )
         {
             EnsureSafePrefabForUI();
 
@@ -173,7 +160,7 @@ namespace ZoningToolkit.Systems
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads enabled");
         }
 
-        internal void DisableTool()
+        internal void DisableTool( )
         {
             toolEnabled = false;
 
@@ -193,7 +180,7 @@ namespace ZoningToolkit.Systems
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads disabled");
         }
 
-        private void CycleZoningMode()
+        private void CycleZoningMode( )
         {
             ZoningMode current = m_UISystem.CurrentZoningMode;
             ZoningMode next = current switch
@@ -208,7 +195,7 @@ namespace ZoningToolkit.Systems
             m_UISystem.SetZoningModeFromTool(next);
         }
 
-        private void UpdateHover()
+        private void UpdateHover( )
         {
             Entity newHovered = TryGetRaycastRoad(out Entity e) ? e : Entity.Null;
             if (newHovered == m_Hovered)
@@ -219,7 +206,7 @@ namespace ZoningToolkit.Systems
             m_Hovered = newHovered;
         }
 
-        private void AddHoveredToSelection()
+        private void AddHoveredToSelection( )
         {
             if (m_Hovered == Entity.Null)
             {
@@ -238,13 +225,13 @@ namespace ZoningToolkit.Systems
             }
         }
 
-        private void ClearSelection()
+        private void ClearSelection( )
         {
             m_Selected.Clear();
             m_SelectedCount = 0;
         }
 
-        private void ApplySelection()
+        private void ApplySelection( )
         {
             if (m_SelectedCount == 0)
             {
@@ -284,14 +271,18 @@ namespace ZoningToolkit.Systems
             }
 
 #if DEBUG
-            // Dump components on the hit road entity so to see PrefabRef/Owner/etc.
-            this.listEntityComponents(hit);
-
-            // If it has PrefabRef, dump the prefab entity too.
-            if (EntityManager.TryGetComponent<PrefabRef>(hit, out var pr))
+            const bool kDumpRaycastHit = false;
+            if (kDumpRaycastHit)
             {
-                Mod.s_Log.Debug($"{Mod.ModTag} Hit PrefabRef entity: {pr.m_Prefab}");
-                this.listEntityComponents(pr.m_Prefab);
+                // Dump components on the hit road entity so to see PrefabRef/Owner/etc.
+                this.listEntityComponents(hit);
+
+                // If it has PrefabRef, dump the prefab entity too.
+                if (EntityManager.TryGetComponent<PrefabRef>(hit, out var pr))
+                {
+                    Mod.s_Log.Debug($"{Mod.ModTag} Hit PrefabRef entity: {pr.m_Prefab}");
+                    this.listEntityComponents(pr.m_Prefab);
+                }
             }
 #endif
 
