@@ -1,10 +1,10 @@
-// Settings/LocaleES.cs
+// Localization/LocaleES.cs
 // Spanish es-ES for Zone Tools.
 
 namespace ZoningToolkit
 {
-    using System.Collections.Generic;
     using Colossal;
+    using System.Collections.Generic;
 
     public sealed class LocaleES : IDictionarySource
     {
@@ -87,7 +87,7 @@ namespace ZoningToolkit
             return d;
         }
 
-        public void Unload()
+        public void Unload( )
         {
         }
     }

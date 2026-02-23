@@ -1,10 +1,10 @@
-// Settings/LocaleZH_CN.cs
+// Localization/LocaleZH_CN.cs
 // Simplified Chinese zh-HANS for Zone Tools.
 
 namespace ZoningToolkit
 {
-    using System.Collections.Generic;
     using Colossal;
+    using System.Collections.Generic;
 
     public sealed class LocaleZH_CN : IDictionarySource
     {
@@ -87,7 +87,7 @@ namespace ZoningToolkit
             return d;
         }
 
-        public void Unload()
+        public void Unload( )
         {
         }
     }

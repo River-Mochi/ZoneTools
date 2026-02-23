@@ -91,7 +91,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Localization\" />
 		<Folder Include="zoning-toolkit-ui\src\components\" />
 	</ItemGroup>
 
@@ -99,56 +98,38 @@
 		- first time (node_modules missing), OR
 		- package-lock.json changed since last run (tracked by .stamp)
 	-->
-	<Target Name="NpmInstallIfNeeded"
-			AfterTargets="Build"
-			Condition="Exists('$(ProjectDir)zoning-toolkit-ui\package.json')"
-			Inputs="$(ProjectDir)zoning-toolkit-ui\package-lock.json"
-			Outputs="$(ProjectDir)zoning-toolkit-ui\node_modules\.stamp">
+	<Target Name="NpmInstallIfNeeded" AfterTargets="Build" Condition="Exists('$(ProjectDir)zoning-toolkit-ui\package.json')" Inputs="$(ProjectDir)zoning-toolkit-ui\package-lock.json" Outputs="$(ProjectDir)zoning-toolkit-ui\node_modules\.stamp">
 
 		<Message Text="ZONE TOOLS UI: npm ci (first-time or lockfile changed)..." Importance="high" />
 
-		<Exec Command="$(NpmCmd) ci --no-fund"
-			  WorkingDirectory="$(ProjectDir)zoning-toolkit-ui"
-			  IgnoreExitCode="true">
+		<Exec Command="$(NpmCmd) ci --no-fund" WorkingDirectory="$(ProjectDir)zoning-toolkit-ui" IgnoreExitCode="true">
 			<Output TaskParameter="ExitCode" PropertyName="NpmCiExit" />
 		</Exec>
 
 		<!-- Release: hard fail -->
-		<Error Condition="'$(Configuration)'=='Release' AND '$(NpmCiExit)'!='0'"
-			   Text="ZONE TOOLS UI: 'npm ci' failed (exit $(NpmCiExit)). Release build aborted." />
+		<Error Condition="'$(Configuration)'=='Release' AND '$(NpmCiExit)'!='0'" Text="ZONE TOOLS UI: 'npm ci' failed (exit $(NpmCiExit)). Release build aborted." />
 
 		<!-- Debug/others: warn -->
-		<Warning Condition="'$(Configuration)'!='Release' AND '$(NpmCiExit)'!='0'"
-				 Text="ZONE TOOLS UI: 'npm ci' failed (exit $(NpmCiExit)). Continuing (non-Release)." />
+		<Warning Condition="'$(Configuration)'!='Release' AND '$(NpmCiExit)'!='0'" Text="ZONE TOOLS UI: 'npm ci' failed (exit $(NpmCiExit)). Continuing (non-Release)." />
 
 		<!-- On success, write/update the stamp -->
-		<WriteLinesToFile Condition="'$(NpmCiExit)'=='0'"
-						  File="$(ProjectDir)zoning-toolkit-ui\node_modules\.stamp"
-						  Lines="ok"
-						  Overwrite="true" />
+		<WriteLinesToFile Condition="'$(NpmCiExit)'=='0'" File="$(ProjectDir)zoning-toolkit-ui\node_modules\.stamp" Lines="ok" Overwrite="true" />
 	</Target>
 
 	<!-- Always run the UI bundle AFTER C# build; ensure it runs *after* NpmInstallIfNeeded -->
-	<Target Name="BuildUI"
-			AfterTargets="Build"
-			DependsOnTargets="NpmInstallIfNeeded"
-			Condition="Exists('$(ProjectDir)zoning-toolkit-ui\package.json')">
+	<Target Name="BuildUI" AfterTargets="Build" DependsOnTargets="NpmInstallIfNeeded" Condition="Exists('$(ProjectDir)zoning-toolkit-ui\package.json')">
 
 		<Message Text="ZONE TOOLS UI: npm run build ($(Configuration))..." Importance="high" />
 
-		<Exec Command="$(NpmCmd) run build"
-			  WorkingDirectory="$(ProjectDir)zoning-toolkit-ui"
-			  IgnoreExitCode="true">
+		<Exec Command="$(NpmCmd) run build" WorkingDirectory="$(ProjectDir)zoning-toolkit-ui" IgnoreExitCode="true">
 			<Output TaskParameter="ExitCode" PropertyName="NpmBuildExit" />
 		</Exec>
 
 		<!-- Release: hard fail -->
-		<Error Condition="'$(Configuration)'=='Release' AND '$(NpmBuildExit)'!='0'"
-			   Text="ZONE TOOLS UI: 'npm run build' failed (exit $(NpmBuildExit)). Release build aborted." />
+		<Error Condition="'$(Configuration)'=='Release' AND '$(NpmBuildExit)'!='0'" Text="ZONE TOOLS UI: 'npm run build' failed (exit $(NpmBuildExit)). Release build aborted." />
 
 		<!-- Debug/others: warn -->
-		<Warning Condition="'$(Configuration)'!='Release' AND '$(NpmBuildExit)'!='0'"
-				 Text="ZONE TOOLS UI: 'npm run build' failed (exit $(NpmBuildExit)). Continuing (non-Release)." />
+		<Warning Condition="'$(Configuration)'!='Release' AND '$(NpmBuildExit)'!='0'" Text="ZONE TOOLS UI: 'npm run build' failed (exit $(NpmBuildExit)). Continuing (non-Release)." />
 	</Target>
 
 	<!-- Optional: prints the active TargetFramework during build; remove anytime -->

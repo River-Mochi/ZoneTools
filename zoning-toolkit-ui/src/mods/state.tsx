@@ -191,6 +191,10 @@ export function sendDataToCSharp<T>(
 
 // Trigger Zone Tools panel toggle via C# bridge (used by FAB).
 export function togglePanelFromUI(): void {
+    // Optimistic local toggle so UI responds even if update bindings are delayed.
+    const current = useModUIStore.getState().uiVisible;
+    useModUIStore.getState().updateUiVisible(!current);
+
     sendDataToCSharp(NS, "toggle_panel", true);
 }
 

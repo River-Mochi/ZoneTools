@@ -37,6 +37,10 @@ namespace ZoningToolkit.Systems
 
         private ToolBaseSystem? m_PreviousTool;
 
+#if DEBUG
+        private static readonly bool kDumpRaycastHit = false;
+#endif
+
         public override string toolID => "Zone Tools Zoning Tool";
 
         protected override void OnCreate( )
@@ -108,8 +112,6 @@ namespace ZoningToolkit.Systems
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-
-
             if (!toolEnabled)
             {
                 return inputDeps;
@@ -271,13 +273,10 @@ namespace ZoningToolkit.Systems
             }
 
 #if DEBUG
-            const bool kDumpRaycastHit = false;
             if (kDumpRaycastHit)
             {
-                // Dump components on the hit road entity so to see PrefabRef/Owner/etc.
                 this.listEntityComponents(hit);
 
-                // If it has PrefabRef, dump the prefab entity too.
                 if (EntityManager.TryGetComponent<PrefabRef>(hit, out var pr))
                 {
                     Mod.s_Log.Debug($"{Mod.ModTag} Hit PrefabRef entity: {pr.m_Prefab}");

@@ -1,10 +1,10 @@
-// Settings/LocaleEN.cs
+// Localization/LocaleEN.cs
 // English en-US for Zone Tools.
 
 namespace ZoningToolkit
 {
-    using System.Collections.Generic;
     using Colossal;
+    using System.Collections.Generic;
 
     public sealed class LocaleEN : IDictionarySource
     {
@@ -96,7 +96,7 @@ namespace ZoningToolkit
             return d;
         }
 
-        public void Unload()
+        public void Unload( )
         {
             // Nothing to clean up; CS2 manages locale life cycle.
         }

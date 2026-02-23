@@ -1,6 +1,5 @@
-// src/mods/zoning-toolkit-panel.tsx
-// Floating panel for Zone Tools (zoning mode picker + update tool toggle).
-// Zone Tools header stays English; row label + tooltips are localized via engine.translate() keys.
+// File: zoning-toolkit-ui/src/mods/zoning-toolkit-panel.tsx
+// Purpose: Floating panel for Zone Tools (zoning mode picker + update tool toggle).
 
 import React from "react";
 import { Number2, Panel, PanelSection, PanelSectionRow } from "cs2/ui";
@@ -34,6 +33,16 @@ function translate(id: string, fallback: string): string {
     }
 }
 
+function getRemPx(): number {
+    try {
+        const fs = window.getComputedStyle(document.documentElement).fontSize;
+        const px = parseFloat(fs);
+        return Number.isFinite(px) && px > 0 ? px : 16;
+    } catch {
+        return 16;
+    }
+}
+
 interface ZoningModeButtonConfig {
     icon: string;
     mode: ZoningMode;
@@ -41,49 +50,43 @@ interface ZoningModeButtonConfig {
     tooltipFallback: string;
 }
 
-function getRemPixels(): number {
-    try {
-        if (typeof window === "undefined" || typeof document === "undefined") {
-            return 1;
-        }
-        const fontSize = window.getComputedStyle(document.documentElement).fontSize;
-        const px = parseFloat(fontSize);
-        return Number.isFinite(px) && px > 0 ? px : 1;
-    } catch {
-        return 1;
-    }
-}
-
 export const ZoningToolkitPanel: React.FC = () => {
     const store = useModUIStore();
 
+    // Compute a stable initial position once per session.
     const initialPosRef = React.useRef<Number2 | null>(null);
     if (initialPosRef.current == null) {
-        const fallbackWidthPx = 1920;
-        const fallbackHeightPx = 1080;
+        const wPx = typeof window !== "undefined" ? window.innerWidth : 1920;
+        const hPx = typeof window !== "undefined" ? window.innerHeight : 1080;
 
-        const wPx = typeof window !== "undefined" ? window.innerWidth : fallbackWidthPx;
-        const hPx = typeof window !== "undefined" ? window.innerHeight : fallbackHeightPx;
+        const remPx = getRemPx();
 
-        const remPx = getRemPixels();
-        const wRem = wPx / remPx;
-        const hRem = hPx / remPx;
+        // Match SCSS sizing (rem → px)
+        const panelWidthPx = 320 * remPx;
+        const panelHeightPx = 180 * remPx;
 
-        const panelWidthRem = 320;
-        const rightMarginRem = 40;
-        const bottomHudClearanceRem = 220;
+        // “Keep off the bottom HUD” margin (rem → px)
+        const rightMarginPx = 40 * remPx;
+        const bottomHudClearancePx = 220 * remPx;
 
         initialPosRef.current = {
-            x: Math.max(0, wRem - panelWidthRem - rightMarginRem),
-            y: Math.max(0, hRem - bottomHudClearanceRem),
+            x: Math.max(0, wPx - panelWidthPx - rightMarginPx),
+            y: Math.max(0, hPx - panelHeightPx - bottomHudClearancePx),
         };
     }
 
     const currentZoningMode = getModeFromString(store.zoningMode);
     const isToolEnabled = store.isToolEnabled;
 
-    const panelStyle = {
+    const panelStyle: React.CSSProperties = {
         display: !store.uiVisible || store.photomodeActive ? "none" : undefined,
+        resize: "none",
+        overflow: "hidden",
+        // Belt-and-suspenders sizing in case the Panel theme fights the className
+        width: "320rem",
+        maxWidth: "320rem",
+        minWidth: "320rem",
+        maxHeight: "180rem",
     };
 
     const zoningModeButtonConfigs: ZoningModeButtonConfig[] = [

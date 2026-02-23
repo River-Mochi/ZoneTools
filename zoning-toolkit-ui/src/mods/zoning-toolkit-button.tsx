@@ -1,5 +1,5 @@
-// src/mods/zoning-toolkit-button.tsx
-// GameTopLeft floating action button that toggles the Zone Tools panel.
+// File: zoning-toolkit-ui/src/mods/zoning-toolkit-button.tsx
+// Purpose: GameTopLeft floating action button that toggles the Zone Tools panel.
 
 import React, { CSSProperties } from "react";
 import { Button } from "cs2/ui";
@@ -12,7 +12,7 @@ import VanillaBindings from "./vanilla-bindings";
 const { DescriptionTooltip } = VanillaBindings.components;
 
 class ZoningToolkitMenuButtonInternal extends React.Component {
-    private handleMenuButtonClick = (): void => {
+    private handleMenuButtonActivate = (): void => {
         togglePanelFromUI();
     };
 
@@ -33,12 +33,11 @@ class ZoningToolkitMenuButtonInternal extends React.Component {
                 <Button
                     style={buttonStyle}
                     variant="floating"
-                    onSelect={this.handleMenuButtonClick}
+                    // Support both paths; different vanilla buttons fire different callbacks.
+                    onSelect={this.handleMenuButtonActivate}
+                    onClick={this.handleMenuButtonActivate}
                 >
-                    <img
-                        src={menuIcon}
-                        className={menuButtonStyles.menuIcon}
-                    />
+                    <img src={menuIcon} className={menuButtonStyles.menuIcon} />
                 </Button>
             </DescriptionTooltip>
         );

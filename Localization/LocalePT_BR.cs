@@ -1,10 +1,10 @@
-// Settings/LocalePT_BR.cs
+// Localization/LocalePT_BR.cs
 // Portuguese (Brazil) pt-BR for Zone Tools.
 
 namespace ZoningToolkit
 {
-    using System.Collections.Generic;
     using Colossal;
+    using System.Collections.Generic;
 
     public sealed class LocalePT_BR : IDictionarySource
     {
@@ -87,7 +87,7 @@ namespace ZoningToolkit
             return d;
         }
 
-        public void Unload()
+        public void Unload( )
         {
         }
     }
