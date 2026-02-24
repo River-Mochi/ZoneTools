@@ -1,32 +1,27 @@
 /* File: zoning-toolkit-ui/src/mods/zoning-toolkit-panel.module.scss */
-/* Purpose: Fixed-size draggable Zone Tools panel. */
+/* Floating Zone Tools panel styling (fixed size, no resize, stable drag). */
 
 .panel {
-    /* Draggable panels behave best when removed from normal layout flow */
-    position: absolute;
-    width: 320rem;
-    min-width: 320rem;
-    max-width: 320rem;
-    /* Fixed “two-row” panel height envelope */
-    max-height: 180rem;
-    overflow: hidden;
-    resize: none;
+    width: 220rem;
+    max-width: 220rem;
+    text-overflow: clip;
     user-select: none;
+}
+
+/* Keep it mounted but invisible/no mouse when hidden (Topo pattern). */
+.hidden {
+    opacity: 0 !important;
+    pointer-events: none;
 }
 
 .content {
     padding: 8rem;
-    max-height: 180rem;
     overflow: hidden;
-    /* Prevent flex layouts from trying to “fill screen” */
-    min-height: 0;
-    flex: 0 0 auto;
 }
 
 .panelToolModeRow {
     display: flex;
     flex-direction: row;
-    padding-left: 0;
     gap: 4rem;
 }
 

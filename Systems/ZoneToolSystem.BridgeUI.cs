@@ -4,13 +4,13 @@
 
 namespace ZoningToolkit.Systems
 {
-    using System;
     using Colossal.UI.Binding;
     using Game;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
     using Game.UI;
+    using System;
     using Unity.Entities;
     using ZoningToolkit.Components;
 
@@ -24,7 +24,7 @@ namespace ZoningToolkit.Systems
 
     internal sealed partial class ZoneToolBridgeUI : UISystemBase
     {
-        private const string kGroup = "zoning_adjuster_ui_namespace";
+        private const string kGroup = Mod.ModId;
 
         private ZoneToolSystemCore? m_ZoningSystem;
         private ToolSystem? m_ToolSystem;
@@ -39,7 +39,7 @@ namespace ZoningToolkit.Systems
 
         public override GameMode gameMode => GameMode.Game;
 
-        protected override void OnCreate()
+        protected override void OnCreate( )
         {
             base.OnCreate();
 
@@ -62,12 +62,12 @@ namespace ZoningToolkit.Systems
             if (m_ToolSystem != null)
             {
                 m_ToolSystem.EventPrefabChanged =
-                    (Action<PrefabBase>)Delegate.Combine(
+                    (Action<PrefabBase>) Delegate.Combine(
                         m_ToolSystem.EventPrefabChanged,
                         new Action<PrefabBase>(OnPrefabChanged));
 
                 m_ToolSystem.EventToolChanged =
-                    (Action<ToolBaseSystem>)Delegate.Combine(
+                    (Action<ToolBaseSystem>) Delegate.Combine(
                         m_ToolSystem.EventToolChanged,
                         new Action<ToolBaseSystem>(OnToolChanged));
             }
@@ -76,22 +76,22 @@ namespace ZoningToolkit.Systems
             AddUpdateBinding(new GetterValueBinding<string>(
                 kGroup,
                 "zoning_mode",
-                () => m_UIState.zoningMode.ToString()));
+                ( ) => m_UIState.zoningMode.ToString()));
 
             AddUpdateBinding(new GetterValueBinding<bool>(
                 kGroup,
                 "tool_enabled",
-                () => m_UIState.toolEnabled));
+                ( ) => m_UIState.toolEnabled));
 
             AddUpdateBinding(new GetterValueBinding<bool>(
                 kGroup,
                 "visible",
-                () => m_UIState.visible));
+                ( ) => m_UIState.visible));
 
             AddUpdateBinding(new GetterValueBinding<bool>(
                 kGroup,
                 "photomode",
-                () => m_PhotoMode?.Enabled ?? false));
+                ( ) => m_PhotoMode?.Enabled ?? false));
 
             // UI -> C# bindings.
             AddBinding(new TriggerBinding<string>(
@@ -107,39 +107,40 @@ namespace ZoningToolkit.Systems
                 }));
 
             AddBinding(new TriggerBinding<bool>(
-                kGroup,
-                "tool_enabled",
-                enabled =>
-                {
-                    Mod.Debug($"{Mod.ModTag} Zone Tools UI: tool_enabled set to {enabled}");
+           kGroup,
+           "tool_enabled_set",
+           enabled =>
+           {
+               Mod.s_Log.Info($"{Mod.ModTag} UI trigger: tool_enabled_set = {enabled}");
 
-                    // If tool refuses to enable (e.g., null-prefab safety), we must reflect reality back to UI.
-                    ToggleTool(enabled);
+               ToggleTool(enabled);
 
-                    if (m_Tool != null)
-                    {
-                        m_UIState.toolEnabled = m_Tool.toolEnabled;
-                    }
-                    else
-                    {
-                        m_UIState.toolEnabled = false;
-                    }
-                }));
+               if (m_Tool != null)
+               {
+                   m_UIState.toolEnabled = m_Tool.toolEnabled;
+               }
+               else
+               {
+                   m_UIState.toolEnabled = false;
+               }
+           }));
+
 
             // FAB button toggle: same behaviour as Shift+Z keybind.
             AddBinding(new TriggerBinding<bool>(
-                kGroup,
-                "toggle_panel",
-                _ =>
-                {
-                    Mod.Debug($"{Mod.ModTag} Zone Tools UI: toggle_panel trigger.");
-                    TogglePanelFromHotkey();
-                }));
+          kGroup,
+          "toggle_panel",
+          _ =>
+          {
+              Mod.s_Log.Info($"{Mod.ModTag} UI trigger: toggle_panel");
+              TogglePanelFromHotkey();
+          }));
+
         }
 
         // Called from ZoneToolSystemKeybind (Shift+Z) and from UI via toggle_panel trigger.
         // This only toggles the Zone Tools panel visibility; it does not change the active tool.
-        internal void TogglePanelFromHotkey()
+        internal void TogglePanelFromHotkey( )
         {
             bool newVisible = !m_UIState.visible;
             m_UIState.visible = newVisible;
@@ -228,7 +229,7 @@ namespace ZoningToolkit.Systems
             HandleAutoPanelForRoadTools(isZonableRoadPrefab, "prefab change");
         }
 
-        protected override void OnUpdate()
+        protected override void OnUpdate( )
         {
             base.OnUpdate();
 

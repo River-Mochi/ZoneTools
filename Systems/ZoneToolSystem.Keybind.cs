@@ -17,7 +17,7 @@ namespace ZoningToolkit.Systems
         private bool m_LoggedMissingAction;
         private bool m_LoggedMissingUISystem;
 
-        protected override void OnCreate()
+        protected override void OnCreate( )
         {
             base.OnCreate();
 
@@ -25,7 +25,7 @@ namespace ZoningToolkit.Systems
             Mod.s_Log.Info($"{Mod.ModTag} ZoneToolSystemKeybind created.");
         }
 
-        protected override void OnUpdate()
+        protected override void OnUpdate( )
         {
             if (m_UISystem == null)
             {
@@ -52,9 +52,11 @@ namespace ZoningToolkit.Systems
 
             if (togglePanelAction.WasPressedThisFrame())
             {
-                Mod.Debug($"{Mod.ModTag} ZoneToolSystemKeybind: toggle pressed -> toggling panel.");
+                Mod.s_Log.Info($"{Mod.ModTag} Keybind: toggle panel pressed");
                 m_UISystem.TogglePanelFromHotkey();
             }
+
+
         }
     }
 }
