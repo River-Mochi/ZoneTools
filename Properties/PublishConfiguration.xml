@@ -34,12 +34,21 @@ Your existing road should keep zoning facing the same original direction you set
 - ✅ Auto open/close Zone Tools when road tools opens.
 - ✅ Protect occupied cells (buildings) 
 - ✅ Protect zoned-but-empty cells
-- SHIFT+ Z  open panel shortcut.
+- Go to Options Menu to set shortcut hot keybind.
 
 ### Support and Feedback
 
 - if the mod helped you give it a Like :)
 - Feedback to Github link, or forum, or discord.
+
+### Compatibility
+
+- To avoid conflicts, don't run "Easy Zoning" or ART mod at the same time as ZT as they all use the same systems (pick one is best); switching ZT to EZ or back should also be ok.
+- Does not have Harmony patches, uses CS2 native systems, safer on patch days.
+- Safe to remove any time.  Road you zoned keep their zoning so buildings don't get deleted.
+- Should work with Platter mod.
+
+
 
 ### 11 Languages
 
