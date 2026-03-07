@@ -1,5 +1,5 @@
 // Systems/ZoneToolSystem.Keybind.cs
-// Handles Zone Tools keybinding (Shift+Z by default) via CO's InputManager.
+// Handles Zone Tools keybinding (Shift+X by default) via CO's InputManager.
 
 namespace ZoningToolkit.Systems
 {
@@ -17,7 +17,7 @@ namespace ZoningToolkit.Systems
         private bool m_LoggedMissingAction;
         private bool m_LoggedMissingUISystem;
 
-        protected override void OnCreate()
+        protected override void OnCreate( )
         {
             base.OnCreate();
 
@@ -25,7 +25,7 @@ namespace ZoningToolkit.Systems
             Mod.s_Log.Info($"{Mod.ModTag} ZoneToolSystemKeybind created.");
         }
 
-        protected override void OnUpdate()
+        protected override void OnUpdate( )
         {
             if (m_UISystem == null)
             {

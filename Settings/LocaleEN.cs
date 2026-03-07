@@ -1,10 +1,13 @@
-// Settings/LocaleEN.cs
-// English en-US for Zone Tools.
+// File: Settings/LocaleEN.cs
+// Purpose: English (en-US) localization entries for Zone Tools.
+// Notes:
+// - Settings UI strings generated via ModSetting helper IDs.
+// - React UI strings use fixed keys (ZoneTools.UI.*).
 
 namespace ZoningToolkit
 {
-    using System.Collections.Generic;
     using Colossal;
+    using System.Collections.Generic;
 
     public sealed class LocaleEN : IDictionarySource
     {
@@ -19,9 +22,11 @@ namespace ZoningToolkit
             IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
-            var d = new Dictionary<string, string>
+            // Dictionary is rebuilt when CS2 requests entries.
+            // CS2 manages lifecycle; Unload() can remain empty.
+            Dictionary<string, string> d = new Dictionary<string, string>
             {
-                // Options title (single source of truth from Mod.cs)
+                // Options title (keep consistent with Mod.cs constants)
                 { m_Setting.GetSettingsLocaleID(), Mod.ModName + " " + Mod.ModTag },
 
                 // Tabs
@@ -29,10 +34,10 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "About"   },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGroup),     "Actions"      },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGroup),    "Key bindings" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGroup),       "About"        },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGroup),  "Links"        },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGroup),    "Actions"      },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGroup),   "Key bindings" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGroup),      "About"        },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGroup), "Links"        },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)),    "Mod name" },
@@ -46,19 +51,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "Open the author's Paradox Mods page." },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AutoOpenPanelForRoadTools)), "Auto-open Zone Tools with road tools." },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.AutoOpenPanelForRoadTools)),
-                    "**[ ✓ ] enabled**, the **Zone Tools panel** automatically opens/closes when you open/close a zonable road tool.\n\n" +
-                    "**[   ] disabled**, panel is opened/closed manually."
-                },
-
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "Protect occupied cells (has buildings)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
                     "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on cells that already have a building.\n" +
                     "**[   ] disabled**, buildings could be condemned when changing the zoning under them."
-
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "Protect zoned-but-empty cells" },
@@ -75,17 +72,17 @@ namespace ZoningToolkit
                     "**Keyboard** shortcut to show or hide the Zone Tools panel (same as clicking the top-left menu icon)."
                 },
 
-                // Keybinding name (Options → Keybindings)
+                // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Toggle panel" },
 
                 // -----------------------------------------------------------------
-                // UI strings (React panel)
+                // React UI strings (React panel)
                 // -----------------------------------------------------------------
                 { "ZoneTools.UI.UpdateRoad", "Update Road" },
 
                 { "ZoneTools.UI.Tooltip.UpdateRoad",
-                  "Toggle update tool (for existing roads).\n\n" +
-                  "If it won’t enable, open any road build tool once." },
+                  "Toggle update panel ON / OFF (for existing roads).\n\n" +
+                  "If enabling fails, open new road build tool one time first (i.e, small roads)." },
 
                 { "ZoneTools.UI.Tooltip.ModeDefault", "Both (default)" },
                 { "ZoneTools.UI.Tooltip.ModeLeft",    "Left"          },
@@ -96,9 +93,9 @@ namespace ZoningToolkit
             return d;
         }
 
-        public void Unload()
+        public void Unload( )
         {
-            // Nothing to clean up; CS2 manages locale life cycle.
+            // No cleanup required; CS2 manages locale lifecycle.
         }
     }
 }

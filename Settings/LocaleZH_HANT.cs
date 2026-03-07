@@ -3,8 +3,8 @@
 
 namespace ZoningToolkit
 {
-    using System.Collections.Generic;
     using Colossal;
+    using System.Collections.Generic;
 
     public sealed class LocaleZH_HANT : IDictionarySource
     {
@@ -45,12 +45,6 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "開啟作者的 Paradox Mods 頁面。" },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AutoOpenPanelForRoadTools)), "開啟道路工具時自動開啟 Zone Tools" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.AutoOpenPanelForRoadTools)),
-                    "啟用後，開啟可分區的道路工具時會自動開啟 Zone Tools 面板。\n" +
-                    "關閉則需手動開啟。"
-                },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "保護已佔用格（有建築）" },
                 {
@@ -87,7 +81,7 @@ namespace ZoningToolkit
             return d;
         }
 
-        public void Unload()
+        public void Unload( )
         {
         }
     }

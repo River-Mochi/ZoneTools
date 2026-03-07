@@ -1,16 +1,16 @@
-// Settings/Setting.cs
-// Options UI for Zone Tools – Actions + About (name/version/link) + keybinding.
+// File: Settings/Setting.cs
+// Purpose: Options UI for Zone Tools – Actions + About (name/version/link) + keybinding.
 
 namespace ZoningToolkit
 {
-    using System;
     using Colossal.IO.AssetDatabase;
     using Game.Input;
     using Game.Modding;
     using Game.Settings;
+    using System;
     using UnityEngine; // Application
 
-    [FileLocation("ModsSettings/ZoneTools/ZoneTools")]
+    [FileLocation("ModsSettings/ZoneTools/ZoneTools")]  // settings coc location
     [SettingsUITabOrder(kActionsTab, kAboutTab)]
     [SettingsUIGroupOrder(kActionsGroup, kBindingsGroup, kAboutGroup, kAboutLinksGroup)]
     // Only show "Links" header on the About tab (no redundant "About" header).
@@ -30,9 +30,8 @@ namespace ZoningToolkit
 
         // Defaults (first install)
         // NOTE: property initializers are what makes first-install defaults show up.
-        private const bool kDefaultAutoOpenPanelForRoadTools = true;
         private const bool kDefaultProtectOccupiedCells = true;
-        private const bool kDefaultProtectZonedCells = false;
+        private const bool kDefaultProtectZonedCells = true;
 
         // External links
         private const string kUrlParadox =
@@ -43,13 +42,12 @@ namespace ZoningToolkit
         {
         }
 
-        public override void SetDefaults()
+        public override void SetDefaults( )
         {
-            AutoOpenPanelForRoadTools = kDefaultAutoOpenPanelForRoadTools;
             ProtectOccupiedCells = kDefaultProtectOccupiedCells;
             ProtectZonedCells = kDefaultProtectZonedCells;
 
-            // Ensure binding has a concrete value when resetting.
+            // Ensure binding has a value when resetting.
             TogglePanelBinding = new ProxyBinding { };
         }
 
@@ -63,10 +61,8 @@ namespace ZoningToolkit
 #if DEBUG
             Mod.ModVersion + " (DEBUG)";
 #else
-    Mod.ModVersion;
+            Mod.ModVersion;
 #endif
-
-
 
         [SettingsUIButtonGroup(kAboutLinksGroup)]
         [SettingsUIButton]
@@ -87,9 +83,6 @@ namespace ZoningToolkit
         // ----- ACTIONS TAB -----
 
         [SettingsUISection(kActionsTab, kActionsGroup)]
-        public bool AutoOpenPanelForRoadTools { get; set; } = kDefaultAutoOpenPanelForRoadTools;
-
-        [SettingsUISection(kActionsTab, kActionsGroup)]
         public bool ProtectOccupiedCells { get; set; } = kDefaultProtectOccupiedCells;
 
         [SettingsUISection(kActionsTab, kActionsGroup)]
@@ -98,7 +91,7 @@ namespace ZoningToolkit
         // ----- KEYBINDINGS (Actions tab) -----
 
         [SettingsUISection(kActionsTab, kBindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.Z, Mod.kTogglePanelActionName, shift: true)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.X, Mod.kTogglePanelActionName, shift: true)]
         public ProxyBinding TogglePanelBinding { get; set; } = new ProxyBinding { };
 
         // ----- Helpers -----

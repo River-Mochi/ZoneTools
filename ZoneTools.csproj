@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<!--
 		ZoneTools.csproj   CS2 mod: "Zone Tools" [ZT]
 		- UI build:
@@ -19,20 +19,17 @@
 		<Nullable>enable</Nullable>
 
 		<!-- Versioning: single source of truth -->
-		<Version>1.1.2</Version>
+		<Version>1.1.3</Version>
 		<AssemblyVersion>$(Version).0</AssemblyVersion>
 		<FileVersion>$(Version).0</FileVersion>
 
 		<!-- Assembly/product metadata -->
-		<RootNamespace>ZoneTools</RootNamespace>
+		<RootNamespace>ZoningToolkit</RootNamespace>
 		<AssemblyTitle>ZoneTools</AssemblyTitle>
 		<AssemblyName>ZoneTools</AssemblyName>
 		<Product>ZoneTools</Product>
 		<Title>ZoneTools</Title>
 
-		<!-- NPM runner -->
-		<!-- On Windows, `npm` resolves npm.cmd automatically; use npm.cmd if preferred. -->
-		<NpmCmd>npm</NpmCmd>
 	</PropertyGroup>
 
 	<!-- Debug includes +commit in informational version -->
@@ -107,7 +104,7 @@
 
 		<Message Text="ZONE TOOLS UI: npm ci (first-time or lockfile changed)..." Importance="high" />
 
-		<Exec Command="$(NpmCmd) ci"
+		<Exec Command="npm ci"
 			  WorkingDirectory="$(ProjectDir)zoning-toolkit-ui"
 			  IgnoreExitCode="true">
 			<Output TaskParameter="ExitCode" PropertyName="NpmCiExit" />
@@ -136,7 +133,7 @@
 
 		<Message Text="ZONE TOOLS UI: npm run build ($(Configuration))..." Importance="high" />
 
-		<Exec Command="$(NpmCmd) run build"
+		<Exec Command="npm run build"
 			  WorkingDirectory="$(ProjectDir)zoning-toolkit-ui"
 			  IgnoreExitCode="true">
 			<Output TaskParameter="ExitCode" PropertyName="NpmBuildExit" />

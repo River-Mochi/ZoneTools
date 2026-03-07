@@ -5,7 +5,7 @@ Works for **new roads** and for **updating existing roads**.
 
 ## How to use
 
-- Open the Zone Tools panel (top-left button or **Shift+Z** by default)
+- Open the Zone Tools panel (click top-left button or **Shift+X** - default changeable)
 - Pick a zoning mode: **Both / Left / Right / None**
 
 ### New roads
@@ -18,13 +18,17 @@ Works for **new roads** and for **updating existing roads**.
 
 ## Options UI Settings
 
-- ✅ Auto-open Zone Tools when road tools opens.
 - ✅ Protect occupied cells (buildings)
 - ✅ Protect zoned-but-empty cells
+- ✅ Change keybind: default Shift+X (rebindable in Options menu for this mod)
 
 ## Languages
 
 English, French, German, Spanish, Italian, Japanese, Korean, Polish, Portuguese (Brazil), Simplified Chinese, Traditional Chinese.
+
+### Compatibility
+- No Harmony patches (more compatible with the game).
+- Safe to remove: cities still load without the mod. Roads keep the zoning edits they have.
 
 ## Credits
 

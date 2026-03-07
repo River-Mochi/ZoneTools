@@ -69,7 +69,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const uiVisible = !!this.props.uiVisible;
         const photomodeActive = !!this.props.photomodeActive;
 
-        // Hide in photo mode or when not visible (Shift+Z / FAB toggle driven by C# -> UI state)
+        // Hide in photo mode or when not visible (Shift+X / FAB toggle driven by C# -> UI state)
         const panelStyle = {
             display: !uiVisible || photomodeActive ? "none" : undefined,
         };

@@ -1,45 +1,49 @@
-// Mod.cs
-// Entry point for Zone Tools – logging, settings, localization, systems, and Shift+Z panel hotkey.
+// File: Mod.cs
+// Purpose: Entry point for Zone Tools.
+// - Registers settings + localization
+// - Registers ECS systems (core logic, UI bridge, tools)
+// - Creates the rebindable Shift+X hotkey via CO InputManager
 
 namespace ZoningToolkit
 {
+    using Colossal;                       // IDictionarySource
+    using Colossal.IO.AssetDatabase;      // AssetDatabase.global.LoadSettings
+    using Colossal.Localization;          // LocalizationManager
+    using Colossal.Logging;              // ILog, LogManager
+    using Game;                          // UpdateSystem, SystemUpdatePhase
+    using Game.Input;                    // ProxyAction
+    using Game.Modding;                  // IMod
+    using Game.SceneFlow;                // GameManager
     using System;
     using System.Reflection;
-    using Colossal;                       // IDictionarySource
-    using Colossal.IO.AssetDatabase;
-    using Colossal.Localization;
-    using Colossal.Logging;
-    using Game;
-    using Game.Input;
-    using Game.Modding;
-    using Game.SceneFlow;
     using ZoningToolkit.Systems;
 
     public sealed class Mod : IMod
     {
-        // Metadata
+        // ---- Metadata ------ 
         public const string ModName = "Zone Tools";
         public const string ModId = "ZoneTools";
         public const string ModTag = "[ZT]";
 
-        // Version (3-part) from assembly
+        // Assembly version source of truth (3-part) for logs.
+        // Controlled by <Version> in ZoneTools.csproj.
         public static readonly string ModVersion =
             Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
-        // CO InputManager action ID for the panel toggle keybinding
+        // CO InputManager action name for the panel toggle keybinding.
+        // Must match [SettingsUIKeyboardAction] in Setting.cs and the UI/Keybind system usage.
         public const string kTogglePanelActionName = "ZoneToolsTogglePanel";
 
-        // Once-only banner flag
+        // Prevents double banners when reloading playsets / mod reload events.
         private static bool s_BannerLogged;
 
-        // CO logger
+        // Main mod logger. Writes to mod named file
         public static readonly ILog s_Log = LogManager.GetLogger(ModId);
 
-        /// <summary>
-        /// Debug logging flag for verbose logs (UI events, tool chatter, etc.).
-        /// In DEBUG builds this defaults to true; in RELEASE builds it defaults to false.
-        /// Can flip at runtime if code added to expose it via settings toggle.
-        /// </summary>
+        // Debug logging gate:
+        // - DEBUG: verbose logging enabled by default
+        // - RELEASE: verbose logging disabled by default
+        // This avoids massive logs for players while keeping deep logs available during development.
         public static bool DebugLoggingEnabled
         {
             get; set;
@@ -50,10 +54,7 @@ namespace ZoningToolkit
             false;
 #endif
 
-        /// <summary>
-        /// Helper for verbose debug logging routed through the CO logger.
-        /// This keeps ZoneTools.log much smaller in Release builds.
-        /// </summary>
+        // Verbose log helper. Route through one place to control spam.
         public static void Debug(string message)
         {
             if (!DebugLoggingEnabled)
@@ -64,30 +65,34 @@ namespace ZoningToolkit
             s_Log.Info(message);
         }
 
-        // Active settings (Options UI)
+        // Active settings instance (Options UI).
+        // Used from systems via Mod.Settings.
         public static Setting? Settings
         {
             get; private set;
         }
 
-        // ProxyAction for Shift+Z (rebindable). Used by ZoneToolSystemKeybind.
+        // ProxyAction resolved from settings keybinding registration.
+        // ZoneToolSystemKeybind reads this and checks for presses.
         public static ProxyAction? TogglePanelAction
         {
             get; private set;
         }
 
-        static Mod()
+        static Mod( )
         {
 #if DEBUG
+            // Show errors as UI popups in Debug builds (dev-friendly).
             s_Log.SetShowsErrorsInUI(true);
 #else
+            // Avoid UI popups in Release builds (player-friendly).
             s_Log.SetShowsErrorsInUI(false);
 #endif
         }
 
         public void OnLoad(UpdateSystem updateSystem)
         {
-            // Once-only log banner
+            // One-time banner line.
             if (!s_BannerLogged)
             {
                 s_BannerLogged = true;
@@ -96,10 +101,11 @@ namespace ZoningToolkit
 
             // ----- Settings + localization -----------------------------------
 
-            var setting = new Setting(this);
+            // Create settings object (holds user choices + keybinds).
+            Setting setting = new Setting(this);
             Settings = setting;
 
-            // Register languages via helper
+            // Register locale sources. Failures are caught inside AddLocaleSource.
             AddLocaleSource("en-US", new LocaleEN(setting));
             AddLocaleSource("fr-FR", new LocaleFR(setting));
             AddLocaleSource("es-ES", new LocaleES(setting));
@@ -109,23 +115,29 @@ namespace ZoningToolkit
             AddLocaleSource("ko-KR", new LocaleKO(setting));
             AddLocaleSource("pl-PL", new LocalePL(setting));
             AddLocaleSource("pt-BR", new LocalePT_BR(setting));
-            AddLocaleSource("zh-HANS", new LocaleZH_CN(setting));        // Simplified Chinese
-            AddLocaleSource("zh-HANT", new LocaleZH_HANT(setting));      // Traditional Chinese
+            AddLocaleSource("zh-HANS", new LocaleZH_CN(setting));   // Simplified Chinese
+            AddLocaleSource("zh-HANT", new LocaleZH_HANT(setting)); // Traditional Chinese
 
-            // Load saved values, then register Options UI.
+            // Loads saved settings values from disk.
+            // Third parameter provides defaults when the file does not exist yet.
             AssetDatabase.global.LoadSettings(ModId, setting, new Setting(this));
+
+            // Registers the Options UI entries (tabs, groups, toggles, keybind UI).
             setting.RegisterInOptionsUI();
 
-            // Keybindings (CO wiki pattern: KeyboardAction + KeyboardBinding)
+            // ----- Keybindings -----------
+
+            // Registers key actions and default keyboard binding (Shift+X by default).
             try
             {
                 setting.RegisterKeyBindings();
 
+                // Resolve the action by name so systems can read it without duplicating input code.
                 TogglePanelAction = setting.GetAction(kTogglePanelActionName);
                 if (TogglePanelAction != null)
                 {
                     TogglePanelAction.shouldBeEnabled = true;
-                    s_Log.Info($"{ModTag} Keybinding '{kTogglePanelActionName}' enabled (default Shift+Z).");
+                    s_Log.Info($"{ModTag} Keybinding '{kTogglePanelActionName}' enabled (default Shift+X).");
                 }
                 else
                 {
@@ -134,34 +146,37 @@ namespace ZoningToolkit
             }
             catch (Exception ex)
             {
+                // Mod should still load even if keybinding registration fails.
                 s_Log.Warn($"{ModTag} Keybinding setup skipped: {ex.GetType().Name}: {ex.Message}");
             }
 
-            // ----- ECS systems -----------------------------------------------
+            // ----- ECS systems ------------
 
-            // Tool for updating existing-road zoning (used by the "Update Tool" icon).
+            // Existing roads update tool (click/drag on roads to apply zoning mode).
             updateSystem.UpdateAt<ZoneToolSystemExistingRoads>(SystemUpdatePhase.ToolUpdate);
 
-            // Core zoning logic that applies the selected zoning mode to blocks.
+            // Core zoning logic for new roads (Net tool / block changes).
             updateSystem.UpdateAt<ZoneToolSystemCore>(SystemUpdatePhase.Modification4B);
 
-            // Cohtml UI bridge (C# <-> React panel).
+            // UI bridge (C# <-> React panel): bindings, tool toggle, panel visibility.
             updateSystem.UpdateAt<ZoneToolBridgeUI>(SystemUpdatePhase.UIUpdate);
 
-            // Hotkey system – listens to Shift+Z and toggles the panel.
+            // Hotkey listener (Shift+X): toggles panel visibility.
             updateSystem.UpdateAt<ZoneToolSystemKeybind>(SystemUpdatePhase.ToolUpdate);
         }
 
-        public void OnDispose()
+        public void OnDispose( )
         {
             s_Log.Info(nameof(OnDispose));
 
+            // Disable action so it stops consuming input when mod unloads.
             if (TogglePanelAction != null)
             {
                 TogglePanelAction.shouldBeEnabled = false;
                 TogglePanelAction = null;
             }
 
+            // Unregister Options UI and release settings reference.
             if (Settings != null)
             {
                 Settings.UnregisterInOptionsUI();
@@ -169,14 +184,12 @@ namespace ZoningToolkit
             }
         }
 
-        // --------------------------------------------------------------------
+        // ------------------------------------------------------------------
         // Localization helper
-        // --------------------------------------------------------------------
+        // ------------------------------------------------------------------
 
-        /// <summary>
-        /// Wrapper for LocalizationManager.AddSource that catches exceptions
-        /// so localization issues can't break mod loading.
-        /// </summary>
+        // Wrapper for LocalizationManager.AddSource that catches exceptions.
+        // Prevents locale issues from breaking mod load.
         private static void AddLocaleSource(string localeId, IDictionarySource source)
         {
             if (string.IsNullOrEmpty(localeId))

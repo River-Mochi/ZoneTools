@@ -110,7 +110,7 @@ export const setupSubscriptions = (): void => {
         allSubscriptions.set(toolEnabledEventKey, subscription);
     }
 
-    // visible (bool) – drives panel show/hide (Shift+Z + tool logic).
+    // visible (bool) – drives panel show/hide (Shift+X + tool logic).
     const visibleEventKey = `${NS}.visible`;
     if (!allSubscriptions.has(visibleEventKey)) {
         const subscription = updateEventFromCSharp<boolean>(

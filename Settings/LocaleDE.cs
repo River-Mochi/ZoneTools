@@ -3,8 +3,8 @@
 
 namespace ZoningToolkit
 {
-    using System.Collections.Generic;
     using Colossal;
+    using System.Collections.Generic;
 
     public sealed class LocaleDE : IDictionarySource
     {
@@ -19,7 +19,7 @@ namespace ZoningToolkit
             IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
-            var d = new Dictionary<string, string>
+            Dictionary<string, string> d = new Dictionary<string, string>
             {
                 { m_Setting.GetSettingsLocaleID(), Mod.ModName + " " + Mod.ModTag },
 
@@ -45,12 +45,6 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "Autorenseite auf Paradox Mods öffnen." },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AutoOpenPanelForRoadTools)), "Zone Tools mit Straßentools automatisch öffnen." },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.AutoOpenPanelForRoadTools)),
-                    "Wenn aktiviert, öffnet sich das Zone-Tools-Panel automatisch bei zonierbaren Straßentools.\n" +
-                    "Deaktivieren, um das Panel manuell zu öffnen."
-                },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "Belegte Zellen schützen (Gebäude)" },
                 {
@@ -87,7 +81,7 @@ namespace ZoningToolkit
             return d;
         }
 
-        public void Unload()
+        public void Unload( )
         {
         }
     }
