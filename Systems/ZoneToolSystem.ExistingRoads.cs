@@ -220,7 +220,6 @@ namespace ZoningToolkit.Systems
         }
 
 
-
         internal bool EnableTool( )
         {
             // Hard rule: do not activate tool unless GetPrefab can be guaranteed non-null.
@@ -234,11 +233,11 @@ namespace ZoningToolkit.Systems
 
             Enabled = true;
             m_ZTToolSystem.activeTool = this;
-            toolEnabled = true;
-
 
             // Match the last-used vanilla contour state when switching into this tool.
             selectedSnap = m_NetToolSystem.selectedSnap;
+
+            toolEnabled = true;
 
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads enabled");
             return true;

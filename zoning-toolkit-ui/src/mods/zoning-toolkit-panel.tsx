@@ -1,8 +1,9 @@
 // src/mods/zoning-toolkit-panel.tsx
-// Floating panel for Zone Tools (zoning mode picker + update tool toggle).
+// Floating panel for Zone Tools (zoning mode picker + update tool toggle + contour toggle).
 // Notes:
 // - Panel visibility is driven by C# (Shift+X / FAB triggers C# which updates visible).
-// - tool_enabled is C#-confirmed; JS should request changes and wait for C# echo.
+// - tool_enabled and contour_enabled are C#-confirmed; JS requests changes and waits for C# echo.
+// - Contour button is shown only when Update Road tool is active (avoids vanilla road tool conflicts).
 
 import React from "react";
 import Draggable from "react-draggable";
@@ -10,6 +11,8 @@ import { Panel, PanelSection, PanelSectionRow } from "cs2/ui";
 import engine from "cohtml/cohtml";
 
 import updateToolIcon from "../../assets/icons/replace_tool_icon.svg";
+import contourIcon from "../../assets/icons/contour_lines.svg";
+
 import { ModUIState, useModUIStore, withStore } from "./state";
 import panelStyles from "./zoning-toolkit-panel.module.scss";
 import VanillaBindings from "./vanilla-bindings";
@@ -23,6 +26,10 @@ const kLocale_Tooltip_ModeDefault = "ZoneTools.UI.Tooltip.ModeDefault";
 const kLocale_Tooltip_ModeLeft = "ZoneTools.UI.Tooltip.ModeLeft";
 const kLocale_Tooltip_ModeRight = "ZoneTools.UI.Tooltip.ModeRight";
 const kLocale_Tooltip_ModeNone = "ZoneTools.UI.Tooltip.ModeNone";
+
+// New (optional) locale keys; safe fallbacks used if missing.
+const kLocale_ContourLabel = "ZoneTools.UI.Contour";
+const kLocale_Tooltip_Contour = "ZoneTools.UI.Tooltip.Contour";
 
 function translate(id: string, fallback: string): string {
     try {
@@ -53,7 +60,6 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
     }
 
     private handleZoneToolSelect(enabled: boolean): void {
-        // Request tool enable; C# will confirm back via tool_enabled.update.
         if (this.props.requestToolEnabled) {
             this.props.requestToolEnabled(enabled);
             return;
@@ -61,11 +67,21 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         useModUIStore.getState().requestToolEnabled(enabled);
     }
 
+    private handleContourSelect(): void {
+        if (this.props.requestToggleContourLines) {
+            this.props.requestToggleContourLines();
+            return;
+        }
+        useModUIStore.getState().requestToggleContourLines();
+    }
+
     public render(): JSX.Element | null {
         const zoningModeString = this.props.zoningMode ?? "Default";
         const currentZoningMode = getModeFromString(zoningModeString);
 
         const isToolEnabled = !!this.props.isToolEnabled;
+        const contourEnabled = !!this.props.contourEnabled;
+
         const uiVisible = !!this.props.uiVisible;
         const photomodeActive = !!this.props.photomodeActive;
 
@@ -106,6 +122,12 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
             "Toggle update tool (for existing roads).",
         );
 
+        const contourLabel = translate(kLocale_ContourLabel, "Contour");
+        const contourTooltip = translate(
+            kLocale_Tooltip_Contour,
+            "Toggle terrain contour lines (update tool only).",
+        );
+
         return (
             <Draggable bounds="parent" grid={[5, 5]} enableUserSelectHack={false}>
                 <Panel className={panelStyles.panel} header="Zone Tools" style={panelStyle}>
@@ -140,6 +162,22 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                                 />
                             }
                         />
+
+                        {/* Only show contour toggle when update tool is active (no conflict with vanilla road tool). */}
+                        {isToolEnabled ? (
+                            <PanelSectionRow
+                                left={<span className={panelStyles.rowLabelNoWrap}>{contourLabel}</span>}
+                                right={
+                                    <ToolButton
+                                        focusKey={VanillaBindings.common.focus.disabled}
+                                        selected={contourEnabled}
+                                        src={contourIcon}
+                                        tooltip={contourTooltip}
+                                        onSelect={() => this.handleContourSelect()}
+                                    />
+                                }
+                            />
+                        ) : null}
                     </PanelSection>
                 </Panel>
             </Draggable>
