@@ -1,35 +1,37 @@
 // File: Settings/Setting.cs
-// Purpose: Options UI for Zone Tools – Actions + About (name/version/link) + keybinding.
+// Purpose: Options UI for Zone Tools (Actions + About + Keybinding).
+// Notes:
+// - Defaults are controlled by property initializers + SetDefaults().
+// - FileLocation controls where settings are stored in LocalLow.
 
 namespace ZoningToolkit
 {
     using Colossal.IO.AssetDatabase;
-    using Game.Input;
-    using Game.Modding;
-    using Game.Settings;
-    using System;
-    using UnityEngine; // Application
+    using Game.Input;        // ProxyBinding, BindingKeyboard
+    using Game.Modding;       // IMod
+    using Game.Settings;      // ModSetting + Settings UI attributes
+    using System;             // Exception
+    using UnityEngine;        // Application.OpenURL
 
-    [FileLocation("ModsSettings/ZoneTools/ZoneTools")]  // settings coc location
+    [FileLocation("ModsSettings/ZoneTools/ZoneTools")] // Saved settings path key (not a disk path).
     [SettingsUITabOrder(kActionsTab, kAboutTab)]
     [SettingsUIGroupOrder(kActionsGroup, kBindingsGroup, kAboutGroup, kAboutLinksGroup)]
-    // Only show "Links" header on the About tab (no redundant "About" header).
-    [SettingsUIShowGroupName(kAboutLinksGroup)]
+    [SettingsUIShowGroupName(kAboutLinksGroup)] // Only show “Links” header on About tab.
     [SettingsUIKeyboardAction(Mod.kTogglePanelActionName, ActionType.Button, usages: new[] { "Game" })]
     public sealed class Setting : ModSetting
     {
-        // Tabs
+        // Tabs (tab IDs must match locale keys)
         public const string kActionsTab = "Actions";
         public const string kAboutTab = "About";
 
-        // Groups
+        // Groups (group IDs must match locale keys)
         public const string kActionsGroup = "Actions";
         public const string kBindingsGroup = "Key bindings";
         public const string kAboutGroup = "About";
         public const string kAboutLinksGroup = "Links";
 
-        // Defaults (first install)
-        // NOTE: property initializers are what makes first-install defaults show up.
+        // Defaults (first install + “Reset to defaults”)
+        // NOTE: Keep defaults TRUE protects cities from accidental damage.
         private const bool kDefaultProtectOccupiedCells = true;
         private const bool kDefaultProtectZonedCells = true;
 
@@ -44,11 +46,12 @@ namespace ZoningToolkit
 
         public override void SetDefaults( )
         {
+            // Called by the game when resetting settings to defaults.
             ProtectOccupiedCells = kDefaultProtectOccupiedCells;
             ProtectZonedCells = kDefaultProtectZonedCells;
 
-            // Ensure binding has a value when resetting.
-            TogglePanelBinding = new ProxyBinding { };
+            // Ensure binding has a concrete value when resetting.
+            TogglePanelBinding = new ProxyBinding();
         }
 
         // ----- ABOUT TAB -----
@@ -92,7 +95,7 @@ namespace ZoningToolkit
 
         [SettingsUISection(kActionsTab, kBindingsGroup)]
         [SettingsUIKeyboardBinding(BindingKeyboard.X, Mod.kTogglePanelActionName, shift: true)]
-        public ProxyBinding TogglePanelBinding { get; set; } = new ProxyBinding { };
+        public ProxyBinding TogglePanelBinding { get; set; } = new ProxyBinding();
 
         // ----- Helpers -----
 
@@ -104,7 +107,7 @@ namespace ZoningToolkit
             }
             catch (Exception)
             {
-                // ignore
+                // Ignore: failing to open a browser must not break the Options UI.
             }
         }
     }

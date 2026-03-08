@@ -1,4 +1,4 @@
-// File: Settings/LocaleEN.cs
+// File: Localization/LocaleEN.cs
 // Purpose: English (en-US) localization entries for Zone Tools.
 // Notes:
 // - Settings UI strings generated via ModSetting helper IDs.

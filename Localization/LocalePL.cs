@@ -1,4 +1,4 @@
-// Settings/LocalePL.cs
+// Localization/LocalePL.cs
 // Polish pl-PL for Zone Tools.
 
 namespace ZoningToolkit

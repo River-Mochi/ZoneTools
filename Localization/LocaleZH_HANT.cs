@@ -1,4 +1,4 @@
-// Settings/LocaleZH_HANT.cs
+// Localization/LocaleZH_HANT.cs
 // Traditional Chinese zh-HANT for Zone Tools.
 
 namespace ZoningToolkit

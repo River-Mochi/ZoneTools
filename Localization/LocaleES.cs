@@ -1,4 +1,4 @@
-// Settings/LocaleES.cs
+// Localization/LocaleES.cs
 // Spanish es-ES for Zone Tools.
 
 namespace ZoningToolkit

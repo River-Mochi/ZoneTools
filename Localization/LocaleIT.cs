@@ -1,4 +1,4 @@
-// Settings/LocaleIT.cs
+// Localization/LocaleIT.cs
 // Italian it-IT for Zone Tools.
 
 namespace ZoningToolkit

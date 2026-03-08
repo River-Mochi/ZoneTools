@@ -1,4 +1,4 @@
-// Settings/LocaleZH_CN.cs
+// Localization/LocaleZH_CN.cs
 // Simplified Chinese zh-HANS for Zone Tools.
 
 namespace ZoningToolkit

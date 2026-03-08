@@ -1,4 +1,4 @@
-// Settings/LocaleDE.cs
+// Localization/LocaleDE.cs
 // German de-DE for Zone Tools.
 
 namespace ZoningToolkit

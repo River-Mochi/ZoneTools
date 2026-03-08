@@ -1,4 +1,4 @@
-// Settings/LocaleFR.cs
+// Localization/LocaleFR.cs
 // French fr-FR for Zone Tools.
 
 namespace ZoningToolkit

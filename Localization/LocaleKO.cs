@@ -1,4 +1,4 @@
-// Settings/LocaleKO.cs
+// Localization/LocaleKO.cs
 // Korean ko-KR for Zone Tools.
 
 namespace ZoningToolkit

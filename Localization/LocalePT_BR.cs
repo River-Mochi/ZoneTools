@@ -1,4 +1,4 @@
-// Settings/LocalePT_BR.cs
+// Localization/LocalePT_BR.cs
 // Portuguese (Brazil) pt-BR for Zone Tools.
 
 namespace ZoningToolkit

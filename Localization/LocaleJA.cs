@@ -1,4 +1,4 @@
-// Settings/LocaleJA.cs
+// Localization/LocaleJA.cs
 // Japanese ja-JP for Zone Tools.
 
 namespace ZoningToolkit
