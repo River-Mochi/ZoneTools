@@ -67,18 +67,14 @@
 		<Reference Include="Unity.Entities"><Private>false</Private>		</Reference>
 		<Reference Include="Unity.Mathematics"><Private>false</Private>		</Reference>
 		<Reference Include="Unity.InputSystem"><Private>false</Private>		</Reference>
+        <Reference Include="UnityEngine.AudioModule"><Private>false</Private></Reference>
+
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Update="System">
-			<Private>false</Private>
-		</Reference>
-		<Reference Update="System.Core">
-			<Private>false</Private>
-		</Reference>
-		<Reference Update="System.Data">
-			<Private>false</Private>
-		</Reference>
+		<Reference Update="System"><Private>false</Private></Reference>
+		<Reference Update="System.Core"><Private>false</Private></Reference>
+		<Reference Update="System.Data"><Private>false</Private></Reference>
 	</ItemGroup>
 
 	<!-- Link CS2 Mod toolchain files in Properties/ for easy viewing -->

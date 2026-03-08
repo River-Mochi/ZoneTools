@@ -6,9 +6,9 @@
 
 namespace ZoningToolkit.Systems
 {
-    using Colossal.UI.Binding;       // ValueBinding, TriggerBinding
+    using Colossal.UI.Binding;       // GetterValueBinding, TriggerBinding
     using Game;                      // GameMode
-    using Game.Prefabs;              // RoadPrefab (tool-type checks)
+    using Game.Prefabs;              // RoadPrefab
     using Game.Rendering;            // PhotoModeRenderSystem
     using Game.Tools;                // ToolSystem, ToolBaseSystem, NetToolSystem
     using Game.UI;                   // UISystemBase
@@ -89,6 +89,7 @@ namespace ZoningToolkit.Systems
                 ( ) => m_PhotoMode?.Enabled ?? false));
 
             // Contour state for the Existing Roads tool icon.
+            // Returns false when tool is not active so the UI never shows "selected" while inactive.
             AddUpdateBinding(new GetterValueBinding<bool>(
                 kGroup,
                 "contour_enabled",
@@ -131,7 +132,7 @@ namespace ZoningToolkit.Systems
                 }));
 
             // Contour toggle (EZ-style): flips Snap.ContourLines on the active tool.
-            // UI should call trigger(mod.id, "ToggleContourLines") (argument ignored).
+            // UI triggers: engine.trigger("zoning_adjuster_ui_namespace.ToggleContourLines", true)
             AddBinding(new TriggerBinding<bool>(
                 kGroup,
                 "ToggleContourLines",
@@ -193,16 +194,20 @@ namespace ZoningToolkit.Systems
 
             if (enable)
             {
-                bool enabled = m_Tool.EnableTool();
-                if (!enabled)
+                bool enabledOk = m_Tool.EnableTool();
+                if (!enabledOk)
                 {
                     Mod.Debug($"{Mod.ModTag} EnableTool refused (safe prefab not ready)");
                     m_UIState.toolEnabled = false;
+                    return;
                 }
+
+                m_UIState.toolEnabled = true;
             }
             else
             {
                 m_Tool.DisableTool();
+                m_UIState.toolEnabled = false;
             }
         }
 
@@ -213,10 +218,12 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
+            // If a zonable road build tool is selected, disable Update Existing Roads helper.
             if (IsZonableRoadTool(tool) && m_Tool.toolEnabled)
             {
                 Mod.Debug($"{Mod.ModTag} Road build tool selected -> disabling update tool");
                 m_Tool.DisableTool();
+                m_UIState.toolEnabled = false;
             }
         }
 
@@ -249,7 +256,7 @@ namespace ZoningToolkit.Systems
                 m_ZoningSystem.zoningMode = m_UIState.zoningMode;
             }
 
-            // Tool -> UI state.
+            // Tool -> UI state (reflect refusal or external disables).
             if (m_UIState.toolEnabled != m_Tool.toolEnabled)
             {
                 m_UIState.toolEnabled = m_Tool.toolEnabled;

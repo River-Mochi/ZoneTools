@@ -11,7 +11,7 @@ namespace ZoningToolkit.Systems
 {
     using Colossal.Serialization.Entities; // Purpose (OnGameLoadingComplete signature)
     using Game;                            // GameMode, ToolBaseSystem
-    using Game.Audio;                      // AudioManager
+    using Game.Audio;                      // AudioManager, ToolUXSoundSettingsData
     using Game.Common;                     // Updated, Highlighted, BatchesUpdated
     using Game.Net;                        // Edge, SubBlock
     using Game.Prefabs;                    // PrefabBase, PrefabSystem
