@@ -75,6 +75,12 @@ namespace ZoningToolkit
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Toggle panel" },
 
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Verbose Debug report to Log" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
+                    "Write a one-time debug report to Logs/ZoneTools.log (Debug use only)."
+                },
+
                 // -----------------------------------------------------------------
                 // React UI strings (React panel)
                 // -----------------------------------------------------------------

@@ -1,228 +1,309 @@
 // File: Systems/ZoneToolSystem.ExistingRoads.PrefabSafety.cs
-// Purpose: Provide a non-null prefab for ToolBaseSystem.GetPrefab() and dump PrefabIDs for debugging.
+// Purpose: Provide a guaranteed non-null prefab for ToolBaseSystem.GetPrefab().
+// Notes:
+// - Some mods assume ToolBaseSystem.GetPrefab() is never null and crash if it is.
+// - EnableTool refuses to activate unless a safe prefab is already resolved.
+// - Resolution order:
+//   1) Fixed RoadsServices FencePrefab candidates (Crosswalk, Wide Sidewalk, Trees, Grass).
+//   2) Minimal extra fallbacks (Tunnel, Quay).
+//   3) Vanilla tool donor prefab (DefaultToolSystem/NetToolSystem).
+//   4) Reflection fallback: first resolvable PrefabID inside PrefabSystem dictionaries.
+// - Diagnostic dump is on-demand only (Options button).
 
 namespace ZoningToolkit.Systems
 {
+    using Game.Prefabs;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Reflection;
-    using Game.Prefabs;
 
     internal sealed partial class ZoneToolSystemExistingRoads
     {
         private PrefabBase? m_SafePrefabForUI;
-        private bool m_TriedResolveSafePrefabForUI;
 
-#if DEBUG
-        private bool m_DidDebugDump;
-#endif
+        private void ResetSafePrefabForUI( )
+        {
+            m_SafePrefabForUI = null;
+        }
 
-        private void EnsureSafePrefabForUI()
+        // Called by EnableTool(). Guarantees a non-null prefab before activation.
+        private bool TryResolveSafePrefabForUI(out PrefabBase prefab)
+        {
+            // Cached result first.
+            if (m_SafePrefabForUI != null)
+            {
+                prefab = m_SafePrefabForUI;
+                return true;
+            }
+
+            // 1) Fixed, known RoadsServices prefabs (FencePrefab).
+            if (TryResolveFromFixedRoadServices(out prefab))
+            {
+                m_SafePrefabForUI = prefab;
+                return true;
+            }
+
+            // 2) Minimal extra fallbacks (kept only because these are known to exist in vanilla).
+            if (TryResolveFromMinimalFallbacks(out prefab))
+            {
+                m_SafePrefabForUI = prefab;
+                return true;
+            }
+
+            // 3) Donor from vanilla tools (often becomes non-null after any tool opens once).
+            if (TryResolveFromVanillaToolDonor(out prefab))
+            {
+                m_SafePrefabForUI = prefab;
+                return true;
+            }
+
+            // 4) Last resort: reflection scan to find any resolvable PrefabID.
+            if (TryResolveFromReflectionAnyPrefab(out prefab))
+            {
+                m_SafePrefabForUI = prefab;
+                return true;
+            }
+
+            // Out parameter must be assigned on false path.
+            prefab = null!;
+            return false;
+        }
+
+        // Used by GetPrefab(). Must not return null when tool is active.
+        private PrefabBase GetSafePrefabForUI( )
         {
             if (m_SafePrefabForUI != null)
             {
-                return;
+                return m_SafePrefabForUI;
             }
 
-            if (m_TriedResolveSafePrefabForUI)
+            if (TryResolveSafePrefabForUI(out PrefabBase resolved))
             {
-                return;
+                return resolved;
             }
 
-            m_TriedResolveSafePrefabForUI = true;
-
-            // Prefer “tool-ish” candidates first. These are just *attempts*.
-            // If these don't exist in a given version/mod set, TryGetPrefab will fail and we move on.
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Quay"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Quay01"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "RetainingWall"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "RetainingWall01"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Tunnel"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Tunnel01"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Elevated"));
-            TryAssignSafePrefab(new PrefabID("FencePrefab", "Elevated01"));
-
-            // Fallback: pick the first prefab ID we can discover via reflection (guaranteed non-null GetPrefab()).
-            if (m_SafePrefabForUI == null && TryGetAnyPrefabIdKey(out PrefabID anyId))
-            {
-                TryAssignSafePrefab(anyId);
-            }
-
-            if (m_SafePrefabForUI == null)
-            {
-                Mod.s_Log.Warn($"{Mod.ModTag} PrefabSafety failed: no prefab resolved");
-            }
-            else
-            {
-                Mod.s_Log.Info($"{Mod.ModTag} PrefabSafety selected: {m_SafePrefabForUI.name}");
-            }
-
-#if DEBUG
-            // One-time debug dump after we know PrefabSystem is alive.
-            if (!m_DidDebugDump)
-            {
-                m_DidDebugDump = true;
-                DebugDumpPrefabIds("Crosswalk");
-                DebugDumpPrefabIds("Wide Sidewalk");
-                DebugDumpPrefabIds("Quay");
-                DebugDumpPrefabIds("Fence");
-                DebugDumpPrefabIds("Road");
-                DebugDumpPrefabIds("Lane");
-
-                // Also show some “donor” examples so we can choose a better stable candidate later.
-                DebugDumpAnyPrefabDonors(max: 25);
-            }
-#endif
+            // EnableTool() should refuse activation before this is reachable.
+            Mod.s_Log.Warn($"{Mod.ModTag} GetPrefab called without safe prefab; falling back to DefaultToolSystem.GetPrefab().");
+            PrefabBase fallback = m_ZTDefaultToolSystem.GetPrefab();
+            return fallback;
         }
 
-        private PrefabBase GetSafePrefabForUI()
+        private bool TryResolveFromFixedRoadServices(out PrefabBase prefab)
         {
-            // ToolSystem calls GetPrefab() and assumes it can be null in vanilla tools,
-            // but some mod/UIs choke on null. We guarantee non-null here.
-            if (m_SafePrefabForUI == null)
+            PrefabID[] candidates =
             {
-                Mod.s_Log.Warn($"{Mod.ModTag} GetPrefab fallback still null; forcing reflection pick.");
-                if (TryGetAnyPrefabIdKey(out PrefabID anyId))
+                // RoadsServices group (FencePrefab). Verified stable vanilla items.
+                new PrefabID("FencePrefab", "Crosswalk"),
+                new PrefabID("FencePrefab", "Wide Sidewalk"),
+                new PrefabID("FencePrefab", "WideSidewalk"),
+                new PrefabID("FencePrefab", "Trees"),
+                new PrefabID("FencePrefab", "Grass"),
+            };
+
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                if (m_ZTPrefabSystem.TryGetPrefab(candidates[i], out PrefabBase p) && p != null)
                 {
-                    TryAssignSafePrefab(anyId);
+                    prefab = p;
+                    return true;
                 }
             }
 
-            return m_SafePrefabForUI!;
+            prefab = null!;
+            return false;
         }
 
-        private void TryAssignSafePrefab(PrefabID id)
+        private bool TryResolveFromMinimalFallbacks(out PrefabBase prefab)
         {
-            if (m_SafePrefabForUI != null)
+            PrefabID[] candidates =
             {
-                return;
+                // Minimal extra fallbacks only.
+                new PrefabID("FencePrefab", "Tunnel"),
+                new PrefabID("FencePrefab", "Quay"),
+            };
+
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                if (m_ZTPrefabSystem.TryGetPrefab(candidates[i], out PrefabBase p) && p != null)
+                {
+                    prefab = p;
+                    return true;
+                }
             }
 
-            if (m_ZTPrefabSystem.TryGetPrefab(id, out PrefabBase prefab) && prefab != null)
+            prefab = null!;
+            return false;
+        }
+
+        private bool TryResolveFromVanillaToolDonor(out PrefabBase prefab)
+        {
+            // DefaultToolSystem prefab is usually the best donor (tool infrastructure expects it).
+            PrefabBase d = m_ZTDefaultToolSystem.GetPrefab();
+            if (d != null)
             {
-                m_SafePrefabForUI = prefab;
+                prefab = d;
+                return true;
             }
+
+            // NetToolSystem donor as secondary option.
+            PrefabBase n = m_NetToolSystem.GetPrefab();
+            if (n != null)
+            {
+                prefab = n;
+                return true;
+            }
+
+            prefab = null!;
+            return false;
+        }
+
+        private bool TryResolveFromReflectionAnyPrefab(out PrefabBase prefab)
+        {
+            try
+            {
+                if (!TryGetAnyPrefabIdKey(out PrefabID anyId))
+                {
+                    prefab = null!;
+                    return false;
+                }
+
+                if (m_ZTPrefabSystem.TryGetPrefab(anyId, out PrefabBase p) && p != null)
+                {
+                    prefab = p;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Mod.s_Log.Warn($"{Mod.ModTag} PrefabSafety reflection resolve failed: {ex.GetType().Name}");
+            }
+
+            prefab = null!;
+            return false;
         }
 
         private bool TryGetAnyPrefabIdKey(out PrefabID id)
         {
             id = default;
 
-            try
+            foreach (IDictionary dict in EnumeratePrefabIdDictionaries(m_ZTPrefabSystem))
             {
-                foreach (IDictionary dict in EnumeratePrefabIdDictionaries(m_ZTPrefabSystem))
+                foreach (object key in dict.Keys)
                 {
-                    foreach (object key in dict.Keys)
+                    if (key is PrefabID pid)
                     {
-                        if (key is PrefabID pid)
-                        {
-                            id = pid;
-                            return true;
-                        }
+                        id = pid;
+                        return true;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Mod.s_Log.Warn($"{Mod.ModTag} PrefabSafety key scan failed: {ex.GetType().Name}");
             }
 
             return false;
         }
 
-        internal void DebugDumpPrefabIds(string contains)
+        // Called by BridgeUI on button click. Compact in Release; expanded in DEBUG.
+        internal void DumpDebugReportOnDemand( )
         {
-#if !DEBUG
-            _ = contains;
-#else
             try
             {
-                int dictCount = 0;
-                int keyCount = 0;
-                int matchCount = 0;
+                Mod.s_Log.Info($"{Mod.ModTag} Diagnostic report begin");
 
-                foreach (IDictionary dict in EnumeratePrefabIdDictionaries(m_ZTPrefabSystem))
-                {
-                    dictCount++;
+                PrefabBase d = m_ZTDefaultToolSystem.GetPrefab();
+                PrefabBase n = m_NetToolSystem.GetPrefab();
 
-                    foreach (object key in dict.Keys)
-                    {
-                        keyCount++;
+                Mod.s_Log.Info($"{Mod.ModTag} Donor(DefaultToolSystem).GetPrefab = {(d != null ? d.name : "<null>")}");
+                Mod.s_Log.Info($"{Mod.ModTag} Donor(NetToolSystem).GetPrefab     = {(n != null ? n.name : "<null>")}");
+                Mod.s_Log.Info($"{Mod.ModTag} Cached safe prefab               = {(m_SafePrefabForUI != null ? m_SafePrefabForUI.name : "<null>")}");
 
-                        if (key is not PrefabID pid)
-                        {
-                            continue;
-                        }
+                // Fixed-candidate spot checks.
+                DumpCandidate("FencePrefab", "Crosswalk");
+                DumpCandidate("FencePrefab", "Wide Sidewalk");
+                DumpCandidate("FencePrefab", "WideSidewalk");
+                DumpCandidate("FencePrefab", "Trees");
+                DumpCandidate("FencePrefab", "Grass");
+                DumpCandidate("FencePrefab", "Tunnel");
+                DumpCandidate("FencePrefab", "Quay");
 
-                        string s = pid.ToString();
-                        if (s.IndexOf(contains, StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            matchCount++;
-                            Mod.s_Log.Info($"{Mod.ModTag} PrefabID match ({contains}): {s}");
-                        }
-                    }
-                }
+                bool ok = TryResolveSafePrefabForUI(out PrefabBase resolved);
+                Mod.s_Log.Info($"{Mod.ModTag} Resolve now = {ok} -> {(ok ? resolved.name : "<none>")}");
 
-                Mod.s_Log.Info($"{Mod.ModTag} PrefabID scan '{contains}': dicts={dictCount}, keys={keyCount}, matches={matchCount}");
+#if DEBUG
+                // DEBUG-only: limited, deduped scan to validate PrefabID availability.
+                DumpPrefabIdMatchesUnique("Crosswalk", max: 40);
+                DumpPrefabIdMatchesUnique("Sidewalk", max: 40);
+#endif
+
+                Mod.s_Log.Info($"{Mod.ModTag} Diagnostic report end");
             }
             catch (Exception ex)
             {
-                Mod.s_Log.Warn($"{Mod.ModTag} DebugDumpPrefabIds('{contains}') failed: {ex.GetType().Name}");
+                Mod.s_Log.Warn($"{Mod.ModTag} Diagnostic report failed: {ex.GetType().Name}");
             }
-#endif
         }
 
-        internal void DebugDumpAnyPrefabDonors(int max)
+        private void DumpCandidate(string typeName, string name)
         {
-#if !DEBUG
-            _ = max;
-#else
-            try
+            PrefabID id = new PrefabID(typeName, name);
+
+            // Null-safe output avoids nullable warnings and keeps logs stable.
+            string result = "<missing>";
+            if (m_ZTPrefabSystem.TryGetPrefab(id, out PrefabBase prefab) && prefab != null)
             {
-                int printed = 0;
-                int scanned = 0;
+                result = prefab.name;
+            }
 
-                foreach (IDictionary dict in EnumeratePrefabIdDictionaries(m_ZTPrefabSystem))
+            Mod.s_Log.Info($"{Mod.ModTag} Candidate {id} -> {result}");
+        }
+
+#if DEBUG
+        private void DumpPrefabIdMatchesUnique(string contains, int max)
+        {
+            HashSet<string> printed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            int dictCount = 0;
+            int keyCount = 0;
+            int matchCount = 0;
+
+            foreach (IDictionary dict in EnumeratePrefabIdDictionaries(m_ZTPrefabSystem))
+            {
+                dictCount++;
+
+                foreach (object key in dict.Keys)
                 {
-                    foreach (object key in dict.Keys)
+                    keyCount++;
+
+                    if (key is not PrefabID pid)
                     {
-                        if (printed >= max)
-                        {
-                            Mod.s_Log.Info($"{Mod.ModTag} Donor dump done: printed={printed}, scanned={scanned}");
-                            return;
-                        }
+                        continue;
+                    }
 
-                        scanned++;
+                    string s = pid.ToString();
+                    if (s.IndexOf(contains, StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        continue;
+                    }
 
-                        if (key is not PrefabID pid)
-                        {
-                            continue;
-                        }
+                    matchCount++;
 
-                        if (!m_ZTPrefabSystem.TryGetPrefab(pid, out PrefabBase prefab) || prefab == null)
-                        {
-                            continue;
-                        }
+                    if (printed.Count >= max)
+                    {
+                        continue;
+                    }
 
-                        // Print a small sampling of real, resolvable prefabs.
-                        Mod.s_Log.Info($"{Mod.ModTag} Donor candidate: {pid} -> {prefab.name}");
-                        printed++;
+                    if (printed.Add(s))
+                    {
+                        Mod.s_Log.Info($"{Mod.ModTag} PrefabID match ({contains}): {s}");
                     }
                 }
+            }
 
-                Mod.s_Log.Info($"{Mod.ModTag} Donor dump done: printed={printed}, scanned={scanned}");
-            }
-            catch (Exception ex)
-            {
-                Mod.s_Log.Warn($"{Mod.ModTag} DebugDumpAnyPrefabDonors failed: {ex.GetType().Name}");
-            }
-#endif
+            Mod.s_Log.Info($"{Mod.ModTag} PrefabID scan '{contains}': dicts={dictCount}, keys={keyCount}, matches={matchCount}, printed={printed.Count}");
         }
+#endif
 
         private static IEnumerable<IDictionary> EnumeratePrefabIdDictionaries(PrefabSystem prefabSystem)
         {
-            // Scan all Dictionary<PrefabID, *> fields inside PrefabSystem.
+            // yield return avoids building an intermediate list; enumerates dictionaries lazily.
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
             FieldInfo[] fields = typeof(PrefabSystem).GetFields(flags);

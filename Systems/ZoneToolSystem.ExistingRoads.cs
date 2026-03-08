@@ -2,23 +2,22 @@
 // Purpose: Update Existing Roads tool (hover + select + apply zoning mode to existing networks).
 // Notes:
 // - Tool is enabled/disabled by the UI panel ("Update Road").
-// - Selected road entities are tagged; sub-blocks are marked for ZoneToolSystemCore to re-apply sizing.
+// - Disabling returns to DefaultToolSystem (predictable; avoids returning to an unrelated prior tool).
+// - Tool refuses to activate unless a non-null prefab is guaranteed (prevents null-prefab crashes in other mods).
 
 namespace ZoningToolkit.Systems
 {
-    using Colossal.Entities;               // Debug build (listEntityComponents) in DEBUG
     using Colossal.Serialization.Entities; // Purpose (OnGameLoadingComplete signature)
     using Game;                            // GameMode, ToolBaseSystem
     using Game.Common;                     // Updated tag
-    using Game.Net;                        // Edge, SubBlock, Owner
+    using Game.Net;                        // Edge, SubBlock
     using Game.Prefabs;                    // PrefabBase, PrefabSystem
     using Game.Tools;                      // ToolSystem, DefaultToolSystem, NetToolSystem, raycast
-    using Game.Zones;                      // Zoning blocks / zone-relevant nets
+    using Game.Zones;
     using Unity.Collections;               // NativeHashSet
     using Unity.Entities;                  // Entity, EntityCommandBuffer
     using Unity.Jobs;                      // JobHandle
     using ZoningToolkit.Components;        // ZoningInfo, ZoningInfoUpdated, ZoningMode
-    using ZoningToolkit.Utils;             // DebugDumpPrefabIds in DEBUG build
 
     internal sealed partial class ZoneToolSystemExistingRoads : ToolBaseSystem
     {
@@ -42,17 +41,14 @@ namespace ZoningToolkit.Systems
             private set;
         }
 
-        // Tool to restore when disabling Update Existing Roads.
-        // This is why clicking update twice returns to the prior tool (bulldozer, net tool, etc.).
-        private ToolBaseSystem? m_PreviousTool;
-
-        public override string toolID => "Zone Tools Zoning Tool";
+        // unique toolID string. Tool/UI infrastructure can reference tools by ID.
+        public override string toolID => "ZoningToolkit.ExistingRoads";
 
         protected override void OnCreate( )
         {
             base.OnCreate();
 
-            // Tool stays disabled until explicitly enabled from UI.
+            // Tool system should not run until explicitly enabled from UI.
             Enabled = false;
 
             m_ZTToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
@@ -68,8 +64,8 @@ namespace ZoningToolkit.Systems
 
             toolEnabled = false;
 
-            // Prefab safety is required so the CS2 tool panel does not crash when asking for GetPrefab().
-            EnsureSafePrefabForUI();
+            // Clear cached safe prefab on startup.
+            ResetSafePrefabForUI();
         }
 
         protected override void OnDestroy( )
@@ -92,12 +88,12 @@ namespace ZoningToolkit.Systems
             applyAction.shouldBeEnabled = true;
             secondaryApplyAction.shouldBeEnabled = true;
 
-            // Raycast requirements: roads only, zones required.
+            // Raycast requirements: roads only.
             requireNet = Layer.Road;
             requireZones = true;
-            allowUnderground = false;
 
-            EnsureSafePrefabForUI();
+            // Zoning does not apply underground; hide underground toggle.
+            allowUnderground = false;
         }
 
         protected override void OnStopRunning( )
@@ -126,25 +122,18 @@ namespace ZoningToolkit.Systems
         {
             base.OnGameLoadingComplete(purpose, mode);
 
-#if DEBUG
-            DebugDumpPrefabIds("Crosswalk");
-            DebugDumpPrefabIds("Wide");
-            DebugDumpPrefabIds("Sidewalk");
-            DebugDumpPrefabIds("Fence");
-#endif
+            // Clear cached safe prefab across loads (prefabs can differ per session/playset).
+            ResetSafePrefabForUI();
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            // Prefab safety is checked every update because other mods/game updates can invalidate prior UI prefabs.
-            EnsureSafePrefabForUI();
-
             if (!toolEnabled)
             {
                 return inputDeps;
             }
 
-            // Clear means selection overlay only; actual apply is handled on release.
+            // Clear means selection overlay only; apply is performed on release.
             applyMode = ApplyMode.Clear;
 
             // Secondary action cycles mode (right-click by default).
@@ -172,27 +161,34 @@ namespace ZoningToolkit.Systems
 
         public override PrefabBase GetPrefab( )
         {
-            // Tool panel queries this for icon/UX; must always return a non-null prefab.
+            // Tool panel queries this for icon/UX.
+            // Non-null required when tool is active (some mods assume non-null and crash otherwise).
             return GetSafePrefabForUI();
         }
 
         public override bool TrySetPrefab(PrefabBase prefab)
         {
-            // Tool does not support changing prefab from the tool panel.
+            // Prefab is not selectable from the tool panel for this tool.
             return false;
         }
 
-        internal void EnableTool( )
+        internal bool EnableTool( )
         {
-            EnsureSafePrefabForUI();
+            // Hard rule: do not activate tool unless GetPrefab can be guaranteed non-null.
+            if (!TryResolveSafePrefabForUI(out _))
+            {
+                toolEnabled = false;
+                Enabled = false;
+                Mod.s_Log.Warn($"{Mod.ModTag} ExistingRoads enable refused: safe prefab not ready.");
+                return false;
+            }
 
-            // Save current tool so disabling Update Existing Roads returns to it.
-            m_PreviousTool = m_ZTToolSystem.activeTool;
+            Enabled = true;
             m_ZTToolSystem.activeTool = this;
-
             toolEnabled = true;
 
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads enabled");
+            return true;
         }
 
         internal void DisableTool( )
@@ -202,16 +198,11 @@ namespace ZoningToolkit.Systems
             ClearSelection();
             m_Hovered = Entity.Null;
 
-            // Return to prior tool when available; otherwise fall back to NetToolSystem.
-            ToolBaseSystem? returnTool = m_PreviousTool;
-            if (returnTool == null || returnTool == this)
-            {
-                returnTool = m_NetToolSystem;
-            }
+            // Predictable: always return to DefaultToolSystem.
+            m_ZTToolSystem.activeTool = m_ZTDefaultToolSystem;
 
-            m_ZTToolSystem.activeTool = returnTool;
-
-            m_PreviousTool = null;
+            // Stop tool updates when not active.
+            Enabled = false;
 
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads disabled");
         }
@@ -229,7 +220,7 @@ namespace ZoningToolkit.Systems
                 _ => ZoningMode.Default
             };
 
-            // Writes into the UI system so the panel reflects the change immediately.
+            // Write into UI system so panel reflects the change immediately.
             m_UISystem.SetZoningModeFromTool(next);
         }
 
@@ -279,7 +270,7 @@ namespace ZoningToolkit.Systems
 
             ZoningMode mode = m_UISystem.CurrentZoningMode;
 
-            // ECB is used so changes apply safely in tool output barrier timing.
+            // ECB used so changes apply safely at tool output barrier timing.
             EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
 
             foreach (Entity roadEntity in m_Selected)
@@ -301,28 +292,17 @@ namespace ZoningToolkit.Systems
                 return false;
             }
 
-            // Edge indicates a net segment-like entity (roads are net entities).
+            // Edge indicates a net segment entity (roads are net entities).
             if (!EntityManager.HasComponent<Edge>(hit))
             {
                 return false;
             }
 
-            // SubBlock buffer is required so blocks can be tagged for core update.
+            // SubBlock buffer required so blocks can be tagged for core update.
             if (!EntityManager.HasBuffer<SubBlock>(hit))
             {
                 return false;
             }
-
-#if DEBUG
-            // Debug aid: dumps ECS components on the hit entity and prefab entity.
-            this.listEntityComponents(hit);
-
-            if (EntityManager.TryGetComponent<PrefabRef>(hit, out var pr))
-            {
-                Mod.s_Log.Debug($"{Mod.ModTag} Hit PrefabRef entity: {pr.m_Prefab}");
-                this.listEntityComponents(pr.m_Prefab);
-            }
-#endif
 
             entity = hit;
             return true;
@@ -330,7 +310,7 @@ namespace ZoningToolkit.Systems
 
         private void AddOrSetZoningInfo(EntityCommandBuffer ecb, Entity owner, ZoningMode mode)
         {
-            // ZoningInfo is stored on the road entity so future block edits inherit it.
+            // ZoningInfo stored on the road entity so future block edits inherit it.
             ZoningInfo zi = new ZoningInfo { zoningMode = mode };
 
             if (EntityManager.HasComponent<ZoningInfo>(owner))
@@ -345,7 +325,7 @@ namespace ZoningToolkit.Systems
 
         private void TagSubBlocksForUpdate(EntityCommandBuffer ecb, Entity roadEntity)
         {
-            // Sub-blocks are zone blocks under the road; they must be tagged so core re-applies sizing.
+            // Sub-blocks are zone blocks under the road; tag so core re-applies sizing once.
             if (!EntityManager.HasBuffer<SubBlock>(roadEntity))
             {
                 return;
@@ -366,13 +346,13 @@ namespace ZoningToolkit.Systems
                     continue;
                 }
 
-                // Marker triggers ZoneToolSystemCore update pass (one-shot).
+                // Marker triggers ZoneToolSystemCore update pass.
                 if (!EntityManager.HasComponent<ZoningInfoUpdated>(blockEntity))
                 {
                     ecb.AddComponent<ZoningInfoUpdated>(blockEntity);
                 }
 
-                // Updated helps other systems recognize a change occurred.
+                // Updated tag helps other systems recognize a change occurred.
                 if (!EntityManager.HasComponent<Updated>(blockEntity))
                 {
                     ecb.AddComponent<Updated>(blockEntity);

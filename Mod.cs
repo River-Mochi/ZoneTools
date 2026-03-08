@@ -16,6 +16,7 @@ namespace ZoningToolkit
     using Game.SceneFlow;                // GameManager
     using System;
     using System.Reflection;
+    using System.Threading;             // Interlocked (debug report request counter)
     using ZoningToolkit.Systems;
 
     public sealed class Mod : IMod
@@ -36,6 +37,8 @@ namespace ZoningToolkit
 
         // Prevents double banners when reloading playsets / mod reload events.
         private static bool s_BannerLogged;
+        // Debug report request counter (incremented by Options UI button).
+        private static int s_DebugReportRequestId;
 
         // Main mod logger. Writes to mod named file
         public static readonly ILog s_Log = LogManager.GetLogger(ModId);
@@ -53,7 +56,6 @@ namespace ZoningToolkit
 #else
             false;
 #endif
-
         // Verbose log helper. Route through one place to control spam.
         public static void Debug(string message)
         {
@@ -64,6 +66,20 @@ namespace ZoningToolkit
 
             s_Log.Info(message);
         }
+
+
+        /// <summary>
+        /// Called by Setting.cs button. Uses a counter so multiple clicks can be detected safely.
+        /// </summary>
+        public static void RequestDebugReport( )
+        {
+            Interlocked.Increment(ref s_DebugReportRequestId);
+        }
+
+        /// <summary>
+        /// Read by ZoneToolBridgeUI (UIUpdate) to run the dump once per click.
+        /// </summary>
+        internal static int DebugReportRequestId => Volatile.Read(ref s_DebugReportRequestId);
 
         // Active settings instance (Options UI).
         // Used from systems via Mod.Settings.

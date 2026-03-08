@@ -1,6 +1,8 @@
 // src/mods/zoning-toolkit-panel.tsx
 // Floating panel for Zone Tools (zoning mode picker + update tool toggle).
-// Zone Tools header stays English; row label + tooltips are localized via engine.translate() keys.
+// Notes:
+// - Panel visibility is driven by C# (Shift+X / FAB triggers C# which updates visible).
+// - tool_enabled is C#-confirmed; JS should request changes and wait for C# echo.
 
 import React from "react";
 import Draggable from "react-draggable";
@@ -15,7 +17,6 @@ import { getModeFromString, zoneModeIconMap, ZoningMode } from "./zoning-toolkit
 
 const { ToolButton } = VanillaBindings.components;
 
-// Locale keys (provided by C# Locale*.cs)
 const kLocale_UpdateRoadLabel = "ZoneTools.UI.UpdateRoad";
 const kLocale_Tooltip_UpdateRoad = "ZoneTools.UI.Tooltip.UpdateRoad";
 const kLocale_Tooltip_ModeDefault = "ZoneTools.UI.Tooltip.ModeDefault";
@@ -26,7 +27,6 @@ const kLocale_Tooltip_ModeNone = "ZoneTools.UI.Tooltip.ModeNone";
 function translate(id: string, fallback: string): string {
     try {
         const value = engine.translate(id);
-        // Treat "missing" as fallback (some setups return the key/id if missing)
         if (!value || value === id) {
             return fallback;
         }
@@ -45,7 +45,6 @@ interface ZoningModeButtonConfig {
 
 export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUIState>> {
     private handleZoneModeSelect(zoningMode: ZoningMode): void {
-        // Use injected store actions if present; fall back to direct store access.
         if (this.props.updateZoningMode) {
             this.props.updateZoningMode(zoningMode.toString());
             return;
@@ -54,11 +53,12 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
     }
 
     private handleZoneToolSelect(enabled: boolean): void {
-        if (this.props.updateIsToolEnabled) {
-            this.props.updateIsToolEnabled(enabled);
+        // Request tool enable; C# will confirm back via tool_enabled.update.
+        if (this.props.requestToolEnabled) {
+            this.props.requestToolEnabled(enabled);
             return;
         }
-        useModUIStore.getState().updateIsToolEnabled(enabled);
+        useModUIStore.getState().requestToolEnabled(enabled);
     }
 
     public render(): JSX.Element | null {
@@ -69,7 +69,6 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const uiVisible = !!this.props.uiVisible;
         const photomodeActive = !!this.props.photomodeActive;
 
-        // Hide in photo mode or when not visible (Shift+X / FAB toggle driven by C# -> UI state)
         const panelStyle = {
             display: !uiVisible || photomodeActive ? "none" : undefined,
         };
@@ -104,16 +103,13 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const updateRoadLabel = translate(kLocale_UpdateRoadLabel, "Update Road");
         const updateRoadTooltip = translate(
             kLocale_Tooltip_UpdateRoad,
-            "Toggle update tool (for existing roads). Roads with zoned buildings are skipped.",
+            "Toggle update tool (for existing roads).",
         );
 
         return (
-            <Draggable bounds="parent" grid={[5, 5]}
-            // prevent moz-selection warning
-                enableUserSelectHack={false}>
+            <Draggable bounds="parent" grid={[5, 5]} enableUserSelectHack={false}>
                 <Panel className={panelStyles.panel} header="Zone Tools" style={panelStyle}>
                     <PanelSection>
-                        {/* Row 1: icons only */}
                         <PanelSectionRow
                             left={null}
                             right={
@@ -132,7 +128,6 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                             }
                         />
 
-                        {/* Row 2: localized label + icon */}
                         <PanelSectionRow
                             left={<span className={panelStyles.rowLabelNoWrap}>{updateRoadLabel}</span>}
                             right={

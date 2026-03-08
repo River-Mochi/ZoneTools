@@ -1,5 +1,8 @@
 // src/mods/state.tsx
 // Global UI state for Zone Tools (Zustand store + Cohtml event wiring + HOC).
+// Notes:
+// - C# is the source of truth for: visible, tool_enabled, photomode.
+// - Avoid echo loops: never call JS->C# setters inside C# subscription callbacks.
 
 import engine, { EventHandle } from "cohtml/cohtml";
 import { create } from "zustand";
@@ -15,160 +18,122 @@ function debugLog(...args: unknown[]): void {
     console.log(...args);
 }
 
-// Shape of the UI store that panel + button read from.
 export interface ModUIState {
     uiVisible: boolean;
     photomodeActive: boolean;
     zoningMode: string;
-    isFocused: boolean;
-    isEnabled: boolean;
+
+    // Derived from C# tool state (do not set optimistically; wait for C# update).
     isToolEnabled: boolean;
 
     updateZoningMode: (newValue: string) => void;
-    updateIsToolEnabled: (newValue: boolean) => void;
+    requestToolEnabled: (newValue: boolean) => void;
     updatePhotomodeActive: (newValue: boolean) => void;
     updateUiVisible: (newValue: boolean) => void;
 }
 
-// Keep track of all Cohtml subscriptions so they can be cleaned up.
 const allSubscriptions = new Map<string, () => void>();
 
 // Namespace shared with C# ZoneToolBridgeUI.
 const NS = "zoning_adjuster_ui_namespace";
 
-// Central Zustand store used everywhere.
 export const useModUIStore = create<ModUIState>((set) => ({
     uiVisible: false,
     photomodeActive: false,
     zoningMode: "Default",
-    isFocused: false,
-    isEnabled: false,
     isToolEnabled: false,
 
     updateUiVisible: (newValue: boolean) => {
-        debugLog("[ZoneTools] Updating uiVisible =", newValue);
+        debugLog("[ZoneTools] uiVisible <- C#", newValue);
         set({ uiVisible: newValue });
-        // NOTE: visible is currently driven from C# → JS; we do not send it back.
-        // If needed later we can add a C# trigger binding for NS.visible.
+        // visible is driven from C# → JS only
     },
 
     updatePhotomodeActive: (newValue: boolean) => {
-        debugLog("[ZoneTools] Updating photomodeActive =", newValue);
+        debugLog("[ZoneTools] photomodeActive <- C#", newValue);
         set({ photomodeActive: newValue });
     },
 
-    updateIsToolEnabled: (newValue: boolean) => {
-        debugLog("[ZoneTools] Updating isToolEnabled =", newValue);
-        // Tell C# side to enable/disable update tool.
+    // Request tool enable/disable.
+    // IMPORTANT: do NOT set isToolEnabled here; C# may refuse to enable (safe prefab not ready).
+    requestToolEnabled: (newValue: boolean) => {
+        debugLog("[ZoneTools] Request tool_enabled -> C#", newValue);
         sendDataToCSharp(NS, "tool_enabled", newValue);
-        set({ isToolEnabled: newValue });
     },
 
+    // Zoning mode can be updated optimistically (C# accepts it); C# will still echo it back.
     updateZoningMode: (newValue: string) => {
-        debugLog("[ZoneTools] Updating zoningMode =", newValue);
-        // Tell C# side the zoning mode changed.
+        debugLog("[ZoneTools] zoningMode -> C#", newValue);
         sendDataToCSharp(NS, "zoning_mode_update", newValue);
         set({ zoningMode: newValue });
     },
 }));
 
-// Called from index.tsx when ZoningToolkitUi mounts.
 export const setupSubscriptions = (): void => {
-    debugLog("[ZoneTools] Creating subscriptions for Zone Tools UI.");
+    debugLog("[ZoneTools] setupSubscriptions");
 
     // zoning_mode (string)
     const zoningModeEventKey = `${NS}.zoning_mode`;
     if (!allSubscriptions.has(zoningModeEventKey)) {
-        const subscription = updateEventFromCSharp<string>(
-            NS,
-            "zoning_mode",
-            (zoningMode) => {
-                debugLog("[ZoneTools] zoning_mode update from C#:", zoningMode);
-
-                // IMPORTANT: do NOT call updateZoningMode() here.
-                // would trigger JS->C# and can cause an echo loop.
-                useModUIStore.setState({ zoningMode });
-            },
-        );
+        const subscription = updateEventFromCSharp<string>(NS, "zoning_mode", (zoningMode) => {
+            debugLog("[ZoneTools] zoning_mode <- C#", zoningMode);
+            useModUIStore.setState({ zoningMode });
+        });
         allSubscriptions.set(zoningModeEventKey, subscription);
     }
-
-
 
     // tool_enabled (bool)
     const toolEnabledEventKey = `${NS}.tool_enabled`;
     if (!allSubscriptions.has(toolEnabledEventKey)) {
-        const subscription = updateEventFromCSharp<boolean>(
-            NS,
-            "tool_enabled",
-            (toolEnabled) => {
-                debugLog("[ZoneTools] tool_enabled update from C#:", toolEnabled);
-                // Avoid re-triggering C# trigger; just update store.
-                useModUIStore.setState({ isToolEnabled: toolEnabled });
-            },
-        );
+        const subscription = updateEventFromCSharp<boolean>(NS, "tool_enabled", (toolEnabled) => {
+            debugLog("[ZoneTools] tool_enabled <- C#", toolEnabled);
+            useModUIStore.setState({ isToolEnabled: toolEnabled });
+        });
         allSubscriptions.set(toolEnabledEventKey, subscription);
     }
 
-    // visible (bool) – drives panel show/hide (Shift+X + tool logic).
+    // visible (bool)
     const visibleEventKey = `${NS}.visible`;
     if (!allSubscriptions.has(visibleEventKey)) {
-        const subscription = updateEventFromCSharp<boolean>(
-            NS,
-            "visible",
-            (visible) => {
-                debugLog("[ZoneTools] visible update from C#:", visible);
-                useModUIStore.getState().updateUiVisible(visible);
-            },
-        );
+        const subscription = updateEventFromCSharp<boolean>(NS, "visible", (visible) => {
+            debugLog("[ZoneTools] visible <- C#", visible);
+            useModUIStore.getState().updateUiVisible(visible);
+        });
         allSubscriptions.set(visibleEventKey, subscription);
     }
 
     // photomode (bool)
     const photomodeEventKey = `${NS}.photomode`;
     if (!allSubscriptions.has(photomodeEventKey)) {
-        const subscription = updateEventFromCSharp<boolean>(
-            NS,
-            "photomode",
-            (photomodeEnabled) => {
-                debugLog(
-                    "[ZoneTools] photomode update from C#:",
-                    photomodeEnabled,
-                );
-                useModUIStore
-                    .getState()
-                    .updatePhotomodeActive(photomodeEnabled);
-            },
-        );
+        const subscription = updateEventFromCSharp<boolean>(NS, "photomode", (photomodeEnabled) => {
+            debugLog("[ZoneTools] photomode <- C#", photomodeEnabled);
+            useModUIStore.getState().updatePhotomodeActive(photomodeEnabled);
+        });
         allSubscriptions.set(photomodeEventKey, subscription);
     }
 };
 
-// Called from index.tsx when ZoningToolkitUi unmounts.
 export const teardownSubscriptions = (): void => {
-    debugLog("[ZoneTools] Destroying subscriptions for Zone Tools UI.");
+    debugLog("[ZoneTools] teardownSubscriptions");
 
     allSubscriptions.forEach((unsubscribe, eventKey) => {
-        debugLog("[ZoneTools] Unsubscribing from event", eventKey);
+        debugLog("[ZoneTools] unsubscribe", eventKey);
         unsubscribe();
     });
 
     allSubscriptions.clear();
 };
 
-// Generic helper: subscribe to a Cohtml event from C# side.
 export function updateEventFromCSharp<T>(
     ns: string,
     eventName: string,
     callback: (value: T) => void,
 ): () => void {
-    debugLog(
-        `[ZoneTools] Subscribing to ${ns}.${eventName}.update events from C#.`,
-    );
-
     const updateEvent = `${ns}.${eventName}.update`;
     const subscribeEvent = `${ns}.${eventName}.subscribe`;
     const unsubscribeEvent = `${ns}.${eventName}.unsubscribe`;
+
+    debugLog(`[ZoneTools] subscribe ${updateEvent}`);
 
     const sub: EventHandle = engine.on(updateEvent, callback);
     engine.trigger(subscribeEvent);
@@ -179,23 +144,16 @@ export function updateEventFromCSharp<T>(
     };
 }
 
-// Trigger an event from JS -> C#
-export function sendDataToCSharp<T>(
-    ns: string,
-    eventName: string,
-    newValue: T,
-): void {
-    debugLog(`[ZoneTools] Sending to C#: ${ns}.${eventName} =`, newValue);
+export function sendDataToCSharp<T>(ns: string, eventName: string, newValue: T): void {
+    debugLog(`[ZoneTools] trigger ${ns}.${eventName}`, newValue);
     engine.trigger(`${ns}.${eventName}`, newValue);
 }
 
-// Trigger Zone Tools panel toggle via C# bridge (used by FAB).
 export function togglePanelFromUI(): void {
+    // Payload is ignored on C# side; bool is fine.
     sendDataToCSharp(NS, "toggle_panel", true);
 }
 
-// Very simple HOC: wraps a component that expects (optionally) ModUIState props
-// and returns a no-props component that reads from the Zustand store.
 export function withStore(
     WrappedComponent: React.ComponentType<Partial<ModUIState>>,
 ): React.FC {
@@ -204,10 +162,6 @@ export function withStore(
         return <WrappedComponent {...storeState} />;
     };
 
-    WithStore.displayName = `WithStore(${WrappedComponent.displayName ??
-        WrappedComponent.name ??
-        "Component"
-        })`;
-
+    WithStore.displayName = `WithStore(${WrappedComponent.displayName ?? WrappedComponent.name ?? "Component"})`;
     return WithStore;
 }
