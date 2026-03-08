@@ -194,6 +194,33 @@ namespace ZoningToolkit.Systems
             return false;
         }
 
+
+        // Contour icon state for UI.
+        internal bool ContourEnabled => (selectedSnap & Snap.ContourLines) != 0;
+
+        // Called by BridgeUI trigger.
+        internal void ToggleContourLines( )
+        {
+            Snap snap = selectedSnap;
+
+            bool next = (snap & Snap.ContourLines) == 0;
+            if (next)
+            {
+                snap |= Snap.ContourLines;
+            }
+            else
+            {
+                snap &= ~Snap.ContourLines;
+            }
+
+            selectedSnap = snap;
+
+            // Feedback: same sound used for snap toggles.
+            PlaySnapSound();
+        }
+
+
+
         internal bool EnableTool( )
         {
             // Hard rule: do not activate tool unless GetPrefab can be guaranteed non-null.
@@ -208,6 +235,10 @@ namespace ZoningToolkit.Systems
             Enabled = true;
             m_ZTToolSystem.activeTool = this;
             toolEnabled = true;
+
+
+            // Match the last-used vanilla contour state when switching into this tool.
+            selectedSnap = m_NetToolSystem.selectedSnap;
 
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads enabled");
             return true;
