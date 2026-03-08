@@ -2,7 +2,7 @@
 // Purpose: Update Existing Roads tool (hover + select + apply zoning mode to existing networks).
 // Notes:
 // - Enabled/disabled by UI panel.
-// - Disabling returns to DefaultToolSystem (predictable).
+// - Disabling returns to DefaultToolSystem.
 // - Tool refuses to activate unless GetPrefab is guaranteed non-null.
 // - Hover uses vanilla highlight outline (Highlighted + BatchesUpdated) for visual feedback.
 // - Click/apply uses vanilla tool sounds (ToolUXSoundSettingsData) for audio feedback.
@@ -11,7 +11,7 @@ namespace ZoningToolkit.Systems
 {
     using Colossal.Serialization.Entities; // Purpose (OnGameLoadingComplete signature)
     using Game;                            // GameMode, ToolBaseSystem
-    using Game.Audio;                      // AudioManager, ToolUXSoundSettingsData
+    using Game.Audio;                      // AudioManager
     using Game.Common;                     // Updated, Highlighted, BatchesUpdated
     using Game.Net;                        // Edge, SubBlock
     using Game.Prefabs;                    // PrefabBase, PrefabSystem
@@ -56,7 +56,6 @@ namespace ZoningToolkit.Systems
         {
             base.OnCreate();
 
-            // Tool system should not run until explicitly enabled from UI.
             Enabled = false;
 
             m_ZTToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
@@ -78,7 +77,6 @@ namespace ZoningToolkit.Systems
 
             toolEnabled = false;
 
-            // Clear cached safe prefab on startup.
             ResetSafePrefabForUI();
         }
 
@@ -98,15 +96,12 @@ namespace ZoningToolkit.Systems
 
             toolEnabled = true;
 
-            // ToolBaseSystem actions drive selection behavior.
             applyAction.shouldBeEnabled = true;
             secondaryApplyAction.shouldBeEnabled = true;
 
-            // Raycast requirements: roads only.
             requireNet = Layer.Road;
             requireZones = true;
 
-            // Zoning does not apply underground; hide underground toggle.
             allowUnderground = false;
         }
 
@@ -122,16 +117,16 @@ namespace ZoningToolkit.Systems
             ClearSelection();
             m_Hovered = Entity.Null;
 
-            // Clear highlight so outline never gets stuck when tool stops.
-            EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
-            ClearHoverHighlight(ecb);
+            // IMPORTANT:
+            // ToolOutputBarrier.CreateCommandBuffer() is not allowed in OnStopRunning().
+            // Highlight cleanup uses immediate EntityManager structural changes.
+            ClearHoverHighlightImmediate();
         }
 
         public override void InitializeRaycast( )
         {
             base.InitializeRaycast();
 
-            // Roads and lanes are sufficient to hit most road network entities.
             m_ToolRaycastSystem.typeMask = TypeMask.Net | TypeMask.Lanes;
             m_ToolRaycastSystem.netLayerMask = Layer.Road;
         }
@@ -140,7 +135,6 @@ namespace ZoningToolkit.Systems
         {
             base.OnGameLoadingComplete(purpose, mode);
 
-            // Clear cached safe prefab across loads (prefabs can differ per session/playset).
             ResetSafePrefabForUI();
         }
 
@@ -151,12 +145,10 @@ namespace ZoningToolkit.Systems
                 return inputDeps;
             }
 
-            // Clear means selection overlay only; apply is performed on release.
             applyMode = ApplyMode.Clear;
 
             EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
 
-            // Secondary action cycles mode (right-click by default).
             if (secondaryApplyAction.WasPressedThisFrame())
             {
                 CycleZoningMode();
@@ -166,13 +158,11 @@ namespace ZoningToolkit.Systems
             UpdateHover();
             UpdateHoverHighlight(ecb);
 
-            // Primary action selects while pressed (supports click-and-drag selection).
             if (applyAction.WasPressedThisFrame() || applyAction.IsPressed())
             {
                 AddHoveredToSelection();
             }
 
-            // Apply once on release to avoid repeated writes while dragging.
             if (applyAction.WasReleasedThisFrame())
             {
                 ApplySelection();
@@ -183,17 +173,13 @@ namespace ZoningToolkit.Systems
 
         public override PrefabBase GetPrefab( )
         {
-            // Tool panel queries this for icon/UX.
-            // Non-null required when tool is active (some mods assume non-null and crash otherwise).
             return GetSafePrefabForUI();
         }
 
         public override bool TrySetPrefab(PrefabBase prefab)
         {
-            // Prefab is not selectable from the tool panel for this tool.
             return false;
         }
-
 
         // Contour icon state for UI.
         internal bool ContourEnabled => (selectedSnap & Snap.ContourLines) != 0;
@@ -215,14 +201,14 @@ namespace ZoningToolkit.Systems
 
             selectedSnap = snap;
 
-            // Feedback: same sound used for snap toggles.
+            // Keep vanilla NetToolSystem snap state consistent to avoid UI mismatch.
+            m_NetToolSystem.selectedSnap = selectedSnap;
+
             PlaySnapSound();
         }
 
-
         internal bool EnableTool( )
         {
-            // Hard rule: do not activate tool unless GetPrefab can be guaranteed non-null.
             if (!TryResolveSafePrefabForUI(out _))
             {
                 toolEnabled = false;
@@ -234,7 +220,6 @@ namespace ZoningToolkit.Systems
             Enabled = true;
             m_ZTToolSystem.activeTool = this;
 
-            // Match the last-used vanilla contour state when switching into this tool.
             selectedSnap = m_NetToolSystem.selectedSnap;
 
             toolEnabled = true;
@@ -250,14 +235,16 @@ namespace ZoningToolkit.Systems
             ClearSelection();
             m_Hovered = Entity.Null;
 
-            // Clear highlight immediately so outline never sticks after disable.
-            EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
-            ClearHoverHighlight(ecb);
+            // IMPORTANT:
+            // ToolOutputBarrier.CreateCommandBuffer() is not allowed from toolbar/tool-change paths.
+            // Highlight cleanup uses immediate EntityManager structural changes.
+            ClearHoverHighlightImmediate();
 
-            // Predictable: always return to DefaultToolSystem.
+            // Persist snap state back to vanilla for consistency.
+            m_NetToolSystem.selectedSnap = selectedSnap;
+
             m_ZTToolSystem.activeTool = m_ZTDefaultToolSystem;
 
-            // Stop tool updates when not active.
             Enabled = false;
 
             PlayCancelSound();
@@ -266,7 +253,6 @@ namespace ZoningToolkit.Systems
 
         private void CycleZoningMode( )
         {
-            // Cycle order matches UI expectations.
             ZoningMode current = m_UISystem.CurrentZoningMode;
             ZoningMode next = current switch
             {
@@ -277,13 +263,11 @@ namespace ZoningToolkit.Systems
                 _ => ZoningMode.Default
             };
 
-            // Write into UI system so panel reflects the change immediately.
             m_UISystem.SetZoningModeFromTool(next);
         }
 
         private void UpdateHover( )
         {
-            // Hover comes from a tool raycast result.
             Entity newHovered = TryGetRaycastRoad(out Entity e) ? e : Entity.Null;
             if (newHovered == m_Hovered)
             {
@@ -329,7 +313,6 @@ namespace ZoningToolkit.Systems
 
             ZoningMode mode = m_UISystem.CurrentZoningMode;
 
-            // ECB used so changes apply safely at tool output barrier timing.
             EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
 
             foreach (Entity roadEntity in m_Selected)
@@ -347,19 +330,16 @@ namespace ZoningToolkit.Systems
         {
             entity = Entity.Null;
 
-            // GetRaycastResult is provided by ToolBaseSystem.
             if (!base.GetRaycastResult(out Entity hit, out RaycastHit _))
             {
                 return false;
             }
 
-            // Edge indicates a net segment entity (roads are net entities).
             if (!EntityManager.HasComponent<Edge>(hit))
             {
                 return false;
             }
 
-            // SubBlock buffer required so blocks can be tagged for core update.
             if (!EntityManager.HasBuffer<SubBlock>(hit))
             {
                 return false;
@@ -371,7 +351,6 @@ namespace ZoningToolkit.Systems
 
         private void AddOrSetZoningInfo(EntityCommandBuffer ecb, Entity owner, ZoningMode mode)
         {
-            // ZoningInfo stored on the road entity so future block edits inherit it.
             ZoningInfo zi = new ZoningInfo { zoningMode = mode };
 
             if (EntityManager.HasComponent<ZoningInfo>(owner))
@@ -386,7 +365,6 @@ namespace ZoningToolkit.Systems
 
         private void TagSubBlocksForUpdate(EntityCommandBuffer ecb, Entity roadEntity)
         {
-            // Sub-blocks are zone blocks under the road; tag so core re-applies sizing once.
             if (!EntityManager.HasBuffer<SubBlock>(roadEntity))
             {
                 return;
@@ -407,13 +385,11 @@ namespace ZoningToolkit.Systems
                     continue;
                 }
 
-                // Marker triggers ZoneToolSystemCore update pass.
                 if (!EntityManager.HasComponent<ZoningInfoUpdated>(blockEntity))
                 {
                     ecb.AddComponent<ZoningInfoUpdated>(blockEntity);
                 }
 
-                // Updated tag helps other systems recognize a change occurred.
                 if (!EntityManager.HasComponent<Updated>(blockEntity))
                 {
                     ecb.AddComponent<Updated>(blockEntity);
@@ -423,7 +399,6 @@ namespace ZoningToolkit.Systems
 
         private void UpdateHoverHighlight(EntityCommandBuffer ecb)
         {
-            // Highlight only when hover is valid and applying would produce a change.
             Entity target = Entity.Null;
 
             if (m_Hovered != Entity.Null && EntityManager.Exists(m_Hovered))
@@ -468,6 +443,24 @@ namespace ZoningToolkit.Systems
             m_Highlighted = Entity.Null;
         }
 
+        // Immediate cleanup path (no ECB).
+        private void ClearHoverHighlightImmediate( )
+        {
+            if (m_Highlighted == Entity.Null)
+            {
+                return;
+            }
+
+            if (!EntityManager.Exists(m_Highlighted))
+            {
+                m_Highlighted = Entity.Null;
+                return;
+            }
+
+            SetHighlightedImmediate(m_Highlighted, value: false);
+            m_Highlighted = Entity.Null;
+        }
+
         private void SetHighlighted(EntityCommandBuffer ecb, Entity entity, bool value)
         {
             if (value)
@@ -477,7 +470,6 @@ namespace ZoningToolkit.Systems
                     ecb.AddComponent<Highlighted>(entity);
                 }
 
-                // Updated forces renderer/UI refresh for highlight changes.
                 if (!EntityManager.HasComponent<Updated>(entity))
                 {
                     ecb.AddComponent<Updated>(entity);
@@ -496,7 +488,6 @@ namespace ZoningToolkit.Systems
                 }
             }
 
-            // BatchesUpdated on endpoints forces the outline to refresh (matches EZ approach).
             if (EntityManager.HasComponent<Edge>(entity))
             {
                 Edge edge = EntityManager.GetComponentData<Edge>(entity);
@@ -510,6 +501,61 @@ namespace ZoningToolkit.Systems
                 {
                     ecb.AddComponent<BatchesUpdated>(edge.m_End);
                 }
+            }
+        }
+
+        // Immediate version (no ECB).
+        private void SetHighlightedImmediate(Entity entity, bool value)
+        {
+            if (value)
+            {
+                if (!EntityManager.HasComponent<Highlighted>(entity))
+                {
+                    EntityManager.AddComponent<Highlighted>(entity);
+                }
+
+                if (!EntityManager.HasComponent<Updated>(entity))
+                {
+                    EntityManager.AddComponent<Updated>(entity);
+                }
+            }
+            else
+            {
+                if (EntityManager.HasComponent<Highlighted>(entity))
+                {
+                    EntityManager.RemoveComponent<Highlighted>(entity);
+                }
+
+                if (!EntityManager.HasComponent<Updated>(entity))
+                {
+                    EntityManager.AddComponent<Updated>(entity);
+                }
+            }
+
+            if (EntityManager.HasComponent<Edge>(entity))
+            {
+                Edge edge = EntityManager.GetComponentData<Edge>(entity);
+
+                AddBatchesUpdatedImmediate(edge.m_Start);
+                AddBatchesUpdatedImmediate(edge.m_End);
+            }
+        }
+
+        private void AddBatchesUpdatedImmediate(Entity node)
+        {
+            if (node == Entity.Null)
+            {
+                return;
+            }
+
+            if (!EntityManager.Exists(node))
+            {
+                return;
+            }
+
+            if (!EntityManager.HasComponent<BatchesUpdated>(node))
+            {
+                EntityManager.AddComponent<BatchesUpdated>(node);
             }
         }
 
