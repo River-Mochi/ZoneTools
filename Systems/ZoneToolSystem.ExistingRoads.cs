@@ -1,21 +1,24 @@
 // File: Systems/ZoneToolSystem.ExistingRoads.cs
 // Purpose: Update Existing Roads tool (hover + select + apply zoning mode to existing networks).
 // Notes:
-// - Tool is enabled/disabled by the UI panel ("Update Road").
-// - Disabling returns to DefaultToolSystem (predictable; avoids returning to an unrelated prior tool).
-// - Tool refuses to activate unless a non-null prefab is guaranteed (prevents null-prefab crashes in other mods).
+// - Enabled/disabled by UI panel.
+// - Disabling returns to DefaultToolSystem (predictable).
+// - Tool refuses to activate unless GetPrefab is guaranteed non-null.
+// - Hover uses vanilla highlight outline (Highlighted + BatchesUpdated) for visual feedback.
+// - Click/apply uses vanilla tool sounds (ToolUXSoundSettingsData) for audio feedback.
 
 namespace ZoningToolkit.Systems
 {
     using Colossal.Serialization.Entities; // Purpose (OnGameLoadingComplete signature)
     using Game;                            // GameMode, ToolBaseSystem
-    using Game.Common;                     // Updated tag
+    using Game.Audio;                      // AudioManager
+    using Game.Common;                     // Updated, Highlighted, BatchesUpdated
     using Game.Net;                        // Edge, SubBlock
     using Game.Prefabs;                    // PrefabBase, PrefabSystem
-    using Game.Tools;                      // ToolSystem, DefaultToolSystem, NetToolSystem, raycast
+    using Game.Tools;                      // ToolSystem, DefaultToolSystem, NetToolSystem, ToolUXSoundSettingsData
     using Game.Zones;
-    using Unity.Collections;               // NativeHashSet
-    using Unity.Entities;                  // Entity, EntityCommandBuffer
+    using Unity.Collections;               // NativeHashSet, Allocator
+    using Unity.Entities;                  // Entity, EntityCommandBuffer, EntityQuery, EntityQueryBuilder
     using Unity.Jobs;                      // JobHandle
     using ZoningToolkit.Components;        // ZoningInfo, ZoningInfoUpdated, ZoningMode
 
@@ -28,6 +31,8 @@ namespace ZoningToolkit.Systems
         private PrefabSystem m_ZTPrefabSystem = null!;
         private ZoneToolBridgeUI m_UISystem = null!;
 
+        private EntityQuery m_SoundbankQuery;
+
         // Selected road entities (click/drag selection).
         private NativeHashSet<Entity> m_Selected;
         private int m_SelectedCount;
@@ -35,13 +40,16 @@ namespace ZoningToolkit.Systems
         // Currently hovered road entity (from raycast).
         private Entity m_Hovered;
 
+        // Currently highlighted road entity (vanilla outline).
+        private Entity m_Highlighted;
+
         internal bool toolEnabled
         {
             get;
             private set;
         }
 
-        // unique toolID string. Tool/UI infrastructure can reference tools by ID.
+        // Unique tool identifier. UI and tool infrastructure can reference tools by this ID.
         public override string toolID => "ZoningToolkit.ExistingRoads";
 
         protected override void OnCreate( )
@@ -58,9 +66,15 @@ namespace ZoningToolkit.Systems
             m_ZTPrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_UISystem = World.GetOrCreateSystemManaged<ZoneToolBridgeUI>();
 
+            m_SoundbankQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<ToolUXSoundSettingsData>()
+                .Build(this);
+
             m_Selected = new NativeHashSet<Entity>(128, Allocator.Persistent);
             m_SelectedCount = 0;
+
             m_Hovered = Entity.Null;
+            m_Highlighted = Entity.Null;
 
             toolEnabled = false;
 
@@ -107,6 +121,10 @@ namespace ZoningToolkit.Systems
 
             ClearSelection();
             m_Hovered = Entity.Null;
+
+            // Clear highlight so outline never gets stuck when tool stops.
+            EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
+            ClearHoverHighlight(ecb);
         }
 
         public override void InitializeRaycast( )
@@ -136,13 +154,17 @@ namespace ZoningToolkit.Systems
             // Clear means selection overlay only; apply is performed on release.
             applyMode = ApplyMode.Clear;
 
+            EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
+
             // Secondary action cycles mode (right-click by default).
             if (secondaryApplyAction.WasPressedThisFrame())
             {
                 CycleZoningMode();
+                PlaySnapSound();
             }
 
             UpdateHover();
+            UpdateHoverHighlight(ecb);
 
             // Primary action selects while pressed (supports click-and-drag selection).
             if (applyAction.WasPressedThisFrame() || applyAction.IsPressed())
@@ -198,12 +220,17 @@ namespace ZoningToolkit.Systems
             ClearSelection();
             m_Hovered = Entity.Null;
 
+            // Clear highlight immediately so outline never sticks after disable.
+            EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
+            ClearHoverHighlight(ecb);
+
             // Predictable: always return to DefaultToolSystem.
             m_ZTToolSystem.activeTool = m_ZTDefaultToolSystem;
 
             // Stop tool updates when not active.
             Enabled = false;
 
+            PlayCancelSound();
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads disabled");
         }
 
@@ -252,6 +279,8 @@ namespace ZoningToolkit.Systems
             {
                 m_Selected.Add(m_Hovered);
                 m_SelectedCount++;
+
+                PlaySelectSound();
             }
         }
 
@@ -280,6 +309,8 @@ namespace ZoningToolkit.Systems
             }
 
             ClearSelection();
+
+            PlayBuildSound();
         }
 
         private bool TryGetRaycastRoad(out Entity entity)
@@ -358,6 +389,150 @@ namespace ZoningToolkit.Systems
                     ecb.AddComponent<Updated>(blockEntity);
                 }
             }
+        }
+
+        private void UpdateHoverHighlight(EntityCommandBuffer ecb)
+        {
+            // Highlight only when hover is valid and applying would produce a change.
+            Entity target = Entity.Null;
+
+            if (m_Hovered != Entity.Null && EntityManager.Exists(m_Hovered))
+            {
+                ZoningMode desired = m_UISystem.CurrentZoningMode;
+                ZoningMode current = EntityManager.HasComponent<ZoningInfo>(m_Hovered)
+                    ? EntityManager.GetComponentData<ZoningInfo>(m_Hovered).zoningMode
+                    : ZoningMode.Default;
+
+                if (current != desired)
+                {
+                    target = m_Hovered;
+                }
+            }
+
+            if (target == m_Highlighted)
+            {
+                return;
+            }
+
+            if (m_Highlighted != Entity.Null)
+            {
+                SetHighlighted(ecb, m_Highlighted, value: false);
+            }
+
+            m_Highlighted = target;
+
+            if (m_Highlighted != Entity.Null)
+            {
+                SetHighlighted(ecb, m_Highlighted, value: true);
+            }
+        }
+
+        private void ClearHoverHighlight(EntityCommandBuffer ecb)
+        {
+            if (m_Highlighted == Entity.Null)
+            {
+                return;
+            }
+
+            SetHighlighted(ecb, m_Highlighted, value: false);
+            m_Highlighted = Entity.Null;
+        }
+
+        private void SetHighlighted(EntityCommandBuffer ecb, Entity entity, bool value)
+        {
+            if (value)
+            {
+                if (!EntityManager.HasComponent<Highlighted>(entity))
+                {
+                    ecb.AddComponent<Highlighted>(entity);
+                }
+
+                // Updated forces renderer/UI refresh for highlight changes.
+                if (!EntityManager.HasComponent<Updated>(entity))
+                {
+                    ecb.AddComponent<Updated>(entity);
+                }
+            }
+            else
+            {
+                if (EntityManager.HasComponent<Highlighted>(entity))
+                {
+                    ecb.RemoveComponent<Highlighted>(entity);
+                }
+
+                if (!EntityManager.HasComponent<Updated>(entity))
+                {
+                    ecb.AddComponent<Updated>(entity);
+                }
+            }
+
+            // BatchesUpdated on endpoints forces the outline to refresh (matches EZ approach).
+            if (EntityManager.HasComponent<Edge>(entity))
+            {
+                Edge edge = EntityManager.GetComponentData<Edge>(entity);
+
+                if (edge.m_Start != Entity.Null)
+                {
+                    ecb.AddComponent<BatchesUpdated>(edge.m_Start);
+                }
+
+                if (edge.m_End != Entity.Null)
+                {
+                    ecb.AddComponent<BatchesUpdated>(edge.m_End);
+                }
+            }
+        }
+
+        private bool TryGetSoundbank(out ToolUXSoundSettingsData soundbank)
+        {
+            if (m_SoundbankQuery.IsEmptyIgnoreFilter)
+            {
+                soundbank = default;
+                return false;
+            }
+
+            soundbank = m_SoundbankQuery.GetSingleton<ToolUXSoundSettingsData>();
+            return true;
+        }
+
+        private void PlaySelectSound( )
+        {
+            if (!TryGetSoundbank(out ToolUXSoundSettingsData soundbank))
+            {
+                return;
+            }
+
+            AudioManager.instance.PlayUISound(soundbank.m_SelectEntitySound);
+        }
+
+        private void PlayBuildSound( )
+        {
+            if (!TryGetSoundbank(out ToolUXSoundSettingsData soundbank))
+            {
+                return;
+            }
+
+            AudioManager.instance.PlayUISound(soundbank.m_NetBuildSound);
+        }
+
+        private void PlayCancelSound( )
+        {
+            if (!TryGetSoundbank(out ToolUXSoundSettingsData soundbank))
+            {
+                return;
+            }
+
+            AudioManager.instance.PlayUISound(soundbank.m_NetCancelSound);
+        }
+
+        private void PlaySnapSound( )
+        {
+            if (!TryGetSoundbank(out ToolUXSoundSettingsData soundbank))
+            {
+                return;
+            }
+
+            AudioManager.instance.PlayUISound(soundbank.m_SnapSound);
         }
     }
 }

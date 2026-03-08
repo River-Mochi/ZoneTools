@@ -4,11 +4,11 @@
 // - Some mods assume ToolBaseSystem.GetPrefab() is never null and crash if it is.
 // - EnableTool refuses to activate unless a safe prefab is already resolved.
 // - Resolution order:
-//   1) Fixed RoadsServices FencePrefab candidates (Crosswalk, Wide Sidewalk, Trees, Grass).
-//   2) Minimal extra fallbacks (Tunnel, Quay).
+//   1) Fixed vanilla FencePrefab candidates (RoadsServices items).
+//   2) Minimal extra fallbacks (known to exist).
 //   3) Vanilla tool donor prefab (DefaultToolSystem/NetToolSystem).
-//   4) Reflection fallback: first resolvable PrefabID inside PrefabSystem dictionaries.
-// - Diagnostic dump is on-demand only (Options button).
+//   4) Reflection fallback: find any PrefabID key inside PrefabSystem dictionaries (last resort).
+// - Reflection fallback touches PrefabSystem fields only. Runs only when enabling tool, not per-frame.
 
 namespace ZoningToolkit.Systems
 {
@@ -37,29 +37,11 @@ namespace ZoningToolkit.Systems
                 return true;
             }
 
-            // 1) Fixed, known RoadsServices prefabs (FencePrefab).
-            if (TryResolveFromFixedRoadServices(out prefab))
-            {
-                m_SafePrefabForUI = prefab;
-                return true;
-            }
-
-            // 2) Minimal extra fallbacks (kept only because these are known to exist in vanilla).
-            if (TryResolveFromMinimalFallbacks(out prefab))
-            {
-                m_SafePrefabForUI = prefab;
-                return true;
-            }
-
-            // 3) Donor from vanilla tools (often becomes non-null after any tool opens once).
-            if (TryResolveFromVanillaToolDonor(out prefab))
-            {
-                m_SafePrefabForUI = prefab;
-                return true;
-            }
-
-            // 4) Last resort: reflection scan to find any resolvable PrefabID.
-            if (TryResolveFromReflectionAnyPrefab(out prefab))
+            // 1) Fixed, known prefabs.
+            if (TryResolveFromFixedRoadServices(out prefab) ||
+                TryResolveFromMinimalFallbacks(out prefab) ||
+                TryResolveFromVanillaToolDonor(out prefab) ||
+                TryResolveFromReflectionAnyPrefab(out prefab))
             {
                 m_SafePrefabForUI = prefab;
                 return true;
@@ -85,15 +67,14 @@ namespace ZoningToolkit.Systems
 
             // EnableTool() should refuse activation before this is reachable.
             Mod.s_Log.Warn($"{Mod.ModTag} GetPrefab called without safe prefab; falling back to DefaultToolSystem.GetPrefab().");
-            PrefabBase fallback = m_ZTDefaultToolSystem.GetPrefab();
-            return fallback;
+            return m_ZTDefaultToolSystem.GetPrefab();
         }
 
         private bool TryResolveFromFixedRoadServices(out PrefabBase prefab)
         {
             PrefabID[] candidates =
             {
-                // RoadsServices group (FencePrefab). Verified stable vanilla items.
+                // FencePrefab items commonly present in vanilla.
                 new PrefabID("FencePrefab", "Crosswalk"),
                 new PrefabID("FencePrefab", "Wide Sidewalk"),
                 new PrefabID("FencePrefab", "WideSidewalk"),
@@ -118,7 +99,6 @@ namespace ZoningToolkit.Systems
         {
             PrefabID[] candidates =
             {
-                // Minimal extra fallbacks only.
                 new PrefabID("FencePrefab", "Tunnel"),
                 new PrefabID("FencePrefab", "Quay"),
             };
@@ -138,7 +118,7 @@ namespace ZoningToolkit.Systems
 
         private bool TryResolveFromVanillaToolDonor(out PrefabBase prefab)
         {
-            // DefaultToolSystem prefab is usually the best donor (tool infrastructure expects it).
+            // DefaultToolSystem donor first.
             PrefabBase d = m_ZTDefaultToolSystem.GetPrefab();
             if (d != null)
             {
@@ -146,7 +126,7 @@ namespace ZoningToolkit.Systems
                 return true;
             }
 
-            // NetToolSystem donor as secondary option.
+            // NetToolSystem donor as backup.
             PrefabBase n = m_NetToolSystem.GetPrefab();
             if (n != null)
             {
@@ -162,6 +142,8 @@ namespace ZoningToolkit.Systems
         {
             try
             {
+                // Finds the first PrefabID key from any Dictionary<PrefabID, *> field on PrefabSystem.
+                // Used only as a last resort to avoid null-prefab tool crashes.
                 if (!TryGetAnyPrefabIdKey(out PrefabID anyId))
                 {
                     prefab = null!;
@@ -216,7 +198,6 @@ namespace ZoningToolkit.Systems
                 Mod.s_Log.Info($"{Mod.ModTag} Donor(NetToolSystem).GetPrefab     = {(n != null ? n.name : "<null>")}");
                 Mod.s_Log.Info($"{Mod.ModTag} Cached safe prefab               = {(m_SafePrefabForUI != null ? m_SafePrefabForUI.name : "<null>")}");
 
-                // Fixed-candidate spot checks.
                 DumpCandidate("FencePrefab", "Crosswalk");
                 DumpCandidate("FencePrefab", "Wide Sidewalk");
                 DumpCandidate("FencePrefab", "WideSidewalk");
@@ -229,7 +210,6 @@ namespace ZoningToolkit.Systems
                 Mod.s_Log.Info($"{Mod.ModTag} Resolve now = {ok} -> {(ok ? resolved.name : "<none>")}");
 
 #if DEBUG
-                // DEBUG-only: limited, deduped scan to validate PrefabID availability.
                 DumpPrefabIdMatchesUnique("Crosswalk", max: 40);
                 DumpPrefabIdMatchesUnique("Sidewalk", max: 40);
 #endif
@@ -246,7 +226,6 @@ namespace ZoningToolkit.Systems
         {
             PrefabID id = new PrefabID(typeName, name);
 
-            // Null-safe output avoids nullable warnings and keeps logs stable.
             string result = "<missing>";
             if (m_ZTPrefabSystem.TryGetPrefab(id, out PrefabBase prefab) && prefab != null)
             {
@@ -303,7 +282,6 @@ namespace ZoningToolkit.Systems
 
         private static IEnumerable<IDictionary> EnumeratePrefabIdDictionaries(PrefabSystem prefabSystem)
         {
-            // yield return avoids building an intermediate list; enumerates dictionaries lazily.
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
             FieldInfo[] fields = typeof(PrefabSystem).GetFields(flags);
@@ -316,8 +294,7 @@ namespace ZoningToolkit.Systems
                     continue;
                 }
 
-                Type gen = f.FieldType.GetGenericTypeDefinition();
-                if (gen != typeof(Dictionary<,>))
+                if (f.FieldType.GetGenericTypeDefinition() != typeof(Dictionary<,>))
                 {
                     continue;
                 }
