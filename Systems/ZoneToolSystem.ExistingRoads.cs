@@ -333,9 +333,29 @@ namespace ZoningToolkit.Systems
             Enabled = false;
         }
 
-
         internal bool EnableTool( )
         {
+            // Keep the current snap state (including contour) when switching
+            // from contour-host mode into the real Update Road tool.
+            Snap snapToKeep = selectedSnap;
+            if (snapToKeep == default)
+            {
+                snapToKeep = m_NetToolSystem.selectedSnap;
+                if (snapToKeep == default)
+                {
+                    snapToKeep = Snap.All;
+                }
+            }
+
+            // If this tool is currently active only as the contour host,
+            // shut that mode down first.
+            // Re-selecting the same tool is not enough; tool needs a real restart
+            // so OnStartRunning() can enter the full Update Road path.
+            if (m_ContourHostActive)
+            {
+                DisableContourHost();
+            }
+
             m_ContourHostActive = false;
 
             if (!TryResolveSafePrefabForUI(out _))
@@ -346,10 +366,12 @@ namespace ZoningToolkit.Systems
                 return false;
             }
 
+            // Seed snap before activation so OnStartRunning() sees the intended state.
+            selectedSnap = snapToKeep;
+            m_NetToolSystem.selectedSnap = selectedSnap;
+
             Enabled = true;
             m_ZTToolSystem.activeTool = this;
-
-            selectedSnap = m_NetToolSystem.selectedSnap;
 
             toolEnabled = true;
 
