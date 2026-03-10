@@ -1,5 +1,5 @@
 // File: Systems/ZoneToolSystem.ExistingRoads.Apply.cs
-// Purpose: Existing Roads hover/select/apply logic.
+// Purpose: hover + select + apply logic.
 // Notes:
 // - Keeps selection/apply code out of the lifecycle file.
 // - Existing Roads only works on road edge entities that own SubBlock buffers.

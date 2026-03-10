@@ -1,5 +1,5 @@
 // File: Systems/ZoneToolSystem.ExistingRoads.cs
-// Purpose: Existing Roads tool lifecycle + activation logic.
+// Purpose: tool lifecycle + tool activation logic.
 // Notes:
 // - Same tool can run in 2 modes:
 //   1) contour host mode: active only to hold contour/topography snap
@@ -14,7 +14,6 @@ namespace ZoningToolkit.Systems
     using Game.Net;                        // Layer
     using Game.Prefabs;                    // PrefabBase, PrefabSystem
     using Game.Tools;                      // ToolSystem, DefaultToolSystem, NetToolSystem, ToolOutputBarrier
-    using Game.Zones;                      // Layer
     using Unity.Collections;               // NativeHashSet, Allocator
     using Unity.Entities;                  // Entity, EntityCommandBuffer
     using Unity.Jobs;                      // JobHandle
@@ -32,6 +31,12 @@ namespace ZoningToolkit.Systems
         // Real mode = full Update Road behavior.
         private bool m_ContourHostActive;
 
+        // Host -> real tool promotion needs a 2-step handoff.
+        // Step 1: leave host mode and return to DefaultToolSystem.
+        // Step 2: on a later frame, activate this tool again as the real UER tool.
+        private bool m_PendingEnableAfterContourHostStop;
+        private Snap m_PendingEnableSnap;
+
         // Shared runtime state used by apply/highlight partials.
         private NativeHashSet<Entity> m_Selected;
         private int m_SelectedCount;
@@ -43,6 +48,8 @@ namespace ZoningToolkit.Systems
             get;
             private set;
         }
+
+        internal bool HasPendingEnableAfterContourHostStop => m_PendingEnableAfterContourHostStop;
 
         public override string toolID => "ZoningToolkit.ExistingRoads";
 
@@ -68,6 +75,9 @@ namespace ZoningToolkit.Systems
             m_Highlighted = Entity.Null;
 
             toolEnabled = false;
+            m_PendingEnableAfterContourHostStop = false;
+            m_PendingEnableSnap = default;
+
             ResetSafePrefabForUI();
         }
 
@@ -232,11 +242,11 @@ namespace ZoningToolkit.Systems
             offMask |= Snap.ContourLines;
         }
 
+        // Turn this tool into a passive contour holder without enabling Update Road behavior.
         internal bool EnableContourHost( )
         {
             if (m_ContourHostActive)
             {
-                // Host flag already set, but tool may no longer be active.
                 Enabled = true;
 
                 if (m_ZTToolSystem.activeTool != this)
@@ -259,6 +269,9 @@ namespace ZoningToolkit.Systems
                 Mod.s_Log.Warn($"{Mod.ModTag} ContourHost enable refused: safe prefab not ready.");
                 return false;
             }
+
+            m_PendingEnableAfterContourHostStop = false;
+            m_PendingEnableSnap = default;
 
             m_ContourHostActive = true;
             Enabled = true;
@@ -319,11 +332,26 @@ namespace ZoningToolkit.Systems
                 }
             }
 
-            // Host mode and real tool mode need different startup paths.
-            // Shut down host mode first so this tool can restart correctly.
-            if (m_ContourHostActive)
+            // Already waiting for the second half of the host -> real tool handoff.
+            if (m_PendingEnableAfterContourHostStop)
             {
-                DisableContourHost();
+                return true;
+            }
+
+            // Host mode and real tool mode need different startup paths.
+            // Do not swap this -> default -> this in the same UI pass.
+            // That can skip the real stop/start cycle.
+            if (m_ContourHostActive && m_ZTToolSystem.activeTool == this)
+            {
+                m_PendingEnableAfterContourHostStop = true;
+                m_PendingEnableSnap = snapToKeep;
+
+                m_ContourHostActive = false;
+                toolEnabled = false;
+                Enabled = false;
+
+                m_ZTToolSystem.activeTool = m_ZTDefaultToolSystem;
+                return true;
             }
 
             m_ContourHostActive = false;
@@ -349,8 +377,70 @@ namespace ZoningToolkit.Systems
             return true;
         }
 
+        // Second half of the host -> real tool handoff.
+        // Called by BridgeUI after ToolSystem has processed the return to default tool.
+        internal void ContinuePendingEnableAfterContourHostStop( )
+        {
+            if (!m_PendingEnableAfterContourHostStop)
+            {
+                return;
+            }
+
+            // Wait until ToolSystem has finished the pending tool change.
+            if (m_ZTToolSystem.fullUpdateRequired)
+            {
+                return;
+            }
+
+            // Default tool must own the frame before real activation resumes.
+            if (m_ZTToolSystem.activeTool != m_ZTDefaultToolSystem)
+            {
+                // Another tool won the slot; abandon the pending resume.
+                if (m_ZTToolSystem.activeTool != this)
+                {
+                    m_PendingEnableAfterContourHostStop = false;
+                    m_PendingEnableSnap = default;
+                }
+
+                return;
+            }
+
+            if (!TryResolveSafePrefabForUI(out _))
+            {
+                m_PendingEnableAfterContourHostStop = false;
+                m_PendingEnableSnap = default;
+                toolEnabled = false;
+                Enabled = false;
+                Mod.s_Log.Warn($"{Mod.ModTag} ExistingRoads pending enable refused: safe prefab not ready.");
+                return;
+            }
+
+            Snap snapToUse = m_PendingEnableSnap;
+            if (snapToUse == default)
+            {
+                snapToUse = m_NetToolSystem.selectedSnap;
+                if (snapToUse == default)
+                {
+                    snapToUse = Snap.All;
+                }
+            }
+
+            m_PendingEnableAfterContourHostStop = false;
+            m_PendingEnableSnap = default;
+
+            m_ContourHostActive = false;
+            selectedSnap = snapToUse;
+            m_NetToolSystem.selectedSnap = selectedSnap;
+
+            Enabled = true;
+            m_ZTToolSystem.activeTool = this;
+        }
+
         internal void DisableTool( )
         {
+            m_PendingEnableAfterContourHostStop = false;
+            m_PendingEnableSnap = default;
+
             m_ContourHostActive = false;
             toolEnabled = false;
 
