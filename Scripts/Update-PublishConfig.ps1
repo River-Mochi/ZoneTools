@@ -75,22 +75,27 @@ function LeftAlignInnerBlock([string]$s, [string]$tagName) {
 }
 
 function Update-ModJsonVersions([string]$rootDir, [string]$versionValue) {
-  $files =
+  # IMPORTANT: wrap with @() so .Count always exists (even if 0 or 1 result)
+  $files = @(
     Get-ChildItem -LiteralPath $rootDir -Recurse -Force -File -Filter 'mod.json' -ErrorAction SilentlyContinue |
-    Where-Object {
-      $p = $_.FullName
-      ($p -notmatch '\\node_modules\\') -and
-      ($p -notmatch '\\bin\\') -and
-      ($p -notmatch '\\obj\\') -and
-      ($p -notmatch '\\dist\\') -and
-      ($p -notmatch '\\build\\') -and
-      ($p -notmatch '\\out\\')
-    }
+      Where-Object {
+        $p = $_.FullName
+        ($p -notmatch '\\node_modules\\') -and
+        ($p -notmatch '\\bin\\') -and
+        ($p -notmatch '\\obj\\') -and
+        ($p -notmatch '\\dist\\') -and
+        ($p -notmatch '\\build\\') -and
+        ($p -notmatch '\\out\\')
+      }
+  )
 
-  if (-not $files -or $files.Count -eq 0) {
-    Write-Host "No mod.json found under repo root (skip)."
-    return 0
+  $found = $files.Count
+  if ($found -eq 0) {
+    Write-Host "mod.json: none found under repo root (skip)."
+    return [pscustomobject]@{ Found = 0; Updated = 0; SkippedNoVersionKey = 0 }
   }
+
+  Write-Host ("mod.json: found {0} file(s) under repo root." -f $found)
 
   $rx = [System.Text.RegularExpressions.Regex]::new(
     '(?m)(?<prefix>"version"\s*:\s*")(?<val>[^"]*)(?<suffix>")',
@@ -98,6 +103,8 @@ function Update-ModJsonVersions([string]$rootDir, [string]$versionValue) {
   )
 
   $changedCount = 0
+  $skippedNoKey = 0
+
   foreach ($f in $files) {
     $json = [System.IO.File]::ReadAllText($f.FullName, $utf8NoBom)
 
@@ -106,6 +113,9 @@ function Update-ModJsonVersions([string]$rootDir, [string]$versionValue) {
     }
 
     if (-not $rx.IsMatch($json)) {
+      $relSkip = $f.FullName.Substring($rootDir.Length).TrimStart('\','/')
+      Write-Host ("mod.json: skipped (no ""version"" key): {0}" -f $relSkip)
+      $skippedNoKey++
       continue
     }
 
@@ -117,6 +127,8 @@ function Update-ModJsonVersions([string]$rootDir, [string]$versionValue) {
     $json2 = Normalize-Eol $json2 'lf'
 
     if ($json2 -eq $json) {
+      $relNoChange = $f.FullName.Substring($rootDir.Length).TrimStart('\','/')
+      Write-Host ("mod.json: already {0}: {1}" -f $versionValue, $relNoChange)
       continue
     }
 
@@ -125,15 +137,11 @@ function Update-ModJsonVersions([string]$rootDir, [string]$versionValue) {
     Move-Item -Force -LiteralPath $tmp -Destination $f.FullName
 
     $rel = $f.FullName.Substring($rootDir.Length).TrimStart('\','/')
-    Write-Host ("mod.json updated: {0}" -f $rel)
+    Write-Host ("mod.json updated to [{0}]: {1}" -f $versionValue, $rel)
     $changedCount++
   }
 
-  if ($changedCount -eq 0) {
-    Write-Host "mod.json found but no version changes needed."
-  }
-
-  return $changedCount
+  return [pscustomobject]@{ Found = $found; Updated = $changedCount; SkippedNoVersionKey = $skippedNoKey }
 }
 
 # Normalize existing file first (removes MIXED now)
@@ -183,7 +191,9 @@ if ($publishChanged) {
 
 # Repo root = parent of Scripts/
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$modJsonChanged = Update-ModJsonVersions $repoRoot $Version
+$modJsonResult = Update-ModJsonVersions $repoRoot $Version
 
-Write-Host ("Done. PublishConfigChanged={0}, ModJsonUpdated={1}." -f $publishChanged, $modJsonChanged)
+Write-Host ("Done. PublishConfigChanged={0}, ModJsonFound={1}, ModJsonUpdated={2}, ModJsonSkippedNoVersionKey={3}." -f `
+  $publishChanged, $modJsonResult.Found, $modJsonResult.Updated, $modJsonResult.SkippedNoVersionKey)
+
 exit 0
