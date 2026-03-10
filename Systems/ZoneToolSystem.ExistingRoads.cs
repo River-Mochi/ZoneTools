@@ -217,15 +217,29 @@ namespace ZoningToolkit.Systems
         public override PrefabBase GetPrefab( )
         {
             // Intentionally null.
-            // This keeps Zone Tools from borrowing a visible vanilla donor prefab,
-            // which was what caused the giant Road Services panel to open.
+            //
+            // This tool edits EXISTING road entities under the cursor.
+            // It does not operate from a selected prefab like vanilla NetToolSystem /
+            // UpgradeToolSystem style tools do.
+            //
+            // In CS2, GetPrefab() being null is valid for tools that are not
+            // prefab-driven. Do not "fix" this by returning a borrowed vanilla prefab (e.g. Crosswalk).
+            // The original donor-prefab workaround caused the giant Road Services panel to open with the tool.
+            //
+            // Important for other mod authors:
+            // any mod reading ToolSystem.activePrefab or activeTool.GetPrefab()
+            // must null-check first. A caller that assumes non-null is the bug.
+            // See game's DefaultToolSystem for vanilla example of GetPrefab = null.
             return null!;
         }
 
         public override bool TrySetPrefab(PrefabBase prefab)
         {
+            // Existing Roads is not activated by prefab selection.
+            // Tool activation comes from the Zone Tools UI, so prefab assignment is refused.
             return false;
         }
+
 
         public override void GetAvailableSnapMask(out Snap onMask, out Snap offMask)
         {
@@ -350,8 +364,9 @@ namespace ZoningToolkit.Systems
             m_ZTToolSystem.activeTool = this;
 
             toolEnabled = true;
-
+#if DEBUB
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads enabled");
+#endif
             return true;
         }
 
@@ -426,7 +441,9 @@ namespace ZoningToolkit.Systems
             Enabled = false;
 
             PlayCancelSound();
+#if DEBUG
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads disabled");
+#endif
         }
 
         // Kept for the debug button in Options UI.
