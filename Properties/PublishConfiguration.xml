@@ -10,7 +10,7 @@
 
 - Change zoning along new roads or update existing roads. Enable zoning road sides for both/left/right/none. 
 - Finer control of where buildings will spawn, as well as placing roads close together without overlapping/conflicting zones.
-- This is the older mod with a moveable panel. If you prefer the icons in a static vanilla game panel, try new Easy Zoning mod (complete redesign).
+- This is the older mod with a moveable panel. If you prefer icons in a static game panel, try new Easy Zoning mod (complete redesign).
 
 ### New roads
 
@@ -44,13 +44,9 @@ Your existing road should keep zoning facing the same original direction you set
 
 ### Compatibility
 
-- Does not have Harmony patches, uses CS2 native systems (more compatible with game).
-- Safe to remove any time.  Road you zoned keep their zoning so buildings don't get deleted.
+- Does not use Harmony patches; uses CS2 native systems (more compatible with the game and other mods).
+- Safe to remove any time.  Roads keep their zoning edits so buildings don't get deleted.
 - Should work with Platter mod.
-
-### Compatibility
-- No Harmony patches (more compatible with the game).
-- Safe to remove: cities still load without the mod. Roads keep the zoning edits they have.
 
 ### 11 Languages
 
@@ -89,6 +85,8 @@ Your existing road should keep zoning facing the same original direction you set
 - move default panel location to bottom right.
 - update languages, images.
 - remove option to auto open/close Zone tool panel when New roads panel opens
+- fix for cross mod compatibility.
+- adds game vanilla sound effects.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />

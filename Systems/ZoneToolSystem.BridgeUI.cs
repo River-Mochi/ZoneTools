@@ -350,8 +350,10 @@ namespace ZoningToolkit.Systems
 
             active.selectedSnap = snap;
 
-            // NetToolSystem snap should stay consistent when the active tool is a Net tool.
-            if (active is NetToolSystem && m_NetToolSystem != null)
+            // Sync: vanilla road-tool topography state with the ZT panel.
+            // This matters both when the active tool is the vanilla road tool
+            // and when the active tool is ZT ExistingRoads.
+            if (m_NetToolSystem != null && (active is NetToolSystem || active == m_Tool))
             {
                 m_NetToolSystem.selectedSnap = snap;
             }

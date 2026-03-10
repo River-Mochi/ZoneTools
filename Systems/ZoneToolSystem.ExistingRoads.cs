@@ -224,15 +224,14 @@ namespace ZoningToolkit.Systems
             return false;
         }
 
-
         public override void GetAvailableSnapMask(out Snap onMask, out Snap offMask)
         {
             base.GetAvailableSnapMask(out onMask, out offMask);
 
-            // Allow contour lines to be toggled while this tool is active.
-            // Do not mirror current state into masks; masks describe capability.
-            offMask &= ~Snap.ContourLines;
+            // Contour must be present in BOTH masks so selectedSnap can turn it on/off.
+            // Putting it only in onMask forces it on (no toggle).
             onMask |= Snap.ContourLines;
+            offMask |= Snap.ContourLines;
         }
 
 
