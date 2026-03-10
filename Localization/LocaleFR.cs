@@ -70,7 +70,7 @@ namespace ZoningToolkit
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] activé**, afficher le bouton des lignes de terrain dans le panneau Zone Tools.\n" +
-                    "Fournit une option là où le jeu l’autorise dans certains outils. " +
+                    "Fournit une option là où le jeu l’autorise dans certains outils.\n" +
                     "Désactiver si un autre mod est préféré pour les lignes de contour.\n" +
                     "Note : même si cet outil de contour n’est pas désactivé, ce n’est probablement pas un problème.\n" +
                     "L’autre mod prendra simplement le dessus et sera le bouton de contour fonctionnel (notre bouton devient inoffensif)."

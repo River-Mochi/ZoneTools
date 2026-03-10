@@ -70,7 +70,7 @@ namespace ZoningToolkit
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] włączone**, pokazuje przycisk linii terenu w panelu Zone Tools.\n" +
-                    "Daje opcję tam, gdzie gra na to pozwala w narzędziach." +
+                    "Daje opcję tam, gdzie gra na to pozwala w narzędziach.\n" +
                     "Wyłącz, jeśli wolisz innego moda do linii konturowych.\n" +
                     "Uwaga: nawet jeśli nie wyłączysz tego narzędzia konturów, prawdopodobnie nadal jest OK.\n" +
                     "Inny mod po prostu będzie bossem, przejmie kontrolę i będzie działał jako przycisk konturów (nasz przycisk staje się nieszkodliwy)."

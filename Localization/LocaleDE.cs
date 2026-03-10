@@ -70,7 +70,7 @@ namespace ZoningToolkit
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] aktiviert**, zeigt die Gelände-/Höhenlinien-Schaltfläche im Zone-Tools-Panel.\n" +
-                    "Bietet eine Option dort, wo das Spiel es in Tools erlaubt. " +
+                    "Bietet eine Option dort, wo das Spiel es in Tools erlaubt.\n" +
                     "Deaktivieren, wenn ein anderer Mod für Höhenlinien bevorzugt wird.\n" +
                     "Hinweis: selbst wenn dieses Höhenlinien-Tool nicht deaktiviert wird, ist das wahrscheinlich weiterhin ok.\n" +
                     "Der andere Mod übernimmt einfach und ist die funktionierende Höhenlinien-Schaltfläche (unsere Schaltfläche wird harmlos)."

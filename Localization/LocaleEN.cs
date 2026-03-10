@@ -70,10 +70,10 @@ namespace ZoningToolkit
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] enabled**, show the terrain lines button in the Zone Tools panel.\n" +
-                    "Provides an option where the game allows it in tools." +
+                    "Provides an option whereever the game allows it in tools.\n" +
                     "Disable if you prefer another mod for contour lines.\n" +
                     "Note: even if you do not disable this contour tool, it's probably still fine.\n" +
-                    "The other mod will simply be the boss and take over and be the working contour button (our button becomes harmless)."
+                    "The other mod will simply be the boss; it will take over and be the working contour button (our button becomes harmless)."
                 },
 
                 // Keybinding option (Options → Mods)

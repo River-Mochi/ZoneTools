@@ -70,7 +70,7 @@ namespace ZoningToolkit
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] 啟用**：在 Zone Tools 面板中顯示地形線按鈕。\n" +
-                    "在遊戲允許的工具中提供該選項。" +
+                    "在遊戲允許的工具中提供該選項。\n" +
                     "若偏好其他等高線模組，請停用。\n" +
                     "注意：即使不停用此等高線工具，通常也沒問題。\n" +
                     "另一個模組會成為 boss 並接管為可用的等高線按鈕（我們的按鈕會變得無害）。"

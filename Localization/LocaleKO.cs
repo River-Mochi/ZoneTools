@@ -70,7 +70,7 @@ namespace ZoningToolkit
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] 활성화**, Zone Tools 패널에 지형선 버튼을 표시합니다.\n" +
-                    "게임이 도구에서 허용하는 경우에 사용할 수 있는 옵션입니다. " +
+                    "게임이 도구에서 허용하는 경우에 사용할 수 있는 옵션입니다.\n" +
                     "윤곽선(지형선)용 다른 모드를 선호하면 비활성화하세요.\n" +
                     "참고: 이 윤곽선 도구를 비활성화하지 않아도, 아마도 괜찮습니다.\n" +
                     "다른 모드가 보스가 되어 작동하는 윤곽선 버튼이 되고(우리 버튼은 무해해집니다)."
