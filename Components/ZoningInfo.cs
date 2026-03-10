@@ -1,16 +1,16 @@
 // File: Components/ZoningInfo.cs
-// Purpose: Zone Tools per-road settings
-// Notes to future self:
+// Purpose: Zone Tools per-road settings.
+// Notes:
 // - Do not reorder enum members.
-// - Do not change existing numeric values once released.
+// - Do not change released numeric values.
 // - New members can be appended with explicit numeric values.
-// - Serialized as uint enum value.
-// - Default(ZoningMode) == Left because Left == 0. Always set explicitly when creating. Vanilla default is both sides.
+// - Default(ZoningMode) == Left because Left == 0.
+// - Always set the mode explicitly when creating ZoningInfo.
 
 namespace ZoningToolkit.Components
 {
-    using System;
     using Colossal.Serialization.Entities;
+    using System;
     using Unity.Entities;
 
     public enum ZoningMode : uint
@@ -23,26 +23,30 @@ namespace ZoningToolkit.Components
 
     public struct ZoningInfo : IComponentData, IQueryTypeParameter, IEquatable<ZoningInfo>, ISerializable
     {
-        // Saved value used when applying block size edits.
+        // Stored on the road owner entity.
+        // Used later when applying or re-applying block size edits.
         public ZoningMode zoningMode;
 
         public readonly bool Equals(ZoningInfo other) => zoningMode == other.zoningMode;
 
-        public override readonly int GetHashCode() => zoningMode.GetHashCode();
+        public override readonly int GetHashCode( ) => zoningMode.GetHashCode();
 
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
         {
-            writer.Write((uint)zoningMode);
+            // Save the raw enum value so released numeric values stay stable.
+            writer.Write((uint) zoningMode);
         }
 
         public void Deserialize<TReader>(TReader reader) where TReader : IReader
         {
+            // Read the saved raw enum value back into the enum.
             reader.Read(out uint value);
-            zoningMode = (ZoningMode)value;
+            zoningMode = (ZoningMode) value;
         }
     }
 
-    // Marker component: triggers update pass for existing blocks.
+    // Marker component.
+    // Added to block entities to trigger the one-shot update pass for existing roads.
     public struct ZoningInfoUpdated : IComponentData, IQueryTypeParameter
     {
     }

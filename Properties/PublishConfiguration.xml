@@ -10,18 +10,18 @@
 
 - Change zoning along new roads or update existing roads. Enable zoning road sides for both/left/right/none. 
 - Finer control of where buildings will spawn, as well as placing roads close together without overlapping/conflicting zones.
-- This is the older mod with a moveable panel. If you prefer icons in a static game panel, try new Easy Zoning mod (complete redesign).
+- This is the older mod with a movable panel. If you prefer icons in a static game panel, try new Easy Zoning mod (complete redesign).
 
 ### New roads
 
 - Open zone panel by clicking the button (top-left) or hotkey (default Shift+X)
-- Pre-select both, left, right, or none; moveable panel.
-- Draw a new road (note: vanilla has side depend on road draw direction).
+- Pre-select: both, left, right, or none (move the panel where you like).
+- Draw a new road (note: road draw direction influences vanilla side).
 
 ### Update Existing Roads (UER):
 
 - Open zoning panel (top-left button or hotkey)
-- Enable the **Update** button (recycle icon). Click again to turn off.
+- Enable the **Update Roads** button (recycle icon). Click again to turn off.
 - Select the side you want (both, left, right, none buttons).
 - Left click on roads to update zoning (supports click-and-drag to update many roads).
 - Left mouse applies the zone change. Select different icons to change.
@@ -42,11 +42,14 @@ Your existing road should keep zoning facing the same original direction you set
 - if mods have use, give it a Like, it's free + easy :)
 - Feedback to Github link, or forum, or discord.
 
-### Compatibility
+### Tech notes
 
 - Does not use Harmony patches; uses CS2 native systems (more compatible with the game and other mods).
 - Safe to remove any time.  Roads keep their zoning edits so buildings don't get deleted.
 - Should work with Platter mod.
+- Contour button will not do anything if Crosswalk, or Wide Sidewalk, etc., is selected as that is not allowed in vanilla.
+Main goal of the contour button is to show terrain lines while updating Existing roads; as a bonus, it happens to also work in other tool modes.
+Contour enables what is safe to do without overriding the game's vanilla system (e.g avoids Harmony patch).
 
 ### 11 Languages
 
@@ -79,14 +82,14 @@ Your existing road should keep zoning facing the same original direction you set
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
-<ChangeLog Value="" />
 <ChangeLog>
-- added contour terrain lines (convenience button).
-- move default panel location to bottom right.
-- update languages, images.
-- remove option to auto open/close Zone tool panel when New roads panel opens
-- fix for cross mod compatibility.
-- adds game vanilla sound effects.
+- added contour terrain button to the ZT panel (convenience).
+- sync contour toggle with vanilla Road Tools Topography.
+- moved default panel location to bottom right.
+- updated languages and images.
+- removed option to auto open/close the Zone Tools panel when the New Roads panel opens.
+- improved compatibility with other mods.
+- added vanilla game sound effects.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />
