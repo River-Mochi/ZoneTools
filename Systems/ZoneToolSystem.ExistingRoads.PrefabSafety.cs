@@ -5,9 +5,8 @@
 // - EnableTool refuses to activate unless a safe prefab is already resolved.
 // - Resolution order:
 //   1) Fixed vanilla FencePrefab candidates (RoadsServices items).
-//   2) Minimal extra fallbacks (known to exist).
-//   3) Vanilla tool donor prefab (DefaultToolSystem/NetToolSystem).
-//   4) Reflection fallback: find any PrefabID key inside PrefabSystem dictionaries (last resort).
+//   2) Vanilla tool donor prefab (DefaultToolSystem/NetToolSystem).
+//   3) Reflection fallback: find any PrefabID key inside PrefabSystem dictionaries (last resort).
 // - Reflection fallback touches PrefabSystem fields only. Runs only when enabling tool, not per-frame.
 
 namespace ZoningToolkit.Systems
@@ -39,7 +38,6 @@ namespace ZoningToolkit.Systems
 
             // 1) Fixed, known prefabs.
             if (TryResolveFromFixedRoadServices(out prefab) ||
-                TryResolveFromMinimalFallbacks(out prefab) ||
                 TryResolveFromVanillaToolDonor(out prefab) ||
                 TryResolveFromReflectionAnyPrefab(out prefab))
             {
@@ -74,33 +72,11 @@ namespace ZoningToolkit.Systems
         {
             PrefabID[] candidates =
             {
-                // FencePrefab items commonly present in vanilla.
+                // FencePrefab items confirmed present in vanilla.
                 new PrefabID("FencePrefab", "Crosswalk"),
                 new PrefabID("FencePrefab", "Wide Sidewalk"),
-                new PrefabID("FencePrefab", "WideSidewalk"),
                 new PrefabID("FencePrefab", "Trees"),
                 new PrefabID("FencePrefab", "Grass"),
-            };
-
-            for (int i = 0; i < candidates.Length; i++)
-            {
-                if (m_ZTPrefabSystem.TryGetPrefab(candidates[i], out PrefabBase p) && p != null)
-                {
-                    prefab = p;
-                    return true;
-                }
-            }
-
-            prefab = null!;
-            return false;
-        }
-
-        private bool TryResolveFromMinimalFallbacks(out PrefabBase prefab)
-        {
-            PrefabID[] candidates =
-            {
-                new PrefabID("FencePrefab", "Tunnel"),
-                new PrefabID("FencePrefab", "Quay"),
             };
 
             for (int i = 0; i < candidates.Length; i++)
@@ -200,11 +176,8 @@ namespace ZoningToolkit.Systems
 
                 DumpCandidate("FencePrefab", "Crosswalk");
                 DumpCandidate("FencePrefab", "Wide Sidewalk");
-                DumpCandidate("FencePrefab", "WideSidewalk");
                 DumpCandidate("FencePrefab", "Trees");
                 DumpCandidate("FencePrefab", "Grass");
-                DumpCandidate("FencePrefab", "Tunnel");
-                DumpCandidate("FencePrefab", "Quay");
 
                 bool ok = TryResolveSafePrefabForUI(out PrefabBase resolved);
                 Mod.s_Log.Info($"{Mod.ModTag} Resolve now = {ok} -> {(ok ? resolved.name : "<none>")}");

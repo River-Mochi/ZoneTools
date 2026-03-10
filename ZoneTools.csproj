@@ -26,6 +26,9 @@
         <!-- Assembly identity -->
         <RootNamespace>ZoningToolkit</RootNamespace>
         <AssemblyName>ZoneTools</AssemblyName>
+        <AssemblyTitle>Zone Tools</AssemblyTitle>
+
+
     </PropertyGroup>
 
     <!-- Imports must be after PropertyGroup block -->
@@ -73,7 +76,7 @@
                  AND Exists('$(MSBuildProjectDirectory)\Scripts\Update-PublishConfig.ps1')
                  AND Exists('$(MSBuildProjectDirectory)\$(PublishConfigurationPath)')">
 
-        <Message Text="$(AssemblyName) PublishConfig: syncing ModVersion + normalize EOL/BOM + left-align blocks + mod.json version..." Importance="high" />
+        <Message Text="$(AssemblyTitle) PublishConfig: syncing ModVersion + normalize EOL/BOM + left-align blocks + mod.json version..." Importance="high" />
 
         <Exec Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Update-PublishConfig.ps1&quot; -Path &quot;$(MSBuildProjectDirectory)\$(PublishConfigurationPath)&quot; -Version &quot;$(Version)&quot; -Eol crlf -LeftAlignBlocks" />
     </Target>

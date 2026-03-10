@@ -70,9 +70,7 @@ Your existing road should keep zoning facing the same original direction you set
 <!--Screenshot, can be set multiple times-->
 <Screenshot Value="Properties/10-panel.jpg" />
 <Screenshot Value="Properties/30-OptionsEN.jpg" />
-<Screenshot Value="Properties/35-roads.jpg" />
-<Screenshot Value="Properties/40-OptionsCN.jpg" />
-<Screenshot Value="Properties/50-OptionsFR.jpg" />
+<Screenshot Value="Properties/40-roads.jpg" />
 <!--Tag, can be set multiple times-->
 <Tag Value="Code Mod" />
 <!--Link to the forum post where the mod can be discussed-->
@@ -86,7 +84,7 @@ Your existing road should keep zoning facing the same original direction you set
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog Value="" />
 <ChangeLog>
-- add a contour button (limited, for convenience).
+- add a contour terrain lines (convenience button).
 - move default panel location to bottom right.
 - update languages, images.
 - remove option to auto open/close Zone tool panel when New roads panel opens
