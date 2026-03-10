@@ -14,6 +14,7 @@ namespace ZoningToolkit.Systems
 
     internal sealed partial class ZoneToolSystemExistingRoads
     {
+        // Highlight only when the hovered road would actually change.
         private void UpdateHoverHighlight(EntityCommandBuffer ecb)
         {
             Entity target = Entity.Null;
@@ -47,17 +48,6 @@ namespace ZoningToolkit.Systems
             {
                 SetHighlighted(ecb, m_Highlighted, value: true);
             }
-        }
-
-        private void ClearHoverHighlight(EntityCommandBuffer ecb)
-        {
-            if (m_Highlighted == Entity.Null)
-            {
-                return;
-            }
-
-            SetHighlighted(ecb, m_Highlighted, value: false);
-            m_Highlighted = Entity.Null;
         }
 
         // Immediate cleanup path (no ECB).

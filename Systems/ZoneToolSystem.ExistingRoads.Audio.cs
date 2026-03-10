@@ -7,8 +7,7 @@
 namespace ZoningToolkit.Systems
 {
     using Game.Audio;        // AudioManager
-    using Game.Prefabs;
-    using Game.Tools;        // ToolUXSoundSettingsData
+    using Game.Prefabs;      // ToolUXSoundSettingsData
     using Unity.Collections; // Allocator
     using Unity.Entities;    // EntityQuery, EntityQueryBuilder
 
