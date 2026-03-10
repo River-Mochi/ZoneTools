@@ -1,5 +1,8 @@
-// Localization/LocaleFR.cs
-// French fr-FR for Zone Tools.
+// File: Localization/LocaleFR.cs
+// Purpose: French (fr-FR) localization entries for Zone Tools.
+// Notes:
+// - Settings UI strings generated via ModSetting helper IDs.
+// - React UI strings use fixed keys.
 
 namespace ZoningToolkit
 {
@@ -19,8 +22,9 @@ namespace ZoningToolkit
             IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
-            var d = new Dictionary<string, string>
+            Dictionary<string, string> d = new Dictionary<string, string>
             {
+                // Options title
                 { m_Setting.GetSettingsLocaleID(), Mod.ModName + " " + Mod.ModTag },
 
                 // Tabs
@@ -28,14 +32,16 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "À propos" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGroup),     "Actions" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGroup),    "Raccourcis clavier" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGroup),       "" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGroup),  "Liens" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Actions" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp), "Compatibilité" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "Raccourcis clavier" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "À propos" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Liens" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Débogage uniquement" },
 
                 // About fields
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)),    "Nom du mod" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ModName)),     "Nom affiché de ce mod." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "Nom du mod" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ModName)),  "Nom d’affichage de ce mod." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Version" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)),  "Version actuelle de Zone Tools." },
@@ -45,36 +51,67 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "Ouvrir la page Paradox Mods de l’auteur." },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "Protéger les cellules occupées (bâtiments)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "Protéger les cases occupées (avec bâtiments)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "Quand activé, Zone Tools ne modifie pas la profondeur/la zone sur les cellules qui ont déjà un bâtiment."
+                    "**[ ✓ ] activé**, Zone Tools ne modifie pas la profondeur / zone sur les cases qui ont déjà un bâtiment.\n" +
+                    "**[   ] désactivé**, des bâtiments peuvent être condamnés si le zonage est modifié sous eux."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "Protéger les cellules zonées mais vides" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "Protéger les cases déjà zonées mais vides" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "Quand activé, Zone Tools ne modifie pas la profondeur/la zone sur les cellules déjà zonées (même si vides)."
+                    "**[ ✓ ] activé**, Zone Tools ne modifie pas la profondeur / zone sur les cases déjà zonées (même si elles sont vides).\n" +
+                    "**[   ] désactivé**, des cases déjà zonées (peintes RCIO) peuvent être écrasées lors de l’utilisation de Zone Tools."
+                },
+
+                // Compatibility (Phase 1: manual user control only)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Bouton Contour" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
+                    "**[ ✓ ] activé**, afficher le bouton des lignes de terrain dans le panneau Zone Tools.\n" +
+                    "Fournit une option là où le jeu l’autorise dans certains outils. " +
+                    "Désactiver si un autre mod est préféré pour les lignes de contour.\n" +
+                    "Note : même si cet outil de contour n’est pas désactivé, ce n’est probablement pas un problème.\n" +
+                    "L’autre mod prendra simplement le dessus et sera le bouton de contour fonctionnel (notre bouton devient inoffensif)."
                 },
 
                 // Keybinding option (Options → Mods)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Afficher/masquer le panneau" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Basculer le panneau" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
-                    "Raccourci clavier pour afficher ou masquer le panneau Zone Tools (comme le bouton en haut à gauche)."
+                    "Raccourci **clavier** pour afficher ou masquer le panneau Zone Tools (comme cliquer l’icône du menu en haut à gauche)."
                 },
 
-                // Keybinding name (Options → Keybindings)
-                { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Afficher/masquer le panneau" },
+                // Keybinding action name (Options → Keybindings)
+                { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Basculer le panneau" },
 
-                // React panel
+                // Debug
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Rapport de débogage détaillé dans le log" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
+                    "Écrire un long rapport de débogage (une seule fois) dans Logs/ZoneTools.log (usage debug uniquement).\n" +
+                    "**Pas nécessaire pour jouer normalement** ; crée un énorme log qui peut être supprimé."
+                },
+
+                // -----------------------------------------------------------------
+                // React UI strings
+                // -----------------------------------------------------------------
                 { "ZoneTools.UI.UpdateRoad", "Mettre à jour la route" },
-                { "ZoneTools.UI.Tooltip.UpdateRoad", "Activer l’outil de mise à jour (routes existantes)." },
+                { "ZoneTools.UI.Tooltip.UpdateRoad",
+                    "Panneau Zone Tools ON / OFF (déplaçable)"
+                },
+
+                { "ZoneTools.UI.Contour", "Contour" },
+                { "ZoneTools.UI.Tooltip.Contour", "Basculer les lignes de terrain." },
 
                 { "ZoneTools.UI.Tooltip.ModeDefault", "Les deux (par défaut)" },
-                { "ZoneTools.UI.Tooltip.ModeLeft",    "Gauche" },
-                { "ZoneTools.UI.Tooltip.ModeRight",   "Droite" },
-                { "ZoneTools.UI.Tooltip.ModeNone",    "Aucun" }
+                { "ZoneTools.UI.Tooltip.ModeLeft",    "Gauche seulement" },
+                { "ZoneTools.UI.Tooltip.ModeRight",   "Droite seulement" },
+                { "ZoneTools.UI.Tooltip.ModeNone",    "Aucun" },
+
+                // GameTopLeft button tooltip
+                { "ZoneTools.UI.Fab.Title", "Zone Tools" },
+                { "ZoneTools.UI.Fab.Desc",  "Modifier le zonage le long des routes.\nRaccourci : Maj+X (défini dans Options)." },
             };
 
             return d;

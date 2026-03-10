@@ -7,7 +7,7 @@ namespace ZoningToolkit.Utils
     using Game.Tools;
     using Game.UI;
     using System.Runtime.CompilerServices;
-    using Unity.Collections;
+    using Unity.Collections;        // needed for debug build
     using Unity.Entities;
 
     public static class EntityUtils

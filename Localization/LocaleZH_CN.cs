@@ -1,5 +1,8 @@
-// Localization/LocaleZH_CN.cs
-// Simplified Chinese zh-HANS for Zone Tools.
+// File: Localization/LocaleZH_CN.cs
+// Purpose: Simplified Chinese (zh-HANS) localization entries for Zone Tools.
+// Notes:
+// - Settings UI strings generated via ModSetting helper IDs.
+// - React UI strings use fixed keys.
 
 namespace ZoningToolkit
 {
@@ -19,8 +22,9 @@ namespace ZoningToolkit
             IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
-            var d = new Dictionary<string, string>
+            Dictionary<string, string> d = new Dictionary<string, string>
             {
+                // Options title
                 { m_Setting.GetSettingsLocaleID(), Mod.ModName + " " + Mod.ModTag },
 
                 // Tabs
@@ -28,54 +32,86 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "关于" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGroup),     "操作" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGroup),    "按键绑定" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGroup),       "" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGroup),  "链接" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "操作" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp), "兼容性" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "按键绑定" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "关于" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "链接" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "仅调试" },
 
                 // About fields
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)),    "模组名称" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ModName)),     "此模组的显示名称。" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "模组名称" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ModName)),  "此模组的显示名称。" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "版本" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)),  "Zone Tools 当前版本。" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)),  "当前 Zone Tools 版本。" },
 
                 // About links
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadox)), "Paradox Mods" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "打开作者的 Paradox Mods 页面。" },
 
                 // Actions toggles
-
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "保护已占用格（有建筑）" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "启用后，Zone Tools 不会修改已有建筑的格子的分区深度/范围。"
+                    "**[ ✓ ] 启用**：Zone Tools 不会更改已存在建筑的格子的分区深度/面积。\n" +
+                    "**[   ] 禁用**：更改其下方分区时，建筑可能会被判定为拆除。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "不改变已涂分区格子" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "保护已分区但为空的格子" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "启用后，Zone Tools 不会修改已涂分区的格子（即使为空）。"
+                    "**[ ✓ ] 启用**：Zone Tools 不会更改已经分区的格子的分区深度/面积（即使为空）。\n" +
+                    "**[   ] 禁用**：使用 Zone Tools 时，已分区的格子（涂抹的 RCIO）可能会被覆盖。"
                 },
 
-                // Keybinding option
+                // Compatibility (Phase 1: manual user control only)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "等高线按钮" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
+                    "**[ ✓ ] 启用**：在 Zone Tools 面板中显示地形线按钮。\n" +
+                    "在游戏允许的工具中提供该选项。" +
+                    "如果更喜欢其他等高线模组，请禁用。\n" +
+                    "注意：即使不禁用这个等高线工具，通常也没问题。\n" +
+                    "另一个模组会成为 boss 并接管为可用的等高线按钮（我们的按钮会变得无害）。"
+                },
+
+                // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "切换面板" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
-                    "显示/隐藏 Zone Tools 面板的快捷键（相当于点击左上角图标）。"
+                    "用于显示或隐藏 Zone Tools 面板的 **键盘** 快捷键（与点击左上角菜单图标相同）。"
                 },
 
-                // Keybinding name
+                // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – 切换面板" },
 
-                // React panel
+                // Debug
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "输出详细调试报告到日志" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
+                    "将一次性的长调试报告写入 Logs/ZoneTools.log（仅用于调试）。\n" +
+                    "**正常游戏不需要**；会生成一个很大的日志文件，可自行删除。"
+                },
+
+                // -----------------------------------------------------------------
+                // React UI strings
+                // -----------------------------------------------------------------
                 { "ZoneTools.UI.UpdateRoad", "更新道路" },
-                { "ZoneTools.UI.Tooltip.UpdateRoad", "切换更新工具（用于现有道路）。" },
+                { "ZoneTools.UI.Tooltip.UpdateRoad",
+                    "Zone Tools 面板 开 / 关（可移动）"
+                },
+
+                { "ZoneTools.UI.Contour", "等高线" },
+                { "ZoneTools.UI.Tooltip.Contour", "切换地形线。" },
 
                 { "ZoneTools.UI.Tooltip.ModeDefault", "两侧（默认）" },
-                { "ZoneTools.UI.Tooltip.ModeLeft",    "左侧" },
-                { "ZoneTools.UI.Tooltip.ModeRight",   "右侧" },
-                { "ZoneTools.UI.Tooltip.ModeNone",    "无" }
+                { "ZoneTools.UI.Tooltip.ModeLeft",    "仅左侧" },
+                { "ZoneTools.UI.Tooltip.ModeRight",   "仅右侧" },
+                { "ZoneTools.UI.Tooltip.ModeNone",    "无" },
+
+                // GameTopLeft button tooltip
+                { "ZoneTools.UI.Fab.Title", "Zone Tools" },
+                { "ZoneTools.UI.Fab.Desc",  "沿道路修改分区。\n快捷键：Shift+X（在选项中设置）。" },
             };
 
             return d;

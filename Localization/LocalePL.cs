@@ -1,5 +1,8 @@
-// Localization/LocalePL.cs
-// Polish pl-PL for Zone Tools.
+// File: Localization/LocalePL.cs
+// Purpose: Polish (pl-PL) localization entries for Zone Tools.
+// Notes:
+// - Settings UI strings generated via ModSetting helper IDs.
+// - React UI strings use fixed keys.
 
 namespace ZoningToolkit
 {
@@ -19,8 +22,9 @@ namespace ZoningToolkit
             IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
-            var d = new Dictionary<string, string>
+            Dictionary<string, string> d = new Dictionary<string, string>
             {
+                // Options title
                 { m_Setting.GetSettingsLocaleID(), Mod.ModName + " " + Mod.ModTag },
 
                 // Tabs
@@ -28,14 +32,16 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "Informacje" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGroup),     "Akcje" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGroup),    "Skróty klawiszowe" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGroup),       "" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGroup),  "Linki" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Akcje" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp), "Zgodność" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "Skróty klawiszowe" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "Informacje" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Linki" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Tylko debug" },
 
                 // About fields
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)),    "Nazwa moda" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ModName)),     "Wyświetlana nazwa tego moda." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "Nazwa moda" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ModName)),  "Wyświetlana nazwa tego moda." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Wersja" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)),  "Aktualna wersja Zone Tools." },
@@ -45,36 +51,67 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "Otwórz stronę autora na Paradox Mods." },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "Chroń zajęte komórki (budynki)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "Chroń zajęte komórki (są budynki)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "Gdy włączone, Zone Tools nie zmienia głębokości/obszaru strefy na komórkach, które mają już budynek."
+                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru strefowania na komórkach, na których już stoi budynek.\n" +
+                    "**[   ] wyłączone**, budynki mogą zostać skazane do wyburzenia przy zmianie strefowania pod nimi."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "Chroń już wyznaczone (puste) komórki" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "Chroń ostrefowane, ale puste komórki" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "Gdy włączone, Zone Tools nie zmienia głębokości/obszaru strefy na komórkach już oznaczonych strefą (nawet jeśli puste)."
+                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru strefowania na komórkach, które są już ostrefowane (nawet jeśli puste).\n" +
+                    "**[   ] wyłączone**, już ostrefowane komórki (pomalowane RCIO) mogą zostać nadpisane podczas używania Zone Tools."
                 },
 
-                // Keybinding option
+                // Compatibility (Phase 1: manual user control only)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Przycisk konturów" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
+                    "**[ ✓ ] włączone**, pokazuje przycisk linii terenu w panelu Zone Tools.\n" +
+                    "Daje opcję tam, gdzie gra na to pozwala w narzędziach." +
+                    "Wyłącz, jeśli wolisz innego moda do linii konturowych.\n" +
+                    "Uwaga: nawet jeśli nie wyłączysz tego narzędzia konturów, prawdopodobnie nadal jest OK.\n" +
+                    "Inny mod po prostu będzie bossem, przejmie kontrolę i będzie działał jako przycisk konturów (nasz przycisk staje się nieszkodliwy)."
+                },
+
+                // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Przełącz panel" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
-                    "Skrót klawiszowy do pokazania/ukrycia panelu Zone Tools (jak ikona w lewym górnym rogu)."
+                    "Skrót **klawiaturowy** do pokazania lub ukrycia panelu Zone Tools (to samo co kliknięcie ikony menu w lewym górnym rogu)."
                 },
 
-                // Keybinding name
+                // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Przełącz panel" },
 
-                // React panel
+                // Debug
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Szczegółowy raport debug do logu" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
+                    "Zapisz jednorazowy długi raport debug do Logs/ZoneTools.log (tylko do debugowania).\n" +
+                    "**Niepotrzebne w normalnej rozgrywce**; tworzy ogromny log, który można usunąć."
+                },
+
+                // -----------------------------------------------------------------
+                // React UI strings
+                // -----------------------------------------------------------------
                 { "ZoneTools.UI.UpdateRoad", "Aktualizuj drogę" },
-                { "ZoneTools.UI.Tooltip.UpdateRoad", "Przełącz narzędzie aktualizacji (istniejące drogi)." },
+                { "ZoneTools.UI.Tooltip.UpdateRoad",
+                    "Panel Zone Tools WŁ. / WYŁ. (przesuwalny)"
+                },
+
+                { "ZoneTools.UI.Contour", "Kontury" },
+                { "ZoneTools.UI.Tooltip.Contour", "Przełącz linie terenu." },
 
                 { "ZoneTools.UI.Tooltip.ModeDefault", "Obie strony (domyślnie)" },
-                { "ZoneTools.UI.Tooltip.ModeLeft",    "Lewa" },
-                { "ZoneTools.UI.Tooltip.ModeRight",   "Prawa" },
-                { "ZoneTools.UI.Tooltip.ModeNone",    "Brak" }
+                { "ZoneTools.UI.Tooltip.ModeLeft",    "Tylko lewa" },
+                { "ZoneTools.UI.Tooltip.ModeRight",   "Tylko prawa" },
+                { "ZoneTools.UI.Tooltip.ModeNone",    "Brak" },
+
+                // GameTopLeft button tooltip
+                { "ZoneTools.UI.Fab.Title", "Zone Tools" },
+                { "ZoneTools.UI.Fab.Desc",  "Modyfikuj strefowanie wzdłuż dróg.\nSkrót: Shift+X (ustaw w Opcjach)." },
             };
 
             return d;

@@ -4,21 +4,18 @@
 // - Enabled/disabled by UI panel.
 // - Disabling returns to DefaultToolSystem.
 // - Tool refuses to activate unless GetPrefab is guaranteed non-null.
-// - Hover uses vanilla highlight outline (Highlighted + BatchesUpdated) for visual feedback.
-// - Click/apply uses vanilla tool sounds (ToolUXSoundSettingsData) for audio feedback.
 
 namespace ZoningToolkit.Systems
 {
     using Colossal.Serialization.Entities; // Purpose (OnGameLoadingComplete signature)
     using Game;                            // GameMode, ToolBaseSystem
-    using Game.Audio;                      // AudioManager
-    using Game.Common;                     // Updated, Highlighted, BatchesUpdated
+    using Game.Common;                     // Updated
     using Game.Net;                        // Edge, SubBlock
     using Game.Prefabs;                    // PrefabBase, PrefabSystem
-    using Game.Tools;                      // ToolSystem, DefaultToolSystem, NetToolSystem, ToolUXSoundSettingsData
-    using Game.Zones;
+    using Game.Tools;                      // ToolSystem, DefaultToolSystem, NetToolSystem, ToolOutputBarrier
+    using Game.Zones;                      // Layer
     using Unity.Collections;               // NativeHashSet, Allocator
-    using Unity.Entities;                  // Entity, EntityCommandBuffer, EntityQuery, EntityQueryBuilder
+    using Unity.Entities;                  // Entity, EntityCommandBuffer, DynamicBuffer
     using Unity.Jobs;                      // JobHandle
     using ZoningToolkit.Components;        // ZoningInfo, ZoningInfoUpdated, ZoningMode
 
@@ -30,8 +27,7 @@ namespace ZoningToolkit.Systems
         private ToolOutputBarrier m_ToolOutputBarrier = null!;
         private PrefabSystem m_ZTPrefabSystem = null!;
         private ZoneToolBridgeUI m_UISystem = null!;
-
-        private EntityQuery m_SoundbankQuery;
+        private bool m_ContourHostActive;
 
         // Selected road entities (click/drag selection).
         private NativeHashSet<Entity> m_Selected;
@@ -65,9 +61,7 @@ namespace ZoningToolkit.Systems
             m_ZTPrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_UISystem = World.GetOrCreateSystemManaged<ZoneToolBridgeUI>();
 
-            m_SoundbankQuery = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<ToolUXSoundSettingsData>()
-                .Build(this);
+            InitializeAudio();
 
             m_Selected = new NativeHashSet<Entity>(128, Allocator.Persistent);
             m_SelectedCount = 0;
@@ -94,6 +88,30 @@ namespace ZoningToolkit.Systems
         {
             base.OnStartRunning();
 
+            // Contour-host mode: keep tool active so contour can render,
+            // but do not enable actions or tool behavior.
+            if (m_ContourHostActive)
+            {
+                toolEnabled = false;
+
+                applyAction.shouldBeEnabled = false;
+                secondaryApplyAction.shouldBeEnabled = false;
+
+                requireNet = Layer.None;
+                requireZones = false;
+                allowUnderground = false;
+
+                // Seed snap so contour has a place to live.
+                Snap snap = m_NetToolSystem.selectedSnap;
+                if (snap == default)
+                {
+                    snap = Snap.All;
+                }
+                selectedSnap = snap;
+
+                return;
+            }
+
             toolEnabled = true;
 
             applyAction.shouldBeEnabled = true;
@@ -103,6 +121,18 @@ namespace ZoningToolkit.Systems
             requireZones = true;
 
             allowUnderground = false;
+
+            // Seed snap from vanilla so contour overlay can render.
+            Snap s = selectedSnap;
+            if (s == default)
+            {
+                s = m_NetToolSystem.selectedSnap;
+                if (s == default)
+                {
+                    s = Snap.All;
+                }
+                selectedSnap = s;
+            }
         }
 
         protected override void OnStopRunning( )
@@ -117,7 +147,6 @@ namespace ZoningToolkit.Systems
             ClearSelection();
             m_Hovered = Entity.Null;
 
-            // IMPORTANT:
             // ToolOutputBarrier.CreateCommandBuffer() is not allowed in OnStopRunning().
             // Highlight cleanup uses immediate EntityManager structural changes.
             ClearHoverHighlightImmediate();
@@ -126,6 +155,14 @@ namespace ZoningToolkit.Systems
         public override void InitializeRaycast( )
         {
             base.InitializeRaycast();
+
+            // Contour-host mode: do not interact with the world.
+            if (m_ContourHostActive)
+            {
+                m_ToolRaycastSystem.typeMask = TypeMask.None;
+                m_ToolRaycastSystem.netLayerMask = Layer.None;
+                return;
+            }
 
             m_ToolRaycastSystem.typeMask = TypeMask.Net | TypeMask.Lanes;
             m_ToolRaycastSystem.netLayerMask = Layer.Road;
@@ -140,6 +177,12 @@ namespace ZoningToolkit.Systems
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
+            // Contour-host mode: do nothing except remain active.
+            if (m_ContourHostActive)
+            {
+                return inputDeps;
+            }
+
             if (!toolEnabled)
             {
                 return inputDeps;
@@ -181,6 +224,18 @@ namespace ZoningToolkit.Systems
             return false;
         }
 
+
+        public override void GetAvailableSnapMask(out Snap onMask, out Snap offMask)
+        {
+            base.GetAvailableSnapMask(out onMask, out offMask);
+
+            // Allow contour lines to be toggled while this tool is active.
+            // Do not mirror current state into masks; masks describe capability.
+            offMask &= ~Snap.ContourLines;
+            onMask |= Snap.ContourLines;
+        }
+
+
         // Contour icon state for UI.
         internal bool ContourEnabled => (selectedSnap & Snap.ContourLines) != 0;
 
@@ -207,8 +262,83 @@ namespace ZoningToolkit.Systems
             PlaySnapSound();
         }
 
+        internal bool EnableContourHost( )
+        {
+            if (m_ContourHostActive)
+            {
+                // Host flag already set, but tool may no longer be active.
+                Enabled = true;
+                if (m_ZTToolSystem.activeTool != this)
+                {
+                    m_ZTToolSystem.activeTool = this;
+                }
+
+                return true;
+            }
+
+
+            // Do not hijack when full Update Road tool is enabled.
+            if (toolEnabled)
+            {
+                return true;
+            }
+
+            if (!TryResolveSafePrefabForUI(out _))
+            {
+                Enabled = false;
+                Mod.s_Log.Warn($"{Mod.ModTag} ContourHost enable refused: safe prefab not ready.");
+                return false;
+            }
+
+            m_ContourHostActive = true;
+            Enabled = true;
+            m_ZTToolSystem.activeTool = this;
+
+            Snap snap = m_NetToolSystem.selectedSnap;
+            if (snap == default)
+            {
+                snap = Snap.All;
+            }
+            selectedSnap = snap;
+
+            // when host is active, snap state (contour) pushed into Net tool's snap state for road-tab sync.
+            m_NetToolSystem.selectedSnap = selectedSnap;
+
+            return true;
+        }
+
+        internal void DisableContourHost( )
+        {
+            if (!m_ContourHostActive)
+            {
+                return;
+            }
+
+            // If Update Road enabled, this tool stays active as a real tool.
+            if (toolEnabled)
+            {
+                m_ContourHostActive = false;
+                return;
+            }
+
+            m_ContourHostActive = false;
+
+            m_NetToolSystem.selectedSnap = selectedSnap;  // last known snap handed back to vanlilla before we drop to defaultTool.
+
+            // Return to vanilla default tool.
+            if (m_ZTToolSystem.activeTool == this)
+            {
+                m_ZTToolSystem.activeTool = m_ZTDefaultToolSystem;
+            }
+
+            Enabled = false;
+        }
+
+
         internal bool EnableTool( )
         {
+            m_ContourHostActive = false;
+
             if (!TryResolveSafePrefabForUI(out _))
             {
                 toolEnabled = false;
@@ -230,12 +360,13 @@ namespace ZoningToolkit.Systems
 
         internal void DisableTool( )
         {
+            m_ContourHostActive = false;
+
             toolEnabled = false;
 
             ClearSelection();
             m_Hovered = Entity.Null;
 
-            // IMPORTANT:
             // ToolOutputBarrier.CreateCommandBuffer() is not allowed from toolbar/tool-change paths.
             // Highlight cleanup uses immediate EntityManager structural changes.
             ClearHoverHighlightImmediate();
@@ -311,19 +442,50 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
-            ZoningMode mode = m_UISystem.CurrentZoningMode;
+            ZoningMode desired = m_UISystem.CurrentZoningMode;
 
-            EntityCommandBuffer ecb = m_ToolOutputBarrier.CreateCommandBuffer();
+            // Only create an ECB if at least one entity actually needs changes.
+            bool didWork = false;
+
+            EntityCommandBuffer ecb = default;
 
             foreach (Entity roadEntity in m_Selected)
             {
-                AddOrSetZoningInfo(ecb, roadEntity, mode);
+                if (roadEntity == Entity.Null || !EntityManager.Exists(roadEntity))
+                {
+                    continue;
+                }
+
+                ZoningMode current = EntityManager.HasComponent<ZoningInfo>(roadEntity)
+                    ? EntityManager.GetComponentData<ZoningInfo>(roadEntity).zoningMode
+                    : ZoningMode.Default;
+
+                if (current == desired)
+                {
+                    continue;
+                }
+
+                if (!didWork)
+                {
+                    didWork = true;
+                    ecb = m_ToolOutputBarrier.CreateCommandBuffer();
+                }
+
+                AddOrSetZoningInfo(ecb, roadEntity, desired);
                 TagSubBlocksForUpdate(ecb, roadEntity);
             }
 
             ClearSelection();
 
-            PlayBuildSound();
+            if (didWork)
+            {
+                PlayBuildSound();
+            }
+            else
+            {
+                // “No-op” feedback: quieter than build thud.
+                PlaySelectSound();
+            }
         }
 
         private bool TryGetRaycastRoad(out Entity entity)
@@ -395,220 +557,6 @@ namespace ZoningToolkit.Systems
                     ecb.AddComponent<Updated>(blockEntity);
                 }
             }
-        }
-
-        private void UpdateHoverHighlight(EntityCommandBuffer ecb)
-        {
-            Entity target = Entity.Null;
-
-            if (m_Hovered != Entity.Null && EntityManager.Exists(m_Hovered))
-            {
-                ZoningMode desired = m_UISystem.CurrentZoningMode;
-                ZoningMode current = EntityManager.HasComponent<ZoningInfo>(m_Hovered)
-                    ? EntityManager.GetComponentData<ZoningInfo>(m_Hovered).zoningMode
-                    : ZoningMode.Default;
-
-                if (current != desired)
-                {
-                    target = m_Hovered;
-                }
-            }
-
-            if (target == m_Highlighted)
-            {
-                return;
-            }
-
-            if (m_Highlighted != Entity.Null)
-            {
-                SetHighlighted(ecb, m_Highlighted, value: false);
-            }
-
-            m_Highlighted = target;
-
-            if (m_Highlighted != Entity.Null)
-            {
-                SetHighlighted(ecb, m_Highlighted, value: true);
-            }
-        }
-
-        private void ClearHoverHighlight(EntityCommandBuffer ecb)
-        {
-            if (m_Highlighted == Entity.Null)
-            {
-                return;
-            }
-
-            SetHighlighted(ecb, m_Highlighted, value: false);
-            m_Highlighted = Entity.Null;
-        }
-
-        // Immediate cleanup path (no ECB).
-        private void ClearHoverHighlightImmediate( )
-        {
-            if (m_Highlighted == Entity.Null)
-            {
-                return;
-            }
-
-            if (!EntityManager.Exists(m_Highlighted))
-            {
-                m_Highlighted = Entity.Null;
-                return;
-            }
-
-            SetHighlightedImmediate(m_Highlighted, value: false);
-            m_Highlighted = Entity.Null;
-        }
-
-        private void SetHighlighted(EntityCommandBuffer ecb, Entity entity, bool value)
-        {
-            if (value)
-            {
-                if (!EntityManager.HasComponent<Highlighted>(entity))
-                {
-                    ecb.AddComponent<Highlighted>(entity);
-                }
-
-                if (!EntityManager.HasComponent<Updated>(entity))
-                {
-                    ecb.AddComponent<Updated>(entity);
-                }
-            }
-            else
-            {
-                if (EntityManager.HasComponent<Highlighted>(entity))
-                {
-                    ecb.RemoveComponent<Highlighted>(entity);
-                }
-
-                if (!EntityManager.HasComponent<Updated>(entity))
-                {
-                    ecb.AddComponent<Updated>(entity);
-                }
-            }
-
-            if (EntityManager.HasComponent<Edge>(entity))
-            {
-                Edge edge = EntityManager.GetComponentData<Edge>(entity);
-
-                if (edge.m_Start != Entity.Null)
-                {
-                    ecb.AddComponent<BatchesUpdated>(edge.m_Start);
-                }
-
-                if (edge.m_End != Entity.Null)
-                {
-                    ecb.AddComponent<BatchesUpdated>(edge.m_End);
-                }
-            }
-        }
-
-        // Immediate version (no ECB).
-        private void SetHighlightedImmediate(Entity entity, bool value)
-        {
-            if (value)
-            {
-                if (!EntityManager.HasComponent<Highlighted>(entity))
-                {
-                    EntityManager.AddComponent<Highlighted>(entity);
-                }
-
-                if (!EntityManager.HasComponent<Updated>(entity))
-                {
-                    EntityManager.AddComponent<Updated>(entity);
-                }
-            }
-            else
-            {
-                if (EntityManager.HasComponent<Highlighted>(entity))
-                {
-                    EntityManager.RemoveComponent<Highlighted>(entity);
-                }
-
-                if (!EntityManager.HasComponent<Updated>(entity))
-                {
-                    EntityManager.AddComponent<Updated>(entity);
-                }
-            }
-
-            if (EntityManager.HasComponent<Edge>(entity))
-            {
-                Edge edge = EntityManager.GetComponentData<Edge>(entity);
-
-                AddBatchesUpdatedImmediate(edge.m_Start);
-                AddBatchesUpdatedImmediate(edge.m_End);
-            }
-        }
-
-        private void AddBatchesUpdatedImmediate(Entity node)
-        {
-            if (node == Entity.Null)
-            {
-                return;
-            }
-
-            if (!EntityManager.Exists(node))
-            {
-                return;
-            }
-
-            if (!EntityManager.HasComponent<BatchesUpdated>(node))
-            {
-                EntityManager.AddComponent<BatchesUpdated>(node);
-            }
-        }
-
-        private bool TryGetSoundbank(out ToolUXSoundSettingsData soundbank)
-        {
-            if (m_SoundbankQuery.IsEmptyIgnoreFilter)
-            {
-                soundbank = default;
-                return false;
-            }
-
-            soundbank = m_SoundbankQuery.GetSingleton<ToolUXSoundSettingsData>();
-            return true;
-        }
-
-        private void PlaySelectSound( )
-        {
-            if (!TryGetSoundbank(out ToolUXSoundSettingsData soundbank))
-            {
-                return;
-            }
-
-            AudioManager.instance.PlayUISound(soundbank.m_SelectEntitySound);
-        }
-
-        private void PlayBuildSound( )
-        {
-            if (!TryGetSoundbank(out ToolUXSoundSettingsData soundbank))
-            {
-                return;
-            }
-
-            AudioManager.instance.PlayUISound(soundbank.m_NetBuildSound);
-        }
-
-        private void PlayCancelSound( )
-        {
-            if (!TryGetSoundbank(out ToolUXSoundSettingsData soundbank))
-            {
-                return;
-            }
-
-            AudioManager.instance.PlayUISound(soundbank.m_NetCancelSound);
-        }
-
-        private void PlaySnapSound( )
-        {
-            if (!TryGetSoundbank(out ToolUXSoundSettingsData soundbank))
-            {
-                return;
-            }
-
-            AudioManager.instance.PlayUISound(soundbank.m_SnapSound);
         }
     }
 }

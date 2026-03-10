@@ -2,7 +2,7 @@
 // Purpose: English (en-US) localization entries for Zone Tools.
 // Notes:
 // - Settings UI strings generated via ModSetting helper IDs.
-// - React UI strings use fixed keys (ZoneTools.UI.*).
+// - React UI strings use fixed keys.
 
 namespace ZoningToolkit
 {
@@ -22,26 +22,26 @@ namespace ZoningToolkit
             IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
-            // Dictionary is rebuilt when CS2 requests entries.
-            // CS2 manages lifecycle; Unload() can remain empty.
             Dictionary<string, string> d = new Dictionary<string, string>
             {
-                // Options title (keep consistent with Mod.cs constants)
+                // Options title
                 { m_Setting.GetSettingsLocaleID(), Mod.ModName + " " + Mod.ModTag },
 
                 // Tabs
                 { m_Setting.GetOptionTabLocaleID(Setting.kActionsTab), "Actions" },
-                { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "About"   },
+                { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "About" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGroup),    "Actions"      },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGroup),   "Key bindings" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGroup),      "About"        },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGroup), "Links"        },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Actions" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp), "Compatibility" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "Key bindings" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "About" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Links" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
 
                 // About fields
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)),    "Mod name" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ModName)),     "Display name of this mod." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "Mod name" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ModName)),  "Display name of this mod." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Version" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)),  "Current Zone Tools version." },
@@ -62,7 +62,18 @@ namespace ZoningToolkit
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
                     "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on cells that are already zoned (even if empty).\n" +
-                    "**[   ] disabled**, already zoned cells (painted RCIO) could be overwritten when using the Zone Tools."
+                    "**[   ] disabled**, already zoned cells (painted RCIO) could be overwritten when using Zone Tools."
+                },
+
+                // Compatibility (Phase 1: manual user control only)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Contour button" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
+                    "**[ ✓ ] enabled**, show the terrain lines button in the Zone Tools panel.\n" +
+                    "Provides an option where the game allows it in tools." +
+                    "Disable if you prefer another mod for contour lines.\n" +
+                    "Note: even if you do not disable this contour tool, it's probably still fine.\n" +
+                    "The other mod will simply be the boss and take over and be the working contour button (our button becomes harmless)."
                 },
 
                 // Keybinding option (Options → Mods)
@@ -75,25 +86,32 @@ namespace ZoningToolkit
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Toggle panel" },
 
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Verbose Debug report to Log" },
+                // Debug
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Verbose debug report to log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
-                    "Write a one-time debug report to Logs/ZoneTools.log (Debug use only)."
+                    "Write a one-time long debug report to Logs/ZoneTools.log (debug use only).\n" +
+                    "**Not needed for normal game play**; creates a huge log that you can delete."
                 },
 
                 // -----------------------------------------------------------------
-                // React UI strings (React panel)
+                // React UI strings
                 // -----------------------------------------------------------------
                 { "ZoneTools.UI.UpdateRoad", "Update Road" },
-
                 { "ZoneTools.UI.Tooltip.UpdateRoad",
-                  "Toggle update panel ON / OFF (for existing roads).\n\n" +
-                  "If enabling fails, open new road build tool one time first (i.e, small roads)." },
+                    "Zone Tool panel ON / OFF (moveable)"
+                },
+
+                { "ZoneTools.UI.Contour", "Contour" },
+                { "ZoneTools.UI.Tooltip.Contour", "Terrain lines toggle." },
 
                 { "ZoneTools.UI.Tooltip.ModeDefault", "Both (default)" },
-                { "ZoneTools.UI.Tooltip.ModeLeft",    "Left"          },
-                { "ZoneTools.UI.Tooltip.ModeRight",   "Right"         },
-                { "ZoneTools.UI.Tooltip.ModeNone",    "None"          }
+                { "ZoneTools.UI.Tooltip.ModeLeft",    "Left only" },
+                { "ZoneTools.UI.Tooltip.ModeRight",   "Right only" },
+                { "ZoneTools.UI.Tooltip.ModeNone",    "None" },
+
+                // GameTopLeft button tooltip
+                { "ZoneTools.UI.Fab.Title", "Zone Tools" },
+                { "ZoneTools.UI.Fab.Desc",  "Modify zoning along roads.\nShortcut: Shift+X (set in Options)." },
             };
 
             return d;
@@ -101,7 +119,6 @@ namespace ZoningToolkit
 
         public void Unload( )
         {
-            // No cleanup required; CS2 manages locale lifecycle.
         }
     }
 }

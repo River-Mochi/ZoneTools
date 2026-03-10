@@ -1,138 +1,132 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<!--
-		ZoneTools.csproj   CS2 mod: "Zone Tools" [ZT]
-		- UI build:
-		  - Debug/non-Release: warn only if npm fails
-		  - Release: HARD FAIL if npm ci/build fails (so published builds never ship without UI)
-	-->
+    <!--
+    ZoneTools.csproj   CS2 mod: "Zone Tools" [ZT]
+    - UI build:
+      - Debug/non-Release: warn only if npm fails
+      - Release: HARD FAIL if npm ci/build fails (so published builds never ship without UI)
+  -->
 
-	<PropertyGroup>
-		<OutputType>Library</OutputType>
-		<Configurations>Debug;Release</Configurations>
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <Configurations>Debug;Release</Configurations>
 
-		<!-- Paradox Mods publish config -->
-		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
+        <!-- Paradox Mods publish config -->
+        <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
 
-		<!-- Only set this if you *must* override the Managed path -->
-		<CustomManagedPath></CustomManagedPath>
+        <!-- Only set this if overriding the Managed path is required -->
+        <CustomManagedPath></CustomManagedPath>
 
-		<Nullable>enable</Nullable>
+        <Nullable>enable</Nullable>
 
-		<!-- Versioning: single source of truth -->
-		<Version>1.1.3</Version>
-		<AssemblyVersion>$(Version).0</AssemblyVersion>
-		<FileVersion>$(Version).0</FileVersion>
+        <!-- Versioning: single source of truth -->
+        <Version>1.2.0</Version>
+        <AssemblyVersion>$(Version).0</AssemblyVersion>
+        <FileVersion>$(Version).0</FileVersion>
 
-		<!-- Assembly/product metadata -->
-		<RootNamespace>ZoningToolkit</RootNamespace>
-		<AssemblyTitle>ZoneTools</AssemblyTitle>
-		<AssemblyName>ZoneTools</AssemblyName>
-		<Product>ZoneTools</Product>
-		<Title>ZoneTools</Title>
+        <!-- Assembly identity -->
+        <RootNamespace>ZoningToolkit</RootNamespace>
+        <AssemblyName>ZoneTools</AssemblyName>
+    </PropertyGroup>
 
-	</PropertyGroup>
+    <!-- Imports must be after PropertyGroup block -->
+    <!-- Let the CS2 toolchain provide TargetFramework and resolve refs -->
+    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
+    <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
 
-	<!-- Debug includes +commit in informational version -->
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<InformationalVersion>$(Version)</InformationalVersion>
-		<IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
-		<DefineConstants>TRACE;DEBUG</DefineConstants>
-	</PropertyGroup>
+    <ItemGroup>
+        <!-- Ensure game/Unity/Colossal refs are not copied to output -->
+        <Reference Include="Game"> <Private>false</Private> </Reference>
+        <Reference Include="Colossal.Core"> <Private>false</Private></Reference>
+        <Reference Include="Colossal.Logging"><Private>false</Private></Reference>
+        <Reference Include="Colossal.IO.AssetDatabase"><Private>false</Private></Reference>
+        <Reference Include="Colossal.UI"> <Private>false</Private></Reference>
+        <Reference Include="Colossal.UI.Binding"> <Private>false</Private></Reference>
+        <Reference Include="Colossal.Localization"><Private>false</Private></Reference>
+        <Reference Include="Colossal.Mathematics"><Private>false</Private></Reference>
 
-	<!-- Release has short informational version -->
-	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-		<InformationalVersion>$(Version)</InformationalVersion>
-		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-		<DefineConstants>TRACE</DefineConstants>
-	</PropertyGroup>
-
-	<!-- Imports must be after PropertyGroup block -->
-	<!-- Let the CS2 toolchain provide TargetFramework and resolve refs -->
-	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
-	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
-	
-		<ItemGroup>
-		<!-- Ensure ALL game/Unity/Colossal refs are not copied to output -->
-		<Reference Include="Game"><Private>false</Private>					</Reference>
-		<Reference Include="Colossal.Core"><Private>false</Private>			</Reference>
-		<Reference Include="Colossal.Logging"><Private>false</Private>		</Reference>
-		<Reference Include="Colossal.IO.AssetDatabase"><Private>false</Private></Reference>
-		<Reference Include="Colossal.UI"><Private>false</Private>			</Reference>
-		<Reference Include="Colossal.UI.Binding"><Private>false</Private>	</Reference>
-		<Reference Include="Colossal.Localization"><Private>false</Private>	</Reference>
-		<Reference Include="Colossal.Mathematics"><Private>false</Private>	</Reference>
-		<Reference Include="UnityEngine.CoreModule"><Private>false</Private></Reference>
-		<Reference Include="Unity.Burst"><Private>false</Private></Reference>
-		<Reference Include="Unity.Collections"><Private>false</Private>		</Reference>
-		<Reference Include="Unity.Entities"><Private>false</Private>		</Reference>
-		<Reference Include="Unity.Mathematics"><Private>false</Private>		</Reference>
-		<Reference Include="Unity.InputSystem"><Private>false</Private>		</Reference>
+        <Reference Include="UnityEngine.CoreModule"> <Private>false</Private></Reference>
+        <Reference Include="Unity.Burst"><Private>false</Private></Reference>
+        <Reference Include="Unity.Collections"><Private>false</Private></Reference>
+        <Reference Include="Unity.Entities"><Private>false</Private></Reference>
+        <Reference Include="Unity.Mathematics"><Private>false</Private></Reference>
+        <Reference Include="Unity.InputSystem"><Private>false</Private></Reference>
         <Reference Include="UnityEngine.AudioModule"><Private>false</Private></Reference>
+    </ItemGroup>
 
-	</ItemGroup>
+    <!-- Link CS2 Mod toolchain files in Properties/ for easy viewing -->
+    <ItemGroup>
+        <None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
+        <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System"><Private>false</Private></Reference>
-		<Reference Update="System.Core"><Private>false</Private></Reference>
-		<Reference Update="System.Data"><Private>false</Private></Reference>
-	</ItemGroup>
+    <ItemGroup>
+        <Folder Include="Scripts\" />
+    </ItemGroup>
 
-	<!-- Link CS2 Mod toolchain files in Properties/ for easy viewing -->
-	<ItemGroup>
-		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
-		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
-	</ItemGroup>
+    <!-- AUTO UPDATE PublishConfiguration ModVersion using CSPROJ (source of truth):
+       - match Version number
+       - remove bom, make EOL=CRLF, and left-align text
+       - update any mod.json version found under repo root -->
+    <Target Name="UpdatePublishConfigVersion"
+            BeforeTargets="Build"
+            Condition="'$(Configuration)' == 'Release'
+                 AND Exists('$(MSBuildProjectDirectory)\Scripts\Update-PublishConfig.ps1')
+                 AND Exists('$(MSBuildProjectDirectory)\$(PublishConfigurationPath)')">
 
-	<ItemGroup>
-		<Folder Include="zoning-toolkit-ui\src\components\" />
-	</ItemGroup>
+        <Message Text="$(AssemblyName) PublishConfig: syncing ModVersion + normalize EOL/BOM + left-align blocks + mod.json version..." Importance="high" />
 
-	<!-- Run npm ci AFTER C# build, only when needed:
-		- first time (node_modules missing), OR
-		- package-lock.json changed since last run (tracked by .stamp)
-	-->
-	<Target Name="NpmInstallIfNeeded" AfterTargets="Build" Condition="Exists('$(ProjectDir)zoning-toolkit-ui\package.json')" Inputs="$(ProjectDir)zoning-toolkit-ui\package-lock.json" Outputs="$(ProjectDir)zoning-toolkit-ui\node_modules\.stamp">
+        <Exec Command="&quot;$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Update-PublishConfig.ps1&quot; -Path &quot;$(MSBuildProjectDirectory)\$(PublishConfigurationPath)&quot; -Version &quot;$(Version)&quot; -Eol crlf -LeftAlignBlocks" />
+    </Target>
 
-		<Message Text="ZONE TOOLS UI: npm ci (first-time or lockfile changed)..." Importance="high" />
+    <!-- Run npm ci AFTER C# build, only when needed:
+       - first time (node_modules missing), OR
+       - package-lock.json changed since last run (tracked by .stamp) -->
+    <Target Name="NpmInstallIfNeeded"
+            AfterTargets="Build"
+            Condition="Exists('$(ProjectDir)zoning-toolkit-ui\package.json')"
+            Inputs="$(ProjectDir)zoning-toolkit-ui\package-lock.json"
+            Outputs="$(ProjectDir)zoning-toolkit-ui\node_modules\.stamp">
 
-		<Exec Command="npm ci" WorkingDirectory="$(ProjectDir)zoning-toolkit-ui" IgnoreExitCode="true">
-			<Output TaskParameter="ExitCode" PropertyName="NpmCiExit" />
-		</Exec>
+        <Message Text="$(AssemblyName) UI: npm ci (first-time or lockfile changed)..." Importance="high" />
 
-		<!-- Release: hard fail -->
-		<Error Condition="'$(Configuration)'=='Release' AND '$(NpmCiExit)'!='0'" Text="ZONE TOOLS UI: 'npm ci' failed (exit $(NpmCiExit)). Release build aborted." />
+        <Exec Command="npm ci" WorkingDirectory="$(ProjectDir)zoning-toolkit-ui" IgnoreExitCode="true">
+            <Output TaskParameter="ExitCode" PropertyName="NpmCiExit" />
+        </Exec>
 
-		<!-- Debug/others: warn -->
-		<Warning Condition="'$(Configuration)'!='Release' AND '$(NpmCiExit)'!='0'" Text="ZONE TOOLS UI: 'npm ci' failed (exit $(NpmCiExit)). Continuing (non-Release)." />
+        <!-- Release: hard fail -->
+        <Error Condition="'$(Configuration)'=='Release' AND '$(NpmCiExit)'!='0'"
+               Text="$(AssemblyName) UI: 'npm ci' failed (exit $(NpmCiExit)). Release build aborted." />
 
-		<!-- On success, write/update the stamp -->
-		<WriteLinesToFile Condition="'$(NpmCiExit)'=='0'" File="$(ProjectDir)zoning-toolkit-ui\node_modules\.stamp" Lines="ok" Overwrite="true" />
-	</Target>
+        <!-- Debug/others: warn -->
+        <Warning Condition="'$(Configuration)'!='Release' AND '$(NpmCiExit)'!='0'"
+                 Text="$(AssemblyName) UI: 'npm ci' failed (exit $(NpmCiExit)). Continuing (non-Release)." />
 
-	<!-- Always run the UI bundle AFTER C# build; ensure it runs *after* NpmInstallIfNeeded -->
-	<Target Name="BuildUI" AfterTargets="Build" DependsOnTargets="NpmInstallIfNeeded" Condition="Exists('$(ProjectDir)zoning-toolkit-ui\package.json')">
+        <!-- On success, write/update the stamp -->
+        <WriteLinesToFile Condition="'$(NpmCiExit)'=='0'"
+                          File="$(ProjectDir)zoning-toolkit-ui\node_modules\.stamp"
+                          Lines="ok"
+                          Overwrite="true" />
+    </Target>
 
-		<Message Text="ZONE TOOLS UI: npm run build ($(Configuration))..." Importance="high" />
+    <!-- Always run the UI bundle AFTER C# build; ensure it runs *after* NpmInstallIfNeeded -->
+    <Target Name="BuildUI"
+            AfterTargets="Build"
+            DependsOnTargets="NpmInstallIfNeeded"
+            Condition="Exists('$(ProjectDir)zoning-toolkit-ui\package.json')">
 
-		<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)zoning-toolkit-ui" IgnoreExitCode="true">
-			<Output TaskParameter="ExitCode" PropertyName="NpmBuildExit" />
-		</Exec>
+        <Message Text="$(AssemblyName) UI: npm run build ($(Configuration))..." Importance="high" />
 
-		<!-- Release: hard fail -->
-		<Error Condition="'$(Configuration)'=='Release' AND '$(NpmBuildExit)'!='0'" Text="ZONE TOOLS UI: 'npm run build' failed (exit $(NpmBuildExit)). Release build aborted." />
+        <Exec Command="npm run build" WorkingDirectory="$(ProjectDir)zoning-toolkit-ui" IgnoreExitCode="true">
+            <Output TaskParameter="ExitCode" PropertyName="NpmBuildExit" />
+        </Exec>
 
-		<!-- Debug/others: warn -->
-		<Warning Condition="'$(Configuration)'!='Release' AND '$(NpmBuildExit)'!='0'" Text="ZONE TOOLS UI: 'npm run build' failed (exit $(NpmBuildExit)). Continuing (non-Release)." />
-	</Target>
+        <!-- Release: hard fail -->
+        <Error Condition="'$(Configuration)'=='Release' AND '$(NpmBuildExit)'!='0'"
+               Text="$(AssemblyName) UI: 'npm run build' failed (exit $(NpmBuildExit)). Release build aborted." />
 
-	<!-- Optional: prints the active TargetFramework during build; remove anytime -->
-	<Target Name="ShowTFM" BeforeTargets="Build">
-		<Message Importance="High" Text="TargetFramework=$(TargetFramework)" />
-	</Target>
-
-	<!-- Optional: prints constants; remove anytime -->
-	<Target Name="ShowConstants" BeforeTargets="Build">
-		<Message Importance="High" Text="DefineConstants=$(DefineConstants)" />
-	</Target>
+        <!-- Debug/others: warn -->
+        <Warning Condition="'$(Configuration)'!='Release' AND '$(NpmBuildExit)'!='0'"
+                 Text="$(AssemblyName) UI: 'npm run build' failed (exit $(NpmBuildExit)). Continuing (non-Release)." />
+    </Target>
 
 </Project>

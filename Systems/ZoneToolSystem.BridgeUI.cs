@@ -1,8 +1,9 @@
 // File: Systems/ZoneToolSystem.BridgeUI.cs
 // Purpose: Bridges Zone Tools ECS state with the in-game UI (panel, menu button, and tool enable/disable).
 // Notes:
-// - Adds ContourEnabled + ToggleContourLines bindings for the Existing Roads tool.
-// - Contour toggle is tool-local (selectedSnap flag) and shown only when the update tool is active.
+// - Contour lines are derived from ToolSystem.activeTool.selectedSnap (game code).
+// - When activeTool is null (or DefaultToolSystem), game resolves contour OFF each frame.
+// - Contour toggle succeeds only when the active tool supports Snap.ContourLines.
 
 namespace ZoningToolkit.Systems
 {
@@ -10,7 +11,7 @@ namespace ZoningToolkit.Systems
     using Game;                      // GameMode
     using Game.Prefabs;              // RoadPrefab
     using Game.Rendering;            // PhotoModeRenderSystem
-    using Game.Tools;                // ToolSystem, ToolBaseSystem, NetToolSystem
+    using Game.Tools;                // ToolSystem, ToolBaseSystem, DefaultToolSystem, NetToolSystem, Snap
     using Game.UI;                   // UISystemBase
     using System;                    // Action, Delegate, Enum
     using Unity.Entities;            // World
@@ -20,8 +21,8 @@ namespace ZoningToolkit.Systems
     {
         public bool visible;
         public ZoningMode zoningMode;
-        public bool applyToNewRoads; // reserved; keep only if UI uses it
-        public bool toolEnabled;
+        public bool applyToNewRoads; // Reserved; keep only if UI uses it.
+        public bool toolEnabled;     // ExistingRoads (Update Road) tool enabled state.
     }
 
     internal sealed partial class ZoneToolBridgeUI : UISystemBase
@@ -30,13 +31,15 @@ namespace ZoningToolkit.Systems
 
         private ZoneToolSystemCore? m_ZoningSystem;
         private ToolSystem? m_ToolSystem;
+        private NetToolSystem? m_NetToolSystem;
         private ZoneToolSystemExistingRoads? m_Tool;
         private PhotoModeRenderSystem? m_PhotoMode;
 
         private UIState m_UIState;
 
-        // Tracks clicks on the Options “dump report” button (works in Release too).
         private int m_LastDebugReportRequestId;
+
+        private Action<ToolBaseSystem>? m_ToolChangedHandler;
 
         public override GameMode gameMode => GameMode.Game;
 
@@ -46,6 +49,7 @@ namespace ZoningToolkit.Systems
 
             m_ZoningSystem = World.GetOrCreateSystemManaged<ZoneToolSystemCore>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
             m_PhotoMode = World.GetOrCreateSystemManaged<PhotoModeRenderSystem>();
             m_Tool = World.GetOrCreateSystemManaged<ZoneToolSystemExistingRoads>();
 
@@ -57,16 +61,18 @@ namespace ZoningToolkit.Systems
                 toolEnabled = false
             };
 
-            // Tool switches: disable update tool when selecting a road build tool.
             if (m_ToolSystem != null)
             {
+                m_ToolChangedHandler = OnToolChanged;
                 m_ToolSystem.EventToolChanged =
                     (Action<ToolBaseSystem>) Delegate.Combine(
                         m_ToolSystem.EventToolChanged,
-                        new Action<ToolBaseSystem>(OnToolChanged));
+                        m_ToolChangedHandler);
             }
 
-            // ----- C# -> UI bindings (polling) -----
+            // -----------------------------
+            // C# -> UI (polling bindings)
+            // -----------------------------
 
             AddUpdateBinding(new GetterValueBinding<string>(
                 kGroup,
@@ -86,16 +92,21 @@ namespace ZoningToolkit.Systems
             AddUpdateBinding(new GetterValueBinding<bool>(
                 kGroup,
                 "photomode",
-                ( ) => m_PhotoMode?.Enabled ?? false));
+                ( ) => m_PhotoMode != null && m_PhotoMode.Enabled));
 
-            // Contour state for the Existing Roads tool icon.
-            // Returns false when tool is not active so the UI never shows "selected" while inactive.
             AddUpdateBinding(new GetterValueBinding<bool>(
                 kGroup,
                 "contour_enabled",
-                ( ) => m_Tool != null && m_Tool.toolEnabled && m_Tool.ContourEnabled));
+                ( ) => GetContourEnabledFromActiveTool()));
 
-            // ----- UI -> C# bindings (events/triggers) -----
+            AddUpdateBinding(new GetterValueBinding<bool>(
+                kGroup,
+                "contour_button_visible",
+                ( ) => Mod.Settings != null && Mod.Settings.ShowContourButton));
+
+            // -----------------------------
+            // UI -> C# (trigger bindings)
+            // -----------------------------
 
             AddBinding(new TriggerBinding<string>(
                 kGroup,
@@ -104,7 +115,6 @@ namespace ZoningToolkit.Systems
                 {
                     if (Enum.TryParse<ZoningMode>(zoningModeString, out ZoningMode mode))
                     {
-                        Mod.Debug($"{Mod.ModTag} UI zoning mode updated to {mode}");
                         m_UIState.zoningMode = mode;
                     }
                 }));
@@ -114,11 +124,7 @@ namespace ZoningToolkit.Systems
                 "tool_enabled",
                 enabled =>
                 {
-                    Mod.Debug($"{Mod.ModTag} UI tool_enabled requested: {enabled}");
-
-                    ToggleTool(enabled);
-
-                    // Reflect reality back to UI after attempting the toggle.
+                    ToggleUpdateRoadTool(enabled);
                     m_UIState.toolEnabled = m_Tool != null && m_Tool.toolEnabled;
                 }));
 
@@ -127,104 +133,34 @@ namespace ZoningToolkit.Systems
                 "toggle_panel",
                 _ =>
                 {
-                    Mod.Debug($"{Mod.ModTag} UI toggle_panel trigger");
                     TogglePanelFromHotkey();
                 }));
 
-            // Contour toggle (EZ-style): flips Snap.ContourLines on the active tool.
-            // UI triggers: engine.trigger("zoning_adjuster_ui_namespace.ToggleContourLines", true)
             AddBinding(new TriggerBinding<bool>(
                 kGroup,
                 "ToggleContourLines",
                 _ =>
                 {
-                    if (m_Tool == null || !m_Tool.toolEnabled)
+                    if (Mod.Settings == null || !Mod.Settings.ShowContourButton)
                     {
                         return;
                     }
 
-                    m_Tool.ToggleContourLines();
+                    ToggleContourLinesFromUI();
                 }));
         }
 
         protected override void OnDestroy( )
         {
-            if (m_ToolSystem != null)
+            if (m_ToolSystem != null && m_ToolChangedHandler != null)
             {
                 m_ToolSystem.EventToolChanged =
                     (Action<ToolBaseSystem>) Delegate.Remove(
                         m_ToolSystem.EventToolChanged,
-                        new Action<ToolBaseSystem>(OnToolChanged));
+                        m_ToolChangedHandler);
             }
 
             base.OnDestroy();
-        }
-
-        internal void TogglePanelFromHotkey( )
-        {
-            bool newVisible = !m_UIState.visible;
-            m_UIState.visible = newVisible;
-
-            Mod.Debug($"{Mod.ModTag} Panel visible = {m_UIState.visible}");
-
-            // Hide panel => disable update tool.
-            if (!newVisible && m_Tool != null && m_Tool.toolEnabled)
-            {
-                ToggleTool(false);
-                m_UIState.toolEnabled = false;
-            }
-        }
-
-        internal ZoningMode CurrentZoningMode => m_UIState.zoningMode;
-
-        internal void SetZoningModeFromTool(ZoningMode mode)
-        {
-            if (m_UIState.zoningMode != mode)
-            {
-                m_UIState.zoningMode = mode;
-            }
-        }
-
-        private void ToggleTool(bool enable)
-        {
-            if (m_Tool == null)
-            {
-                return;
-            }
-
-            if (enable)
-            {
-                bool enabledOk = m_Tool.EnableTool();
-                if (!enabledOk)
-                {
-                    Mod.Debug($"{Mod.ModTag} EnableTool refused (safe prefab not ready)");
-                    m_UIState.toolEnabled = false;
-                    return;
-                }
-
-                m_UIState.toolEnabled = true;
-            }
-            else
-            {
-                m_Tool.DisableTool();
-                m_UIState.toolEnabled = false;
-            }
-        }
-
-        private void OnToolChanged(ToolBaseSystem tool)
-        {
-            if (m_ToolSystem == null || m_Tool == null)
-            {
-                return;
-            }
-
-            // If a zonable road build tool is selected, disable Update Existing Roads helper.
-            if (IsZonableRoadTool(tool) && m_Tool.toolEnabled)
-            {
-                Mod.Debug($"{Mod.ModTag} Road build tool selected -> disabling update tool");
-                m_Tool.DisableTool();
-                m_UIState.toolEnabled = false;
-            }
         }
 
         protected override void OnUpdate( )
@@ -243,39 +179,209 @@ namespace ZoningToolkit.Systems
                 m_Tool.DumpDebugReportOnDemand();
             }
 
-            // Photo mode or panel hidden => tool must not stay active.
+            // Photomode or hidden panel => tool must be disabled (Update Road mode).
             if ((!m_UIState.visible || m_PhotoMode.Enabled) && m_Tool.toolEnabled)
             {
-                ToggleTool(false);
+                ToggleUpdateRoadTool(false);
                 m_UIState.toolEnabled = false;
             }
 
-            // UI -> core mode.
+            // Push zoning mode into core system.
             if (m_UIState.zoningMode != m_ZoningSystem.zoningMode)
             {
                 m_ZoningSystem.zoningMode = m_UIState.zoningMode;
             }
 
-            // Tool -> UI state (reflect refusal or external disables).
+            // Mirror actual tool state back to UI state.
             if (m_UIState.toolEnabled != m_Tool.toolEnabled)
             {
                 m_UIState.toolEnabled = m_Tool.toolEnabled;
             }
         }
 
-        private static bool IsZonableRoadTool(ToolBaseSystem tool)
+        internal ZoningMode CurrentZoningMode => m_UIState.zoningMode;
+
+        internal void SetZoningModeFromTool(ZoningMode mode)
+        {
+            if (m_UIState.zoningMode != mode)
+            {
+                m_UIState.zoningMode = mode;
+            }
+        }
+
+        internal void TogglePanelFromHotkey( )
+        {
+            bool newVisible = !m_UIState.visible;
+            m_UIState.visible = newVisible;
+
+            if (!newVisible && m_Tool != null && m_Tool.toolEnabled)
+            {
+                ToggleUpdateRoadTool(false);
+                m_UIState.toolEnabled = false;
+            }
+        }
+
+        private void ToggleUpdateRoadTool(bool enable)
+        {
+            if (m_Tool == null)
+            {
+                return;
+            }
+
+            if (enable)
+            {
+                bool ok = m_Tool.EnableTool();
+                if (!ok)
+                {
+                    m_UIState.toolEnabled = false;
+                }
+            }
+            else
+            {
+                m_Tool.DisableTool();
+            }
+        }
+
+        private void OnToolChanged(ToolBaseSystem tool)
+        {
+            // Road build tool active => Update Road tool must not stay enabled.
+            if (m_Tool != null && m_UIState.toolEnabled && IsRoadBuildTool(tool))
+            {
+                ToggleUpdateRoadTool(false);
+                m_UIState.toolEnabled = false;
+            }
+        }
+
+        private static bool IsRoadBuildTool(ToolBaseSystem tool)
         {
             if (tool is not NetToolSystem netTool)
             {
                 return false;
             }
 
-            if (netTool.GetPrefab() is not RoadPrefab roadPrefab)
+            return netTool.GetPrefab() is RoadPrefab;
+        }
+
+        // ------------------------------------------------------------------
+        // Contour toggle
+        // ------------------------------------------------------------------
+
+        private void ToggleContourLinesFromUI( )
+        {
+            bool actual = GetContourEnabledFromActiveTool();
+            bool next = !actual;
+
+            // No active tool or DefaultToolSystem => enable inert host tool when enabling contour.
+            if (next)
+            {
+                if (EnsureContourHostIfNoTool())
+                {
+                    TrySetContourOnActiveTool(true);
+                }
+                return;
+            }
+
+            // Turning OFF.
+            TrySetContourOnActiveTool(false);
+            ReleaseContourHostIfOnlyHost();
+        }
+
+        private bool EnsureContourHostIfNoTool( )
+        {
+            if (m_ToolSystem == null || m_Tool == null)
             {
                 return false;
             }
 
-            return roadPrefab.m_ZoneBlock != null;
+            ToolBaseSystem? active = m_ToolSystem.activeTool;
+            if (active != null && active is not DefaultToolSystem)
+            {
+                return true;
+            }
+
+            return m_Tool.EnableContourHost();
+        }
+
+        private void ReleaseContourHostIfOnlyHost( )
+        {
+            if (m_ToolSystem == null || m_Tool == null)
+            {
+                return;
+            }
+
+            // Contour host should not remain active as the only reason for an active tool.
+            // Update Road mode is controlled separately; host disable is a no-op if Update Road is enabled.
+            ToolBaseSystem? active = m_ToolSystem.activeTool;
+            if (active == m_Tool)
+            {
+                m_Tool.DisableContourHost();
+            }
+        }
+
+        private bool TrySetContourOnActiveTool(bool contourOn)
+        {
+            if (m_ToolSystem == null)
+            {
+                return false;
+            }
+
+            ToolBaseSystem? active = m_ToolSystem.activeTool;
+            if (active == null)
+            {
+                return false;
+            }
+
+            // Capability check: contour can be enabled only if onMask allows it.
+            active.GetAvailableSnapMask(out Snap onMask, out Snap offMask);
+            if (contourOn && (onMask & Snap.ContourLines) == 0)
+            {
+                return false;
+            }
+
+            Snap snap = active.selectedSnap;
+            if (contourOn)
+            {
+                snap |= Snap.ContourLines;
+            }
+            else
+            {
+                snap &= ~Snap.ContourLines;
+            }
+
+            active.selectedSnap = snap;
+
+            // NetToolSystem snap should stay consistent when the active tool is a Net tool.
+            if (active is NetToolSystem && m_NetToolSystem != null)
+            {
+                m_NetToolSystem.selectedSnap = snap;
+            }
+
+            // Verify result via game snap resolution rules.
+            Snap actual = ToolBaseSystem.GetActualSnap(active.selectedSnap, onMask, offMask);
+            if (contourOn)
+            {
+                return (actual & Snap.ContourLines) != 0;
+            }
+
+            return (actual & Snap.ContourLines) == 0;
+        }
+
+        private bool GetContourEnabledFromActiveTool( )
+        {
+            if (m_ToolSystem == null)
+            {
+                return false;
+            }
+
+            ToolBaseSystem? active = m_ToolSystem.activeTool;
+            if (active == null)
+            {
+                return false;
+            }
+
+            active.GetAvailableSnapMask(out Snap onMask, out Snap offMask);
+            Snap actual = ToolBaseSystem.GetActualSnap(active.selectedSnap, onMask, offMask);
+            return (actual & Snap.ContourLines) != 0;
         }
     }
 }

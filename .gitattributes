@@ -1,23 +1,30 @@
 * text=auto
 
-*.sln     text eol=crlf
-*.cs      text eol=crlf
-*.csproj  text eol=crlf
-*.props   text eol=crlf
-*.targets text eol=crlf
+# Windows-style line endings for VS project files and C#
+*.sln      text eol=crlf
+*.csproj   text eol=crlf
+*.props    text eol=crlf
+*.targets  text eol=crlf
+*.cs       text eol=crlf
 *.xml     text eol=crlf
 
-
-*.pubxml  text eol=lf
-*.mjs     text eol=lf
-*.js   text eol=lf
-*.ts   text eol=lf
-*.tsx  text eol=lf
-*.css  text eol=lf
-*.scss text eol=lf
-*.html text eol=lf
+# optional: LF renders nicer on GitHub
+*.md       text eol=lf
 *.json text eol=lf
-*.yml  text eol=lf
-*.yaml text eol=lf
-*.md   text eol=lf
-*.sh   text eol=lf
+
+*.css   text eol=lf
+*.scss  text eol=lf
+*.js    text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+
+# Scripts
+*.sh       text eol=lf
+*.bash     text eol=lf
+*.ps1      text eol=crlf
+
+# Binaries
+*.png binary
+*.jpg binary
+*.svg binary
+*.ico binary

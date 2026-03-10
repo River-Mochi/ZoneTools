@@ -1,9 +1,8 @@
-// src/mods/zoning-toolkit-panel.tsx
+// File: src/mods/zoning-toolkit-panel.tsx
 // Floating panel for Zone Tools (zoning mode picker + update tool toggle + contour toggle).
 // Notes:
 // - Panel visibility is driven by C# (Shift+X / FAB triggers C# which updates visible).
-// - tool_enabled and contour_enabled are C#-confirmed; JS requests changes and waits for C# echo.
-// - Contour button is shown only when Update Road tool is active (avoids vanilla road tool conflicts).
+// - tool_enabled / contour_enabled / contour_button_visible are C#-confirmed.
 
 import React from "react";
 import Draggable from "react-draggable";
@@ -27,16 +26,13 @@ const kLocale_Tooltip_ModeLeft = "ZoneTools.UI.Tooltip.ModeLeft";
 const kLocale_Tooltip_ModeRight = "ZoneTools.UI.Tooltip.ModeRight";
 const kLocale_Tooltip_ModeNone = "ZoneTools.UI.Tooltip.ModeNone";
 
-// New (optional) locale keys; safe fallbacks used if missing.
 const kLocale_ContourLabel = "ZoneTools.UI.Contour";
 const kLocale_Tooltip_Contour = "ZoneTools.UI.Tooltip.Contour";
 
 function translate(id: string, fallback: string): string {
     try {
         const value = engine.translate(id);
-        if (!value || value === id) {
-            return fallback;
-        }
+        if (!value || value === id) return fallback;
         return value;
     } catch {
         return fallback;
@@ -79,11 +75,12 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const zoningModeString = this.props.zoningMode ?? "Default";
         const currentZoningMode = getModeFromString(zoningModeString);
 
-        const isToolEnabled = !!this.props.isToolEnabled;
-        const contourEnabled = !!this.props.contourEnabled;
+        const isToolEnabled = this.props.isToolEnabled === true;
+        const contourEnabled = this.props.contourEnabled === true;
+        const contourButtonVisible = this.props.contourButtonVisible !== false;
 
-        const uiVisible = !!this.props.uiVisible;
-        const photomodeActive = !!this.props.photomodeActive;
+        const uiVisible = this.props.uiVisible === true;
+        const photomodeActive = this.props.photomodeActive === true;
 
         const panelStyle = {
             display: !uiVisible || photomodeActive ? "none" : undefined,
@@ -94,19 +91,19 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                 icon: zoneModeIconMap[ZoningMode.DEFAULT],
                 mode: ZoningMode.DEFAULT,
                 tooltipKey: kLocale_Tooltip_ModeDefault,
-                tooltipFallback: "Default (both)",
+                tooltipFallback: "Both (default)",
             },
             {
                 icon: zoneModeIconMap[ZoningMode.LEFT],
                 mode: ZoningMode.LEFT,
                 tooltipKey: kLocale_Tooltip_ModeLeft,
-                tooltipFallback: "Left",
+                tooltipFallback: "Left only",
             },
             {
                 icon: zoneModeIconMap[ZoningMode.RIGHT],
                 mode: ZoningMode.RIGHT,
                 tooltipKey: kLocale_Tooltip_ModeRight,
-                tooltipFallback: "Right",
+                tooltipFallback: "Right only",
             },
             {
                 icon: zoneModeIconMap[ZoningMode.NONE],
@@ -119,14 +116,11 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const updateRoadLabel = translate(kLocale_UpdateRoadLabel, "Update Road");
         const updateRoadTooltip = translate(
             kLocale_Tooltip_UpdateRoad,
-            "Toggle update tool (for existing roads).",
+            "Toggle update panel ON / OFF (for existing roads).",
         );
 
         const contourLabel = translate(kLocale_ContourLabel, "Contour");
-        const contourTooltip = translate(
-            kLocale_Tooltip_Contour,
-            "Toggle terrain contour lines (update tool only).",
-        );
+        const contourTooltip = translate(kLocale_Tooltip_Contour, "Terrain lines toggle.");
 
         return (
             <Draggable bounds="parent" grid={[5, 5]} enableUserSelectHack={false}>
@@ -163,8 +157,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                             }
                         />
 
-                        {/* Only show contour toggle when update tool is active (no conflict with vanilla road tool). */}
-                        {isToolEnabled ? (
+                        {contourButtonVisible ? (
                             <PanelSectionRow
                                 left={<span className={panelStyles.rowLabelNoWrap}>{contourLabel}</span>}
                                 right={

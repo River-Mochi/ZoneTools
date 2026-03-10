@@ -1,20 +1,19 @@
 // File: Settings/Setting.cs
-// Purpose: Options UI for Zone Tools – Actions + About (name/version/link) + keybinding + debug report button.
+// Purpose: Options UI for Zone Tools – Actions + About + keybinding + debug report + compatibility toggles.
 
 namespace ZoningToolkit
 {
-    using Colossal.IO.AssetDatabase;      // FileLocation
-    using Game.Input;                     // ProxyBinding, keybinding attributes
-    using Game.Modding;                   // IMod
-    using Game.Settings;                  // ModSetting + SettingsUI* attributes
-    using System;                         // Exception
-    using UnityEngine;                    // Application.OpenURL
+    using Colossal.IO.AssetDatabase; // FileLocation
+    using Game.Input;                // ProxyBinding, keybinding attributes
+    using Game.Modding;              // IMod
+    using Game.Settings;             // ModSetting + SettingsUI* attributes
+    using System;                    // Exception
+    using UnityEngine;               // Application.OpenURL
 
-    [FileLocation("ModsSettings/ZoneTools/ZoneTools")]  // Settings save path (per-profile).
+    [FileLocation("ModsSettings/ZoneTools/ZoneTools")]
     [SettingsUITabOrder(kActionsTab, kAboutTab)]
-    [SettingsUIGroupOrder(kActionsGroup, kBindingsGroup, kAboutGroup, kAboutLinksGroup, kDebugGroup)]
-    // Only show "Links" header on the About tab (no redundant "About" header).
-    [SettingsUIShowGroupName(kAboutLinksGroup)]
+    [SettingsUIGroupOrder(kActionsGrp, kCompatibilityGrp, kBindingsGrp, kAboutGrp, kAboutLinksGrp, kDebugGrp)]
+    [SettingsUIShowGroupName(kAboutLinksGrp)]
     [SettingsUIKeyboardAction(Mod.kTogglePanelActionName, ActionType.Button, usages: new[] { "Game" })]
     public sealed class Setting : ModSetting
     {
@@ -23,18 +22,13 @@ namespace ZoningToolkit
         public const string kAboutTab = "About";
 
         // Groups
-        public const string kActionsGroup = "Actions";
-        public const string kBindingsGroup = "Key bindings";
-        public const string kAboutGroup = "About";
-        public const string kAboutLinksGroup = "Links";
-        public const string kDebugGroup = "Debug only";
+        public const string kActionsGrp = "Actions";
+        public const string kCompatibilityGrp = "Compatibility";
+        public const string kBindingsGrp = "Key bindings";
+        public const string kAboutGrp = "About";
+        public const string kAboutLinksGrp = "Links";
+        public const string kDebugGrp = "Debug only";
 
-        // Defaults (first install)
-        // NOTE: Property initializers are what make first-install defaults appear in Options UI.
-        private const bool kDefaultProtectOccupiedCells = true;
-        private const bool kDefaultProtectZonedCells = true;
-
-        // External links
         private const string kUrlParadox =
             "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
 
@@ -45,20 +39,36 @@ namespace ZoningToolkit
 
         public override void SetDefaults( )
         {
-            // Reset-to-defaults uses this path.
-            ProtectOccupiedCells = kDefaultProtectOccupiedCells;
-            ProtectZonedCells = kDefaultProtectZonedCells;
+            ProtectOccupiedCells = true;
+            ProtectZonedCells = true;
+            ShowContourButton = true;
 
-            // Ensure binding has a value when resetting.
             TogglePanelBinding = new ProxyBinding { };
         }
 
+        // ----- ACTIONS TAB -----
+
+        [SettingsUISection(kActionsTab, kActionsGrp)]
+        public bool ProtectOccupiedCells { get; set; } = true;
+
+        [SettingsUISection(kActionsTab, kActionsGrp)]
+        public bool ProtectZonedCells { get; set; } = true;
+
+        // Compatibility (Phase 1: manual user control only)
+        [SettingsUISection(kActionsTab, kCompatibilityGrp)]
+        public bool ShowContourButton { get; set; } = true;
+
+        // Keybindings
+        [SettingsUISection(kActionsTab, kBindingsGrp)]
+        [SettingsUIKeyboardBinding(BindingKeyboard.X, Mod.kTogglePanelActionName, shift: true)]
+        public ProxyBinding TogglePanelBinding { get; set; } = new ProxyBinding { };
+
         // ----- ABOUT TAB -----
 
-        [SettingsUISection(kAboutTab, kAboutGroup)]
+        [SettingsUISection(kAboutTab, kAboutGrp)]
         public string ModName => Mod.ModName;
 
-        [SettingsUISection(kAboutTab, kAboutGroup)]
+        [SettingsUISection(kAboutTab, kAboutGrp)]
         public string VersionText =>
 #if DEBUG
             Mod.ModVersion + " (DEBUG)";
@@ -66,53 +76,34 @@ namespace ZoningToolkit
             Mod.ModVersion;
 #endif
 
-        [SettingsUIButtonGroup(kAboutLinksGroup)]
+        [SettingsUIButtonGroup(kAboutLinksGrp)]
         [SettingsUIButton]
-        [SettingsUISection(kAboutTab, kAboutLinksGroup)]
+        [SettingsUISection(kAboutTab, kAboutLinksGrp)]
         public bool OpenParadox
         {
             set
             {
                 if (!value)
-                {
                     return;
-                }
 
                 TryOpenUrl(kUrlParadox);
             }
         }
 
-        // Debug report (writes a compact one-shot dump to Logs/ZoneTools.log)
-        // Keeps startup logs clean; only prints when requested.
-        [SettingsUISection(kAboutTab, kDebugGroup)]
+        [SettingsUISection(kAboutTab, kDebugGrp)]
         [SettingsUIButton]
         public bool DumpDebugReport
         {
             set
             {
                 if (!value)
-                {
                     return;
-                }
+
                 Mod.RequestDebugReport();
             }
         }
 
-        // ----- ACTIONS TAB -----
-
-        [SettingsUISection(kActionsTab, kActionsGroup)]
-        public bool ProtectOccupiedCells { get; set; } = kDefaultProtectOccupiedCells;
-
-        [SettingsUISection(kActionsTab, kActionsGroup)]
-        public bool ProtectZonedCells { get; set; } = kDefaultProtectZonedCells;
-
-        // ----- KEYBINDINGS (Actions tab) -----
-
-        [SettingsUISection(kActionsTab, kBindingsGroup)]
-        [SettingsUIKeyboardBinding(BindingKeyboard.X, Mod.kTogglePanelActionName, shift: true)]
-        public ProxyBinding TogglePanelBinding { get; set; } = new ProxyBinding { };
-
-        // ----- Helpers -----
+        // ----- HELPERS -----
 
         private static void TryOpenUrl(string url)
         {
@@ -122,7 +113,6 @@ namespace ZoningToolkit
             }
             catch (Exception)
             {
-                // Ignore URL open failures (sandbox / OS policy / etc.).
             }
         }
     }
