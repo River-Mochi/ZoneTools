@@ -1,15 +1,17 @@
-// Systems/ZoneToolSystem.Keybind.cs
-// Handles Zone Tools keybinding (Shift+X by default) via CO's InputManager.
+// File: Systems/ZoneToolSystem.Keybind.cs
+// Purpose: Handles Zone Tools keybinding (Shift+X by default) via CO InputManager.
 
 namespace ZoningToolkit.Systems
 {
+    using CS2HonuShared;    // LogUtils
     using Game;
     using Game.Input;       // ProxyAction
     using Unity.Entities;   // GameSystemBase
 
     /// <summary>
     /// Runs in ToolUpdate and listens to the CO ProxyAction registered in Setting.RegisterKeyBindings().
-    /// When the action is pressed, it toggles Zone Tools UI panel (same as clicking the GameTopLeft button).
+    /// When the action is pressed, it toggles the Zone Tools UI panel
+    /// (same behavior as clicking the GameTopLeft button).
     /// </summary>
     public sealed partial class ZoneToolSystemKeybind : GameSystemBase
     {
@@ -22,7 +24,11 @@ namespace ZoningToolkit.Systems
             base.OnCreate();
 
             m_UISystem = World.GetOrCreateSystemManaged<ZoneToolBridgeUI>();
-            Mod.s_Log.Info($"{Mod.ModTag} ZoneToolSystemKeybind created.");
+
+#if DEBUG
+            LogUtils.TryLog(Mod.s_Log, Colossal.Logging.Level.Info,
+                () => $"{Mod.ModTag} ZoneToolSystemKeybind created.");
+#endif
         }
 
         protected override void OnUpdate( )
@@ -32,7 +38,10 @@ namespace ZoningToolkit.Systems
                 if (!m_LoggedMissingUISystem)
                 {
                     m_LoggedMissingUISystem = true;
-                    Mod.s_Log.Warn($"{Mod.ModTag} ZoneToolSystemKeybind: UI system is null in OnUpdate (unexpected).");
+                    LogUtils.WarnOnce(
+                        Mod.s_Log,
+                        "ZoneToolSystemKeybind.MissingUISystem",
+                        ( ) => $"{Mod.ModTag} ZoneToolSystemKeybind: UI system is null in OnUpdate (unexpected).");
                 }
 
                 return;
@@ -44,7 +53,10 @@ namespace ZoningToolkit.Systems
                 if (!m_LoggedMissingAction)
                 {
                     m_LoggedMissingAction = true;
-                    Mod.s_Log.Warn($"{Mod.ModTag} ZoneToolSystemKeybind: TogglePanelAction is null in OnUpdate.");
+                    LogUtils.WarnOnce(
+                        Mod.s_Log,
+                        "ZoneToolSystemKeybind.MissingTogglePanelAction",
+                        ( ) => $"{Mod.ModTag} ZoneToolSystemKeybind: TogglePanelAction is null in OnUpdate.");
                 }
 
                 return;
@@ -52,7 +64,10 @@ namespace ZoningToolkit.Systems
 
             if (togglePanelAction.WasPressedThisFrame())
             {
-                Mod.Debug($"{Mod.ModTag} ZoneToolSystemKeybind: toggle pressed -> toggling panel.");
+#if DEBUG
+                LogUtils.TryLog(Mod.s_Log, Colossal.Logging.Level.Info,
+                    () => $"{Mod.ModTag} ZoneToolSystemKeybind: toggle pressed -> toggling panel.");
+#endif
                 m_UISystem.TogglePanelFromHotkey();
             }
         }
