@@ -6,7 +6,8 @@
 //   1) contour host-mode only: active just to hold contour/topography snap
 //   2) real Update Road tool: hover/select/apply on existing roads
 // - Disabling returns to DefaultToolSystem.
-// - Tool refuses to activate unless GetPrefab is guaranteed non-null.
+// - GetPrefab intentionally returns null so the tool can stay active without forcing
+//   the large vanilla asset panel open. Mini Tool Options visibility is handled in UI.
 
 namespace ZoningToolkit.Systems
 {
@@ -107,7 +108,6 @@ namespace ZoningToolkit.Systems
                 requireZones = false;
                 allowUnderground = false;
 
-                // Seed snap so contour has a place to live.
                 Snap snap = m_NetToolSystem.selectedSnap;
                 if (snap == default)
                 {
@@ -128,7 +128,6 @@ namespace ZoningToolkit.Systems
             requireZones = true;
             allowUnderground = false;
 
-            // Seed snap from vanilla so contour overlay can render.
             Snap snapToUse = selectedSnap;
             if (snapToUse == default)
             {
@@ -222,9 +221,11 @@ namespace ZoningToolkit.Systems
             return inputDeps;
         }
 
+        // Intentionally null so the custom tool can be active without selecting
+        // a visible vanilla asset/prefab that opens the large Roads panel.
         public override PrefabBase GetPrefab( )
         {
-            return GetSafePrefabForUI();
+            return null!;
         }
 
         public override bool TrySetPrefab(PrefabBase prefab)
@@ -251,7 +252,6 @@ namespace ZoningToolkit.Systems
                 Enabled = true;
                 if (m_ZTToolSystem.activeTool != this)
                 {
-                    // Tool must become active so selectedSnap can control contour/topography.
                     m_ZTToolSystem.activeTool = this;
                 }
 
@@ -262,13 +262,6 @@ namespace ZoningToolkit.Systems
             if (toolEnabled)
             {
                 return true;
-            }
-
-            if (!TryResolveSafePrefabForUI(out _))
-            {
-                Enabled = false;
-                Mod.s_Log.Warn($"{Mod.ModTag} ContourHost enable refused: safe prefab not ready.");
-                return false;
             }
 
             m_ContourHostActive = true;
@@ -340,23 +333,12 @@ namespace ZoningToolkit.Systems
 
             m_ContourHostActive = false;
 
-            if (!TryResolveSafePrefabForUI(out _))
-            {
-                toolEnabled = false;
-                Enabled = false;
-                Mod.s_Log.Warn($"{Mod.ModTag} ExistingRoads enable refused: safe prefab not ready.");
-                return false;
-            }
-
             // Seed snap before activation so OnStartRunning() sees the intended state.
             selectedSnap = snapToKeep;
             m_NetToolSystem.selectedSnap = selectedSnap;
 
             Enabled = true;
-
-            // Activate as the real tool after host mode is cleared.
             m_ZTToolSystem.activeTool = this;
-
             toolEnabled = true;
 
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads enabled");
@@ -485,7 +467,6 @@ namespace ZoningToolkit.Systems
             }
             else
             {
-                // No-op feedback: quieter than build thud.
                 PlaySelectSound();
             }
         }

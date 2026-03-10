@@ -1,5 +1,6 @@
 // File: Systems/ZoneToolSystem.BridgeUI.cs
-// Purpose: Bridges Zone Tools ECS state with the in-game UI (panel, menu button, and tool enable/disable).
+// Purpose: Bridges Zone Tools ECS state with the in-game UI (panel, menu button, tool-options contour row,
+// and tool enable/disable).
 // Notes:
 // - Contour lines are derived from ToolSystem.activeTool.selectedSnap (game code).
 // - When activeTool is null (or DefaultToolSystem), game resolves contour OFF each frame.
@@ -103,6 +104,12 @@ namespace ZoningToolkit.Systems
                 kGroup,
                 "contour_button_visible",
                 ( ) => Mod.Settings != null && Mod.Settings.ShowContourButton));
+
+            // Visibility for the injected mini Tool Options contour row.
+            AddUpdateBinding(new GetterValueBinding<bool>(
+                kGroup,
+                "contour_tooloptions_visible",
+                ( ) => GetContourToolOptionsVisible()));
 
             // -----------------------------
             // UI -> C# (trigger bindings)
@@ -262,6 +269,51 @@ namespace ZoningToolkit.Systems
             return netTool.GetPrefab() is RoadPrefab;
         }
 
+        // Small injected Tool Options contour row should appear only when:
+        // - setting is enabled
+        // - not in Photo Mode
+        // - a relevant active tool exists
+        private bool GetContourToolOptionsVisible( )
+        {
+            if (Mod.Settings == null || !Mod.Settings.ShowContourButton)
+            {
+                return false;
+            }
+
+            if (m_PhotoMode != null && m_PhotoMode.Enabled)
+            {
+                return false;
+            }
+
+            if (m_ToolSystem == null)
+            {
+                return false;
+            }
+
+            ToolBaseSystem? active = m_ToolSystem.activeTool;
+            if (active == null || active is DefaultToolSystem)
+            {
+                return false;
+            }
+
+            // Always show for ZT ExistingRoads, including contour-host mode.
+            if (active == m_Tool)
+            {
+                return true;
+            }
+
+            // Show for any active tool that advertises contour capability.
+            try
+            {
+                active.GetAvailableSnapMask(out Snap onMask, out Snap offMask);
+                return ((onMask | offMask) & Snap.ContourLines) != 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         // ------------------------------------------------------------------
         // Contour toggle
         // ------------------------------------------------------------------
@@ -278,6 +330,7 @@ namespace ZoningToolkit.Systems
                 {
                     TrySetContourOnActiveTool(true);
                 }
+
                 return;
             }
 
@@ -350,9 +403,8 @@ namespace ZoningToolkit.Systems
 
             active.selectedSnap = snap;
 
-            // Sync: vanilla road-tool topography state with the ZT panel.
-            // This matters both when the active tool is the vanilla road tool
-            // and when the active tool is ZT ExistingRoads.
+            // Keep vanilla NetTool snap state aligned when the active tool is a road tool
+            // or when ZT ExistingRoads is the active tool.
             if (m_NetToolSystem != null && (active is NetToolSystem || active == m_Tool))
             {
                 m_NetToolSystem.selectedSnap = snap;

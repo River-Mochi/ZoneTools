@@ -1,11 +1,11 @@
-// src/mods/vanilla-bindings.ts
-// Thin wrappers over vanilla UI components (tooltip + tool button + focus keys).
+// File: src/mods/vanilla-bindings.ts
+// Purpose: Thin wrappers over vanilla UI components (tooltip + tool button + tool-options section + focus keys).
 
+import type { ReactNode } from "react";
 import { getModule } from "cs2/modding";
 import { ButtonProps, TooltipProps } from "cs2/ui";
 
-export interface DescriptionTooltipProps
-    extends Omit<TooltipProps, "tooltip"> {
+export interface DescriptionTooltipProps extends Omit<TooltipProps, "tooltip"> {
     title: string | null;
     description: string | null;
     content?: unknown;
@@ -29,11 +29,24 @@ const ToolButton = getModule(
     "ToolButton",
 );
 
+export interface SectionProps {
+    title?: string | null;
+    uiTag?: string;
+    children: ReactNode;
+}
+
+/** Tool Options section (vanilla component). */
+const Section = getModule(
+    "game-ui/game/components/tool-options/mouse-tool-options/mouse-tool-options.tsx",
+    "Section",
+);
+
 /** Manually exported/bound modules that are not exported directly by CS2; use with caution! */
 const VanillaBindings = {
     components: {
         DescriptionTooltip,
         ToolButton,
+        Section,
     },
     common: {
         focus: {
