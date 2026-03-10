@@ -10,7 +10,7 @@
 
 - Change zoning along new roads or update existing roads. Enable zoning road sides for both/left/right/none. 
 - Finer control of where buildings will spawn, as well as placing roads close together without overlapping/conflicting zones.
-- This is the older mod with a moveable panel. If you prefer the icons are in a static vanilla game panel, try Easy Zoning mod.
+- This is the older mod with a moveable panel. If you prefer the icons in a static vanilla game panel, try new Easy Zoning mod (complete redesign).
 
 ### New roads
 
@@ -34,7 +34,8 @@ Your existing road should keep zoning facing the same original direction you set
 
 - ✅ Protect occupied cells (buildings) 
 - ✅ Protect zoned-but-empty cells
-- Go to Options Menu to set shortcut hot keybind.
+- ✅ Contour terrain lines button
+- ✅ Change keybind shortcut (Options menu)
 
 ### Support and Feedback
 
@@ -84,7 +85,7 @@ Your existing road should keep zoning facing the same original direction you set
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog Value="" />
 <ChangeLog>
-- add a contour terrain lines (convenience button).
+- added contour terrain lines (convenience button).
 - move default panel location to bottom right.
 - update languages, images.
 - remove option to auto open/close Zone tool panel when New roads panel opens
