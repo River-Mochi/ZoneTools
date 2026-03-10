@@ -9,14 +9,13 @@
 
 namespace ZoningToolkit.Utils
 {
-    using Colossal.Mathematics;
-    using Game.Common;
-    using Game.Net;
-    using Game.Zones;
-    using Unity.Entities;
-    using Unity.Mathematics;
-    using UnityEngine;
-    using ZoningToolkit.Components;
+    using Colossal.Mathematics;     // Bezier4x2, MathUtils
+    using Game.Net;                 // Curve
+    using Game.Zones;               // Block, Cell, ValidArea
+    using Unity.Entities;           // Entity
+    using Unity.Mathematics;        // float2
+    using UnityEngine;              // Vector2
+    using ZoningToolkit.Components; // ZoningInfo
 
     internal static class BlockUtils
     {

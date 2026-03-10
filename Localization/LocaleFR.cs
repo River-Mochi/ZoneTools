@@ -69,11 +69,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Bouton Contour" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] activé**, afficher le bouton des lignes de terrain dans le panneau Zone Tools.\n" +
-                    "Fournit une option là où le jeu l’autorise dans certains outils.\n" +
-                    "Désactiver si un autre mod est préféré pour les lignes de contour.\n" +
-                    "Note : même si cet outil de contour n’est pas désactivé, ce n’est probablement pas un problème.\n" +
-                    "L’autre mod prendra simplement le dessus et sera le bouton de contour fonctionnel (notre bouton devient inoffensif)."
+                    "**[ ✓ ] activé**, affiche le bouton Contour dans le panneau Zone Tools.\n\n" +
+                    "Utilise les propres règles d'outil du jeu là où les lignes de terrain sont autorisées.\n" +
+                    "Décoche cette case si un autre mod gère déjà le contour/la topographie et/ou si le bouton ne doit pas être affiché.\n" +
+                    "Le laisser activé est généralement quand même sans problème et inoffensif, même avec un autre mod de contour/topographie.\n" +
+                    "L'autre mod devient simplement le boss de la topographie."
                 },
 
                 // Keybinding option (Options → Mods)

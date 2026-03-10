@@ -66,14 +66,14 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility (Phase 1: manual user control only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Höhenlinien-Schaltfläche" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Höhenlinien-Button" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] aktiviert**, zeigt die Gelände-/Höhenlinien-Schaltfläche im Zone-Tools-Panel.\n" +
-                    "Bietet eine Option dort, wo das Spiel es in Tools erlaubt.\n" +
-                    "Deaktivieren, wenn ein anderer Mod für Höhenlinien bevorzugt wird.\n" +
-                    "Hinweis: selbst wenn dieses Höhenlinien-Tool nicht deaktiviert wird, ist das wahrscheinlich weiterhin ok.\n" +
-                    "Der andere Mod übernimmt einfach und ist die funktionierende Höhenlinien-Schaltfläche (unsere Schaltfläche wird harmlos)."
+                    "**[ ✓ ] aktiviert**, zeigt den Höhenlinien-Button im Zone-Tools-Panel an.\n\n" +
+                    "Verwendet die eigenen Werkzeugregeln des Spiels dort, wo Geländelinien erlaubt sind.\n" +
+                    "Dieses Kästchen deaktivieren, wenn ein anderer Mod bereits Höhenlinien/Topografie übernimmt und/oder der Button nicht angezeigt werden soll.\n" +
+                    "Dies aktiviert zu lassen ist normalerweise trotzdem in Ordnung und harmlos, selbst wenn ein anderer Höhenlinien-/Topografie-Mod installiert ist.\n" +
+                    "Der andere Mod wird dann einfach der Boss für die Topografie."
                 },
 
                 // Keybinding option (Options → Mods)

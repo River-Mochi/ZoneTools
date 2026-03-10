@@ -69,11 +69,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "윤곽선 버튼" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] 활성화**, Zone Tools 패널에 지형선 버튼을 표시합니다.\n" +
-                    "게임이 도구에서 허용하는 경우에 사용할 수 있는 옵션입니다.\n" +
-                    "윤곽선(지형선)용 다른 모드를 선호하면 비활성화하세요.\n" +
-                    "참고: 이 윤곽선 도구를 비활성화하지 않아도, 아마도 괜찮습니다.\n" +
-                    "다른 모드가 보스가 되어 작동하는 윤곽선 버튼이 되고(우리 버튼은 무해해집니다)."
+                    "**[ ✓ ] 활성화**, Zone Tools 패널에 윤곽선 버튼을 표시합니다.\n\n" +
+                    "지형선이 허용되는 경우 게임 자체의 도구 규칙을 사용합니다.\n" +
+                    "다른 모드가 이미 윤곽선/지형 표시를 처리하거나 버튼을 숨기고 싶다면 이 체크박스를 OFF로 하세요.\n" +
+                    "다른 윤곽선/지형 표시 모드가 있어도 이것을 켜 둔 채로 두는 것은 보통 괜찮고 무해합니다.\n" +
+                    "그 경우 다른 모드가 지형 표시의 보스가 됩니다."
                 },
 
                 // Keybinding option (Options → Mods)

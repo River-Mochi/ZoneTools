@@ -69,11 +69,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Contour button" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] enabled**, show the terrain lines button in the Zone Tools panel.\n" +
-                    "Provides an option whereever the game allows it in tools.\n" +
-                    "Disable if you prefer another mod for contour lines.\n" +
-                    "Note: even if you do not disable this contour tool, it's probably still fine.\n" +
-                    "The other mod will simply be the boss; it will take over and be the working contour button (our button becomes harmless)."
+                    "**[ ✓ ] enabled**, show the Contour button in the Zone Tools panel.\n\n" +
+                    "Uses the game's own tool rules where terrain lines are allowed.\n" +
+                    "Disable this checkbox if another mod already handles contour/topography and/or if you want to hide the button.\n" +
+                    "Leaving this on is usually still fine and harmless even with another contour/topography mod.\n" +
+                    "The other mod simply becomes the boss for topography."
                 },
 
                 // Keybinding option (Options → Mods)
@@ -98,7 +98,7 @@ namespace ZoningToolkit
                 // -----------------------------------------------------------------
                 { "ZoneTools.UI.UpdateRoad", "Update Road" },
                 { "ZoneTools.UI.Tooltip.UpdateRoad",
-                    "Zone Tool panel ON / OFF (moveable)"
+                    "Zone Tool panel ON / OFF (movable)"
                 },
 
                 { "ZoneTools.UI.Contour", "Contour" },

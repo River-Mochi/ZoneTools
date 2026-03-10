@@ -66,14 +66,14 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility (Phase 1: manual user control only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Przycisk konturów" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Przycisk Kontury" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] włączone**, pokazuje przycisk linii terenu w panelu Zone Tools.\n" +
-                    "Daje opcję tam, gdzie gra na to pozwala w narzędziach.\n" +
-                    "Wyłącz, jeśli wolisz innego moda do linii konturowych.\n" +
-                    "Uwaga: nawet jeśli nie wyłączysz tego narzędzia konturów, prawdopodobnie nadal jest OK.\n" +
-                    "Inny mod po prostu będzie bossem, przejmie kontrolę i będzie działał jako przycisk konturów (nasz przycisk staje się nieszkodliwy)."
+                    "**[ ✓ ] włączone**, pokazuje przycisk Kontury w panelu Zone Tools.\n\n" +
+                    "Używa własnych zasad narzędzi gry tam, gdzie linie terenu są dozwolone.\n" +
+                    "Odznacz to pole, jeśli inny mod już obsługuje kontury/topografię i/lub jeśli przycisk ma pozostać ukryty.\n" +
+                    "Pozostawienie tego włączonego zazwyczaj też jest w porządku i nieszkodliwe, nawet jeśli masz inny mod do konturów/topografii.\n" +
+                    "Tamten mod po prostu zostaje bossem topografii."
                 },
 
                 // Keybinding option (Options → Mods)

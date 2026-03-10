@@ -83,9 +83,11 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
+- Major new features:
+- added Preview on Hover.
+- moved default panel location to bottom right.
 - added contour terrain button to the ZT panel (convenience).
 - sync contour toggle with vanilla Road Tools Topography.
-- moved default panel location to bottom right.
 - updated languages and images.
 - removed option to auto open/close the Zone Tools panel when the New Roads panel opens.
 - improved compatibility with other mods.

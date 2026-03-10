@@ -69,11 +69,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "等高線ボタン" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] 有効**, Zone Tools パネルに地形ライン（等高線）ボタンを表示します。\n" +
-                    "ゲーム側がツールで許可している場合に使えるオプションです。\n" +
-                    "等高線用に別MODを使いたい場合は無効にしてください。\n" +
-                    "注: この等高線ツールを無効にしなくても、おそらく問題ありません。\n" +
-                    "別MODが主導して動作する等高線ボタンになり（こちらのボタンは無害になります）。"
+                    "**[ ✓ ] 有効**、Zone Tools パネルに等高線ボタンを表示します。\n\n" +
+                    "地形ラインが許可されている場面では、ゲーム本体のツールルールを使います。\n" +
+                    "別の MOD が等高線/地形表示を担当している場合や、ボタンを表示したくない場合は、このチェックを OFF にしてください。\n" +
+                    "別の等高線/地形表示 MOD が入っていても、これを ON のままにしておいて通常は問題なく無害です。\n" +
+                    "その場合は、もう一方の MOD が地形表示のボスになります。"
                 },
 
                 // Keybinding option (Options → Mods)

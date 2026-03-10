@@ -66,14 +66,14 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility (Phase 1: manual user control only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Botão de contorno" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Botão Contorno" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] ativado**, mostrar o botão de linhas do terreno no painel do Zone Tools.\n" +
-                    "Fornece uma opção onde o jogo permite isso nas ferramentas.\n" +
-                    "Desative se preferir outro mod para linhas de contorno.\n" +
-                    "Observação: mesmo se você não desativar esta ferramenta de contorno, provavelmente ainda está tudo bem.\n" +
-                    "O outro mod simplesmente será o boss, assumirá o controle e será o botão de contorno funcional (nosso botão fica inofensivo)."
+                    "**[ ✓ ] ativado**, mostra o botão Contorno no painel do Zone Tools.\n\n" +
+                    "Usa as próprias regras de ferramenta do jogo onde as linhas do terreno são permitidas.\n" +
+                    "Desative esta caixa se outro mod já cuidar de contorno/topografia e/ou se o botão não deve ser exibido.\n" +
+                    "Deixar isso ativado normalmente também é tranquilo e inofensivo, mesmo se houver outro mod de contorno/topografia.\n" +
+                    "O outro mod simplesmente vira o chefe da topografia."
                 },
 
                 // Keybinding option (Options → Mods)

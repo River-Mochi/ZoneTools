@@ -69,11 +69,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "等高線按鈕" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] 啟用**：在 Zone Tools 面板中顯示地形線按鈕。\n" +
-                    "在遊戲允許的工具中提供該選項。\n" +
-                    "若偏好其他等高線模組，請停用。\n" +
-                    "注意：即使不停用此等高線工具，通常也沒問題。\n" +
-                    "另一個模組會成為 boss 並接管為可用的等高線按鈕（我們的按鈕會變得無害）。"
+                    "**[ ✓ ] 已啟用**，在 Zone Tools 面板中顯示等高線按鈕。\n\n" +
+                    "在遊戲工具允許顯示地形線的地方，會使用遊戲自己的工具規則。\n" +
+                    "如果其他模組已經處理等高線/地形顯示，和/或不想顯示這個按鈕，請取消勾選此項。\n" +
+                    "即使有其他等高線/地形顯示模組，通常也可以繼續保持勾選，基本上是無害的。\n" +
+                    "那時另一個模組就會成為地形顯示的 boss。"
                 },
 
                 // Keybinding option (Options → Mods)
