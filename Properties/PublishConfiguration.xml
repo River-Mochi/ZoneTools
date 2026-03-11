@@ -90,10 +90,11 @@ Major upgrade
 - moved default panel location to bottom right.
 - added contour terrain button to the ZT panel (convenience).
 - sync contour toggle with vanilla Road Tools Topography.
+- added vanilla game sound effects.
 - updated languages and images.
+- changed shortcut to Shift+x to reduce conflicts. 
 - removed option to auto open/close the Zone Tools panel when the New Roads panel opens.
 - improved compatibility with other mods.
-- added vanilla game sound effects.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />
