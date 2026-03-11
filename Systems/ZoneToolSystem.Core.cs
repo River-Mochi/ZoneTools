@@ -53,7 +53,9 @@ namespace ZoningToolkit.Systems
 
         protected override void OnCreate( )
         {
+#if DEBUG
             Mod.s_Log.Info("Creating ZoneToolSystemCore");
+#endif
             base.OnCreate();
 
             // New blocks (Created or Deleted) with zone block data.
@@ -219,8 +221,9 @@ namespace ZoningToolkit.Systems
         // Legacy helper: string-based mode selection (kept for compatibility with older UI wiring).
         public void SetZoningMode(string mode)
         {
+#if DEBUG
             Mod.s_Log.Info($"Changing zoning mode to {mode}");
-
+#endif
             zoningMode = mode switch
             {
                 "Left" => ZoningMode.Left,

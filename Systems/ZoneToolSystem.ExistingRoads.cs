@@ -1,23 +1,24 @@
 // File: Systems/ZoneToolSystem.ExistingRoads.cs
-// Purpose: Update Existing Roads tool (hover + select + apply zoning mode to existing networks).
+// Purpose: tool lifecycle + tool activation logic.
 // Notes:
-// - Enabled/disabled by UI panel.
-// - Disabling returns to DefaultToolSystem.
-// - Tool refuses to activate unless GetPrefab is guaranteed non-null.
+// - Same tool can run in 2 modes:
+//   1) contour host mode: active only to hold contour/topography snap
+//   2) real Update Road mode: hover/select/apply on existing roads
+// - ToolSystem.activeTool swap drives the real start/stop cycle.
+// - GetPrefab() intentionally returns null so this tool does not borrow a visible donor prefab.
+//   That donor-prefab approach was what opened the giant Road Services panel.
 
 namespace ZoningToolkit.Systems
 {
-    using Colossal.Serialization.Entities; // Purpose (OnGameLoadingComplete signature)
-    using Game;                            // GameMode, ToolBaseSystem
-    using Game.Common;                     // Updated
-    using Game.Net;                        // Edge, SubBlock
-    using Game.Prefabs;                    // PrefabBase, PrefabSystem
-    using Game.Tools;                      // ToolSystem, DefaultToolSystem, NetToolSystem, ToolOutputBarrier
-    using Game.Zones;                      // Layer
-    using Unity.Collections;               // NativeHashSet, Allocator
-    using Unity.Entities;                  // Entity, EntityCommandBuffer, DynamicBuffer
-    using Unity.Jobs;                      // JobHandle
-    using ZoningToolkit.Components;        // ZoningInfo, ZoningInfoUpdated, ZoningMode
+    using Game;                 // GameMode, ToolBaseSystem
+    using Game.Common;
+    using Game.Net;             // Layer
+    using Game.Prefabs;         // PrefabBase
+    using Game.Tools;           // ToolSystem, DefaultToolSystem, NetToolSystem, ToolOutputBarrier, Snap, ApplyMode
+    using System;               // Exception
+    using Unity.Collections;    // NativeHashSet, Allocator
+    using Unity.Entities;       // Entity, EntityCommandBuffer
+    using Unity.Jobs;           // JobHandle
 
     internal sealed partial class ZoneToolSystemExistingRoads : ToolBaseSystem
     {
@@ -25,18 +26,22 @@ namespace ZoningToolkit.Systems
         private DefaultToolSystem m_ZTDefaultToolSystem = null!;
         private NetToolSystem m_NetToolSystem = null!;
         private ToolOutputBarrier m_ToolOutputBarrier = null!;
-        private PrefabSystem m_ZTPrefabSystem = null!;
         private ZoneToolBridgeUI m_UISystem = null!;
+
+        // Host mode = active only to hold contour/topography snap.
+        // Real mode = full Update Road behavior.
         private bool m_ContourHostActive;
 
-        // Selected road entities (click/drag selection).
+        // Host -> real tool promotion needs a 2-step handoff.
+        // Step 1: leave host mode and return to DefaultToolSystem.
+        // Step 2: on a later frame, activate this tool again as the real UER tool.
+        private bool m_PendingEnableAfterContourHostStop;
+        private Snap m_PendingEnableSnap;
+
+        // Shared runtime state used by apply/highlight partials.
         private NativeHashSet<Entity> m_Selected;
         private int m_SelectedCount;
-
-        // Currently hovered road entity (from raycast).
         private Entity m_Hovered;
-
-        // Currently highlighted road entity (vanilla outline).
         private Entity m_Highlighted;
 
         internal bool toolEnabled
@@ -45,7 +50,8 @@ namespace ZoningToolkit.Systems
             private set;
         }
 
-        // Unique tool identifier. UI and tool infrastructure can reference tools by this ID.
+        internal bool HasPendingEnableAfterContourHostStop => m_PendingEnableAfterContourHostStop;
+
         public override string toolID => "ZoningToolkit.ExistingRoads";
 
         protected override void OnCreate( )
@@ -58,7 +64,6 @@ namespace ZoningToolkit.Systems
             m_ZTDefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
-            m_ZTPrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_UISystem = World.GetOrCreateSystemManaged<ZoneToolBridgeUI>();
 
             InitializeAudio();
@@ -70,8 +75,8 @@ namespace ZoningToolkit.Systems
             m_Highlighted = Entity.Null;
 
             toolEnabled = false;
-
-            ResetSafePrefabForUI();
+            m_PendingEnableAfterContourHostStop = false;
+            m_PendingEnableSnap = default;
         }
 
         protected override void OnDestroy( )
@@ -88,8 +93,8 @@ namespace ZoningToolkit.Systems
         {
             base.OnStartRunning();
 
-            // Contour-host mode: keep tool active so contour can render,
-            // but do not enable actions or tool behavior.
+            // Host mode keeps the tool active only so contour/topography can exist.
+            // No road interaction, no actions, no road raycast.
             if (m_ContourHostActive)
             {
                 toolEnabled = false;
@@ -101,17 +106,17 @@ namespace ZoningToolkit.Systems
                 requireZones = false;
                 allowUnderground = false;
 
-                // Seed snap so contour has a place to live.
                 Snap snap = m_NetToolSystem.selectedSnap;
                 if (snap == default)
                 {
                     snap = Snap.All;
                 }
-                selectedSnap = snap;
 
+                selectedSnap = snap;
                 return;
             }
 
+            // Real Update Road mode: enable actions and road interaction.
             toolEnabled = true;
 
             applyAction.shouldBeEnabled = true;
@@ -119,20 +124,20 @@ namespace ZoningToolkit.Systems
 
             requireNet = Layer.Road;
             requireZones = true;
-
             allowUnderground = false;
 
             // Seed snap from vanilla so contour overlay can render.
-            Snap s = selectedSnap;
-            if (s == default)
+            Snap snapToUse = selectedSnap;
+            if (snapToUse == default)
             {
-                s = m_NetToolSystem.selectedSnap;
-                if (s == default)
+                snapToUse = m_NetToolSystem.selectedSnap;
+                if (snapToUse == default)
                 {
-                    s = Snap.All;
+                    snapToUse = Snap.All;
                 }
-                selectedSnap = s;
             }
+
+            selectedSnap = snapToUse;
         }
 
         protected override void OnStopRunning( )
@@ -156,7 +161,7 @@ namespace ZoningToolkit.Systems
         {
             base.InitializeRaycast();
 
-            // Contour-host mode: do not interact with the world.
+            // Host mode must raycast nothing.
             if (m_ContourHostActive)
             {
                 m_ToolRaycastSystem.typeMask = TypeMask.None;
@@ -164,20 +169,15 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
+            // Real mode raycasts roads/lanes so hover + selection can work.
             m_ToolRaycastSystem.typeMask = TypeMask.Net | TypeMask.Lanes;
             m_ToolRaycastSystem.netLayerMask = Layer.Road;
         }
 
-        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
-        {
-            base.OnGameLoadingComplete(purpose, mode);
-
-            ResetSafePrefabForUI();
-        }
-
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            // Contour-host mode: do nothing except remain active.
+            // Host mode intentionally does no road work.
+            // It only exists so contour/topography can stay active.
             if (m_ContourHostActive)
             {
                 return inputDeps;
@@ -216,57 +216,47 @@ namespace ZoningToolkit.Systems
 
         public override PrefabBase GetPrefab( )
         {
-            return GetSafePrefabForUI();
+            // Intentionally null.
+            //
+            // This tool edits EXISTING road entities under the cursor.
+            // It does not operate from a selected prefab like vanilla NetToolSystem /
+            // UpgradeToolSystem style tools do.
+            //
+            // In CS2, GetPrefab() being null is valid for tools that are not
+            // prefab-driven. Do not "fix" this by returning a borrowed vanilla prefab (e.g. Crosswalk).
+            // The original donor-prefab workaround caused the giant Road Services panel to open with the tool.
+            //
+            // Important for other mods:
+            // any code reading activeTool.GetPrefab() or ToolSystem.activePrefab
+            // must null-check first. A mod caller that assumes non-null is the bug.
+            // See game's DefaultToolSystem for vanilla example of GetPrefab = null.
+            return null!;
         }
 
         public override bool TrySetPrefab(PrefabBase prefab)
         {
+            // Existing Roads is not activated by prefab selection.
+            // Tool activation comes from the Zone Tools UI, so prefab assignment is refused.
             return false;
         }
+
 
         public override void GetAvailableSnapMask(out Snap onMask, out Snap offMask)
         {
             base.GetAvailableSnapMask(out onMask, out offMask);
 
-            // Contour must be present in BOTH masks so selectedSnap can turn it on/off.
-            // Putting it only in onMask forces it on (no toggle).
+            // Contour must be present in both masks so selectedSnap can turn it on/off.
             onMask |= Snap.ContourLines;
             offMask |= Snap.ContourLines;
         }
 
-
-        // Contour icon state for UI.
-        internal bool ContourEnabled => (selectedSnap & Snap.ContourLines) != 0;
-
-        // Called by BridgeUI trigger.
-        internal void ToggleContourLines( )
-        {
-            Snap snap = selectedSnap;
-
-            bool next = (snap & Snap.ContourLines) == 0;
-            if (next)
-            {
-                snap |= Snap.ContourLines;
-            }
-            else
-            {
-                snap &= ~Snap.ContourLines;
-            }
-
-            selectedSnap = snap;
-
-            // Keep vanilla NetToolSystem snap state consistent to avoid UI mismatch.
-            m_NetToolSystem.selectedSnap = selectedSnap;
-
-            PlaySnapSound();
-        }
-
+        // Turn this tool into a passive contour holder without enabling Update Road behavior.
         internal bool EnableContourHost( )
         {
             if (m_ContourHostActive)
             {
-                // Host flag already set, but tool may no longer be active.
                 Enabled = true;
+
                 if (m_ZTToolSystem.activeTool != this)
                 {
                     m_ZTToolSystem.activeTool = this;
@@ -275,19 +265,14 @@ namespace ZoningToolkit.Systems
                 return true;
             }
 
-
-            // Do not hijack when full Update Road tool is enabled.
+            // Full Update Road mode already active.
             if (toolEnabled)
             {
                 return true;
             }
 
-            if (!TryResolveSafePrefabForUI(out _))
-            {
-                Enabled = false;
-                Mod.s_Log.Warn($"{Mod.ModTag} ContourHost enable refused: safe prefab not ready.");
-                return false;
-            }
+            m_PendingEnableAfterContourHostStop = false;
+            m_PendingEnableSnap = default;
 
             m_ContourHostActive = true;
             Enabled = true;
@@ -298,9 +283,10 @@ namespace ZoningToolkit.Systems
             {
                 snap = Snap.All;
             }
+
             selectedSnap = snap;
 
-            // when host is active, snap state (contour) pushed into Net tool's snap state for road-tab sync.
+            // Keep vanilla road-tool snap in sync while host mode is active.
             m_NetToolSystem.selectedSnap = selectedSnap;
 
             return true;
@@ -313,7 +299,7 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
-            // If Update Road enabled, this tool stays active as a real tool.
+            // If full Update Road mode is already active, only clear the host flag.
             if (toolEnabled)
             {
                 m_ContourHostActive = false;
@@ -322,9 +308,9 @@ namespace ZoningToolkit.Systems
 
             m_ContourHostActive = false;
 
-            m_NetToolSystem.selectedSnap = selectedSnap;  // last known snap handed back to vanlilla before we drop to defaultTool.
+            // Hand last known snap back to vanilla before returning to DefaultToolSystem.
+            m_NetToolSystem.selectedSnap = selectedSnap;
 
-            // Return to vanilla default tool.
             if (m_ZTToolSystem.activeTool == this)
             {
                 m_ZTToolSystem.activeTool = m_ZTDefaultToolSystem;
@@ -333,34 +319,112 @@ namespace ZoningToolkit.Systems
             Enabled = false;
         }
 
-
         internal bool EnableTool( )
         {
-            m_ContourHostActive = false;
-
-            if (!TryResolveSafePrefabForUI(out _))
+            // Preserve snap state so contour/topography does not get lost
+            // when switching from host mode into real Update Road mode.
+            Snap snapToKeep = selectedSnap;
+            if (snapToKeep == default)
             {
+                snapToKeep = m_NetToolSystem.selectedSnap;
+                if (snapToKeep == default)
+                {
+                    snapToKeep = Snap.All;
+                }
+            }
+
+            // Already waiting for the second half of the host -> real tool handoff.
+            if (m_PendingEnableAfterContourHostStop)
+            {
+                return true;
+            }
+
+            // Host mode and real tool mode need different startup paths.
+            // Do not swap this -> default -> this in the same UI pass.
+            if (m_ContourHostActive && m_ZTToolSystem.activeTool == this)
+            {
+                m_PendingEnableAfterContourHostStop = true;
+                m_PendingEnableSnap = snapToKeep;
+
+                m_ContourHostActive = false;
                 toolEnabled = false;
                 Enabled = false;
-                Mod.s_Log.Warn($"{Mod.ModTag} ExistingRoads enable refused: safe prefab not ready.");
-                return false;
+
+                m_ZTToolSystem.activeTool = m_ZTDefaultToolSystem;
+                return true;
             }
+
+            m_ContourHostActive = false;
+
+            // Seed snap before activation so OnStartRunning() sees the intended state.
+            selectedSnap = snapToKeep;
+            m_NetToolSystem.selectedSnap = selectedSnap;
 
             Enabled = true;
             m_ZTToolSystem.activeTool = this;
 
-            selectedSnap = m_NetToolSystem.selectedSnap;
-
             toolEnabled = true;
-
+#if DEBUB
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads enabled");
+#endif
             return true;
+        }
+
+        // Second half of the host -> real tool handoff.
+        // Called by BridgeUI after ToolSystem has processed the return to default tool.
+        internal void ContinuePendingEnableAfterContourHostStop( )
+        {
+            if (!m_PendingEnableAfterContourHostStop)
+            {
+                return;
+            }
+
+            // Wait until ToolSystem has finished the pending tool change.
+            if (m_ZTToolSystem.fullUpdateRequired)
+            {
+                return;
+            }
+
+            // Default tool must own the frame before real activation resumes.
+            if (m_ZTToolSystem.activeTool != m_ZTDefaultToolSystem)
+            {
+                // Another tool won the slot; abandon the pending resume.
+                if (m_ZTToolSystem.activeTool != this)
+                {
+                    m_PendingEnableAfterContourHostStop = false;
+                    m_PendingEnableSnap = default;
+                }
+
+                return;
+            }
+
+            Snap snapToUse = m_PendingEnableSnap;
+            if (snapToUse == default)
+            {
+                snapToUse = m_NetToolSystem.selectedSnap;
+                if (snapToUse == default)
+                {
+                    snapToUse = Snap.All;
+                }
+            }
+
+            m_PendingEnableAfterContourHostStop = false;
+            m_PendingEnableSnap = default;
+
+            m_ContourHostActive = false;
+            selectedSnap = snapToUse;
+            m_NetToolSystem.selectedSnap = selectedSnap;
+
+            Enabled = true;
+            m_ZTToolSystem.activeTool = this;
         }
 
         internal void DisableTool( )
         {
-            m_ContourHostActive = false;
+            m_PendingEnableAfterContourHostStop = false;
+            m_PendingEnableSnap = default;
 
+            m_ContourHostActive = false;
             toolEnabled = false;
 
             ClearSelection();
@@ -374,187 +438,36 @@ namespace ZoningToolkit.Systems
             m_NetToolSystem.selectedSnap = selectedSnap;
 
             m_ZTToolSystem.activeTool = m_ZTDefaultToolSystem;
-
             Enabled = false;
 
             PlayCancelSound();
+#if DEBUG
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads disabled");
+#endif
         }
 
-        private void CycleZoningMode( )
+        // Kept for the debug button in Options UI.
+        internal void DumpDebugReportOnDemand( )
         {
-            ZoningMode current = m_UISystem.CurrentZoningMode;
-            ZoningMode next = current switch
+            try
             {
-                ZoningMode.Default => ZoningMode.Left,
-                ZoningMode.Left => ZoningMode.Right,
-                ZoningMode.Right => ZoningMode.None,
-                ZoningMode.None => ZoningMode.Default,
-                _ => ZoningMode.Default
-            };
+                string activeToolId = m_ZTToolSystem.activeTool != null
+                    ? m_ZTToolSystem.activeTool.toolID
+                    : "<null>";
 
-            m_UISystem.SetZoningModeFromTool(next);
-        }
-
-        private void UpdateHover( )
-        {
-            Entity newHovered = TryGetRaycastRoad(out Entity e) ? e : Entity.Null;
-            if (newHovered == m_Hovered)
-            {
-                return;
+                Mod.s_Log.Info($"{Mod.ModTag} Diagnostic report begin");
+                Mod.s_Log.Info($"{Mod.ModTag} activeTool                  = {activeToolId}");
+                Mod.s_Log.Info($"{Mod.ModTag} this.Enabled                = {Enabled}");
+                Mod.s_Log.Info($"{Mod.ModTag} toolEnabled                 = {toolEnabled}");
+                Mod.s_Log.Info($"{Mod.ModTag} contourHostActive           = {m_ContourHostActive}");
+                Mod.s_Log.Info($"{Mod.ModTag} pendingEnableAfterHostStop  = {m_PendingEnableAfterContourHostStop}");
+                Mod.s_Log.Info($"{Mod.ModTag} selectedSnap                = {selectedSnap}");
+                Mod.s_Log.Info($"{Mod.ModTag} netTool.selectedSnap        = {m_NetToolSystem.selectedSnap}");
+                Mod.s_Log.Info($"{Mod.ModTag} Diagnostic report end");
             }
-
-            m_Hovered = newHovered;
-        }
-
-        private void AddHoveredToSelection( )
-        {
-            if (m_Hovered == Entity.Null)
+            catch (Exception ex)
             {
-                return;
-            }
-
-            if (!EntityManager.Exists(m_Hovered))
-            {
-                return;
-            }
-
-            if (!m_Selected.Contains(m_Hovered))
-            {
-                m_Selected.Add(m_Hovered);
-                m_SelectedCount++;
-
-                PlaySelectSound();
-            }
-        }
-
-        private void ClearSelection( )
-        {
-            m_Selected.Clear();
-            m_SelectedCount = 0;
-        }
-
-        private void ApplySelection( )
-        {
-            if (m_SelectedCount == 0)
-            {
-                return;
-            }
-
-            ZoningMode desired = m_UISystem.CurrentZoningMode;
-
-            // Only create an ECB if at least one entity actually needs changes.
-            bool didWork = false;
-
-            EntityCommandBuffer ecb = default;
-
-            foreach (Entity roadEntity in m_Selected)
-            {
-                if (roadEntity == Entity.Null || !EntityManager.Exists(roadEntity))
-                {
-                    continue;
-                }
-
-                ZoningMode current = EntityManager.HasComponent<ZoningInfo>(roadEntity)
-                    ? EntityManager.GetComponentData<ZoningInfo>(roadEntity).zoningMode
-                    : ZoningMode.Default;
-
-                if (current == desired)
-                {
-                    continue;
-                }
-
-                if (!didWork)
-                {
-                    didWork = true;
-                    ecb = m_ToolOutputBarrier.CreateCommandBuffer();
-                }
-
-                AddOrSetZoningInfo(ecb, roadEntity, desired);
-                TagSubBlocksForUpdate(ecb, roadEntity);
-            }
-
-            ClearSelection();
-
-            if (didWork)
-            {
-                PlayBuildSound();
-            }
-            else
-            {
-                // “No-op” feedback: quieter than build thud.
-                PlaySelectSound();
-            }
-        }
-
-        private bool TryGetRaycastRoad(out Entity entity)
-        {
-            entity = Entity.Null;
-
-            if (!base.GetRaycastResult(out Entity hit, out RaycastHit _))
-            {
-                return false;
-            }
-
-            if (!EntityManager.HasComponent<Edge>(hit))
-            {
-                return false;
-            }
-
-            if (!EntityManager.HasBuffer<SubBlock>(hit))
-            {
-                return false;
-            }
-
-            entity = hit;
-            return true;
-        }
-
-        private void AddOrSetZoningInfo(EntityCommandBuffer ecb, Entity owner, ZoningMode mode)
-        {
-            ZoningInfo zi = new ZoningInfo { zoningMode = mode };
-
-            if (EntityManager.HasComponent<ZoningInfo>(owner))
-            {
-                ecb.SetComponent(owner, zi);
-            }
-            else
-            {
-                ecb.AddComponent(owner, zi);
-            }
-        }
-
-        private void TagSubBlocksForUpdate(EntityCommandBuffer ecb, Entity roadEntity)
-        {
-            if (!EntityManager.HasBuffer<SubBlock>(roadEntity))
-            {
-                return;
-            }
-
-            DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
-
-            for (int i = 0; i < subBlocks.Length; i++)
-            {
-                Entity blockEntity = subBlocks[i].m_SubBlock;
-                if (blockEntity == Entity.Null)
-                {
-                    continue;
-                }
-
-                if (!EntityManager.Exists(blockEntity))
-                {
-                    continue;
-                }
-
-                if (!EntityManager.HasComponent<ZoningInfoUpdated>(blockEntity))
-                {
-                    ecb.AddComponent<ZoningInfoUpdated>(blockEntity);
-                }
-
-                if (!EntityManager.HasComponent<Updated>(blockEntity))
-                {
-                    ecb.AddComponent<Updated>(blockEntity);
-                }
+                Mod.s_Log.Warn($"{Mod.ModTag} Diagnostic report failed: {ex.GetType().Name}");
             }
         }
     }

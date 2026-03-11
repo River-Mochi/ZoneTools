@@ -1,7 +1,8 @@
 // File: src/mods/state.tsx
 // Purpose: Global UI state for Zone Tools (Zustand store + Cohtml event wiring + HOC).
 // Notes:
-// - C# is source of truth for: visible, tool_enabled, photomode, contour_enabled, contour_button_visible.
+// - C# is source of truth for: visible, tool_enabled, photomode, contour_enabled,
+//   contour_button_visible, contour_tooloptions_visible.
 // - Avoid echo loops: never call JS->C# setters inside C# subscription callbacks.
 
 import engine, { EventHandle } from "cohtml/cohtml";
@@ -29,6 +30,9 @@ export interface ModUIState {
     // From C# Settings/compatibility (wait for C# update).
     contourButtonVisible: boolean;
 
+    // From C# active-tool context (wait for C# update).
+    contourToolOptionsVisible: boolean;
+
     updateZoningMode: (newValue: string) => void;
     requestToolEnabled: (newValue: boolean) => void;
     requestToggleContourLines: () => void;
@@ -50,6 +54,7 @@ export const useModUIStore = create<ModUIState>((set) => ({
     isToolEnabled: false,
     contourEnabled: false,
     contourButtonVisible: true,
+    contourToolOptionsVisible: false,
 
     updateUiVisible: (newValue: boolean) => {
         debugLog("[ZoneTools] visible <- C#", newValue);
@@ -68,7 +73,6 @@ export const useModUIStore = create<ModUIState>((set) => ({
 
     requestToggleContourLines: () => {
         debugLog("[ZoneTools] ToggleContourLines -> C#");
-        // Payload ignored by C# side.
         sendDataToCSharp(NS, "ToggleContourLines", true);
     },
 
@@ -110,6 +114,11 @@ export const setupSubscriptions = (): void => {
     subscribeOnce<boolean>("contour_button_visible", (visible) => {
         debugLog("[ZoneTools] contour_button_visible <- C#", visible);
         useModUIStore.setState({ contourButtonVisible: visible === true });
+    });
+
+    subscribeOnce<boolean>("contour_tooloptions_visible", (visible) => {
+        debugLog("[ZoneTools] contour_tooloptions_visible <- C#", visible);
+        useModUIStore.setState({ contourToolOptionsVisible: visible === true });
     });
 };
 
