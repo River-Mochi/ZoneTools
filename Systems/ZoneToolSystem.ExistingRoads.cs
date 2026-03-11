@@ -226,9 +226,9 @@ namespace ZoningToolkit.Systems
             // prefab-driven. Do not "fix" this by returning a borrowed vanilla prefab (e.g. Crosswalk).
             // The original donor-prefab workaround caused the giant Road Services panel to open with the tool.
             //
-            // Important for other mod authors:
-            // any mod reading ToolSystem.activePrefab or activeTool.GetPrefab()
-            // must null-check first. A caller that assumes non-null is the bug.
+            // Important for other mods:
+            // any code reading activeTool.GetPrefab() or ToolSystem.activePrefab
+            // must null-check first. A mod caller that assumes non-null is the bug.
             // See game's DefaultToolSystem for vanilla example of GetPrefab = null.
             return null!;
         }

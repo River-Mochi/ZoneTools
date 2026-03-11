@@ -51,14 +51,14 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "Open the author's Paradox Mods page." },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "Protect occupied cells (has buildings)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● Protect occupied cells (has buildings)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
                     "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on cells that already have a building.\n" +
                     "**[   ] disabled**, buildings could be condemned when changing the zoning under them."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "Protect zoned-but-empty cells" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protect zoned-but-empty cells" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
                     "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on cells that are already zoned (even if empty).\n" +
@@ -66,14 +66,17 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility (Phase 1: manual user control only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Contour button" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Contour button" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] enabled**, show the Contour button in the Zone Tools panel.\n\n" +
-                    "Uses the game's own tool rules where terrain lines are allowed.\n" +
-                    "Disable this checkbox if another mod already handles contour/topography and/or if you want to hide the button.\n" +
-                    "Leaving this on is usually still fine and harmless even with another contour/topography mod.\n" +
-                    "The other mod simply becomes the boss for topography."
+                    "● This lets contour lines be enabled even when no vanilla road tool is open.\n" +
+                    "● When **Update Road** is enabled, the vanilla Topography button is visible in the bottom left vanilla location.\n" +
+                    "◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●\n" +
+                    "● Disable this if you want to hide the contour button (smaller panel) or prefer another mod to handle terrain lines.\n" +
+                    " When this is disabled then the contour feature is only available when [Update Road] is ON.\n" +
+                    "● Even with another topography mod, leaving this on is usually still fine.\n" +
+                    "● The other mod becomes the boss and our button gets disabled/override"
                 },
 
                 // Keybinding option (Options → Mods)

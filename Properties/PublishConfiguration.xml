@@ -71,6 +71,8 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <Screenshot Value="Properties/10-panel.jpg" />
 <Screenshot Value="Properties/30-OptionsEN.jpg" />
 <Screenshot Value="Properties/40-roads.jpg" />
+<Screenshot Value="Properties/50-OptionsCN.jpg" />
+<Screenshot Value="Properties/60-OptionsFR.jpg" />
 <!--Tag, can be set multiple times-->
 <Tag Value="Code Mod" />
 <!--Link to the forum post where the mod can be discussed-->
@@ -83,6 +85,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
+Major upgrade
 - adds hover highlight/ change indication (blue outline on road).
 - moved default panel location to bottom right.
 - added contour terrain button to the ZT panel (convenience).
