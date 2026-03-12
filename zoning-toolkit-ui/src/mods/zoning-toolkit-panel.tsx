@@ -9,7 +9,9 @@
 // Notes:
 // - Uses React Draggable, not cs2/ui draggable.
 // - Dragging is restricted to the title bar only.
+// - grid={[5, 5]} is drag snap in JS; it is NOT CSS grid.
 // - Vanilla ToolButton still handles hover/selected/tooltip visuals.
+// - Title bar tooltip is explicit; locale entry alone does not make a tooltip appear.
 
 import React from "react";
 import Draggable from "react-draggable";
@@ -24,15 +26,16 @@ import panelStyles from "./zoning-toolkit-panel.module.scss";
 import VanillaBindings from "./vanilla-bindings";
 import { getModeFromString, zoneModeIconMap, ZoningMode } from "./zoning-toolkit-utils";
 
-const { ToolButton } = VanillaBindings.components;
+const { ToolButton, DescriptionTooltip } = VanillaBindings.components;
 
+const kLocale_Title = "ZoneTools.UI.Fab.Title";
+const kLocale_Tooltip_TitleBar = "ZoneTools.UI.Tooltip.TitleBar";
 const kLocale_Tooltip_UpdateRoad = "ZoneTools.UI.Tooltip.UpdateRoad";
 const kLocale_Tooltip_ModeDefault = "ZoneTools.UI.Tooltip.ModeDefault";
 const kLocale_Tooltip_ModeLeft = "ZoneTools.UI.Tooltip.ModeLeft";
 const kLocale_Tooltip_ModeRight = "ZoneTools.UI.Tooltip.ModeRight";
 const kLocale_Tooltip_ModeNone = "ZoneTools.UI.Tooltip.ModeNone";
 const kLocale_Tooltip_Contour = "ZoneTools.UI.Tooltip.Contour";
-const kLocale_Tooltip_TitleBar = "ZoneTools.UI.Tooltip.TitleBar";
 
 function translate(id: string, fallback: string): string {
     try {
@@ -102,7 +105,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                 icon: zoneModeIconMap[ZoningMode.DEFAULT],
                 mode: ZoningMode.DEFAULT,
                 tooltipKey: kLocale_Tooltip_ModeDefault,
-                tooltipFallback: "Both (default)",
+                tooltipFallback: "Both sides",
             },
             {
                 icon: zoneModeIconMap[ZoningMode.LEFT],
@@ -123,6 +126,8 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                 tooltipFallback: "None",
             },
         ];
+
+        const titleText = translate(kLocale_Title, "Zone Tools");
 
         const updateRoadTooltip = translate(
             kLocale_Tooltip_UpdateRoad,
@@ -150,12 +155,16 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                     className={panelStyles.panel}
                     style={panelStyle}
                     header={
-                        <div
-                            className={panelStyles.header}
-                            title={titleBarTooltip}
+                        <DescriptionTooltip
+                            title={titleText}
+                            description={titleBarTooltip}
                         >
-                            <div className={panelStyles.headerText}>Zone Tools</div>
-                        </div>
+                            <div className={panelStyles.titleTooltipAnchor}>
+                                <div className={panelStyles.header}>
+                                    <div className={panelStyles.headerText}>{titleText}</div>
+                                </div>
+                            </div>
+                        </DescriptionTooltip>
                     }
                 >
                     <div className={panelStyles.body}>
@@ -173,7 +182,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                                 ))}
                             </div>
 
-                            <div className={panelStyles.bottomRow}>
+                            <div className={`${panelStyles.bottomRow} ${panelStyles.bottomRowLeft}`}>
                                 <div className={panelStyles.bottomUpdate}>
                                     <ToolButton
                                         focusKey={VanillaBindings.common.focus.disabled}
