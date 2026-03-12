@@ -71,9 +71,9 @@ namespace ZoningToolkit
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] enabled**, show the Contour button in the Zone Tools panel.\n\n" +
                     "● This lets contour lines be enabled even when no vanilla road tool is open.\n" +
-                    "● When **Update Road** is enabled, the vanilla Topography button is visible in the bottom left vanilla location.\n" +
-                    "◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●◉●\n" +
-                    "● Disable this if you want to hide the contour button (smaller panel) or prefer another mod to handle terrain lines.\n" +
+                    "● **Update Road**: when enabled, the vanilla Topography button is visible in the bottom left vanilla location.\n" +
+                    "●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●\n" +
+                    "[ ] disable this if you want to hide the contour button (smaller panel) or prefer another mod to handle terrain lines.\n" +
                     " When this is disabled then the contour feature is only available when [Update Road] is ON.\n" +
                     "● Even with another topography mod, leaving this on is usually still fine.\n" +
                     "● The other mod becomes the boss and our button gets disabled/override"
@@ -99,22 +99,24 @@ namespace ZoningToolkit
                 // -----------------------------------------------------------------
                 // React UI strings
                 // -----------------------------------------------------------------
+                { "ZoneTools.UI.Tooltip.TitleBar", "Drag panel from the title bar." },
+
                 { "ZoneTools.UI.UpdateRoad", "Update Road" },
                 { "ZoneTools.UI.Tooltip.UpdateRoad",
-                    "Zone Tool panel ON / OFF (movable)"
+                    "Edit Existing roads ON / OFF"
                 },
 
                 { "ZoneTools.UI.Contour", "Contour" },
-                { "ZoneTools.UI.Tooltip.Contour", "Terrain lines toggle." },
+                { "ZoneTools.UI.Tooltip.Contour", "Show Terrain lines." },
 
-                { "ZoneTools.UI.Tooltip.ModeDefault", "Both (default)" },
+                { "ZoneTools.UI.Tooltip.ModeDefault", "Both sides" },
                 { "ZoneTools.UI.Tooltip.ModeLeft",    "Left only" },
                 { "ZoneTools.UI.Tooltip.ModeRight",   "Right only" },
                 { "ZoneTools.UI.Tooltip.ModeNone",    "None" },
 
                 // GameTopLeft button tooltip
                 { "ZoneTools.UI.Fab.Title", "Zone Tools" },
-                { "ZoneTools.UI.Fab.Desc",  "Modify zoning along roads.\nShortcut: Shift+X (set in Options)." },
+                { "ZoneTools.UI.Fab.Desc",  "Modify zoning along roads.\nShortcut: Shift+X (set in Options)\n Panel can move." },
             };
 
             return d;

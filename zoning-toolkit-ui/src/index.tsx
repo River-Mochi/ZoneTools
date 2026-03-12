@@ -46,6 +46,9 @@ const register: ModRegistrar = (moduleRegistry) => {
         VANILLA.ToolOptionsPanelVisible.exportId,
         ToolOptionsVisibility,
     );
+
+    console.log("ZoneTools UI module registrations completed.");
+
 };
 
 function ZoningToolkitPanelHost() {
@@ -58,5 +61,7 @@ function ZoningToolkitPanelHost() {
 
     return <ZoningToolkitPanel />;
 }
+
+
 
 export default register;

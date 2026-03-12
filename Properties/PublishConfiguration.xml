@@ -76,7 +76,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <!--Tag, can be set multiple times-->
 <Tag Value="Code Mod" />
 <!--Link to the forum post where the mod can be discussed-->
-<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/zone-tool-redux.1888663/" />
+<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/zone-tool.1888663/" />
 <!--Version of the mod-->
 <ModVersion Value="1.2.0" />
 <!--Recommended version of the base game to use the mod-->

@@ -1,28 +1,119 @@
-// src/mods/zoning-toolkit-panel.module.scss
-// Floating, draggable Zone Tools panel styling.
-// Keep minimal so vanilla handles visuals/layout as much as possible.
-
+// File: src/mods/zoning-toolkit-panel.module.scss
+// Zone Tools floating panel styling.
+//
+// Tuning guide:
+// - right: bigger = panel parks more LEFT
+// - bottom: bigger = panel parks more UP
+// - width/max-width: overall panel width
+// - --menuPanel1 / --menuPanel2 / --panelColor*: vanilla shell transparency
+// - .header background-color alpha: title bar transparency
+// - .body background-color alpha: body transparency
+// - .rowBlock width: shared inner width for both rows
+//   * lower = bottom row shifts LEFT
+//   * higher = bottom row shifts RIGHT
+// - .topRow gap: spacing between the 4 zoning icons
+// - .bottomRow margin-top: vertical gap between row 1 and row 2
+// - .bottomContour margin-left: actual spacing between UER and Contour
 
 .panel {
     position: absolute;
-    /* Default: bottom-right, but nudged left a bit */
-    /* Move more left: increase right, Move more up: increase bottom  */
-    right: 366rem;
+    /* Default parking spot
+       increase right = move more left
+       increase bottom = move more up */
+    right: 372rem;
     bottom: 125rem;
-    /* Make sure old top-based placement can’t interfere */
     top: auto;
     left: auto;
-    max-width: 300rem;
+    /* Overall panel width
+       lower this for a narrower panel */
+    width: 129rem;
+    max-width: 129rem;
     user-select: none;
+    border-radius: 0rem;
+    overflow: hidden;
+    /* Make the vanilla shell transparent so the custom header/body are visible */
+    --menuPanel1: transparent;
+    --menuPanel2: transparent;
+    --panelColorDark: transparent;
+    --panelColorNormal: transparent;
+    --sectionHeaderColor: transparent;
+    background-color: transparent;
 }
 
-.panelToolModeRow {
+/* Drag handle: title bar only */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 18rem;
+    background-color: rgba(40, 58, 74, 0.44);
+/*background-color: rgba(16, 19, 29, 0.65); */
+    cursor: move;
+}
+
+/* Title text */
+.headerText {
+    font-size: 15rem;
+    line-height: 1;
+    font-weight: 600;
+    text-transform: none;
+    color: var(--accentColorNormal);
+}
+
+/* Main body */
+.body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Body transparency */
+    background-color: rgba(16, 19, 29, 0.20);
+    /* background-color: rgba(40, 58, 74, 0.20); */
+    /* top right bottom left
+       keep side padding tiny so panel does not feel too wide */
+    padding: 5rem 0rem 5rem 0rem;
+}
+
+/* Shared inner content width for both rows */
+.rowBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    /* This is the main horizontal control for row 2 alignment */
+    width: 120rem;
+    margin: 0 auto;
+}
+
+/* Top row: Both / Left / Right / None */
+.topRow {
     display: flex;
     flex-direction: row;
-    padding-left: 0;
-    gap: 4rem;
+    align-items: center;
+    justify-content: center;
+    /* Smaller = tighter top row */
+    gap: 3rem;
 }
 
-.rowLabelNoWrap {
-    white-space: nowrap;
+/* Bottom row: UER + Contour, grouped on the right */
+.bottomRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    /* Actual vertical gap between row 1 and row 2 */
+    margin-top: 8rem;
+    margin-bottom: 4rem;
+}
+
+/* UER wrapper */
+.bottomUpdate {
+    display: flex;
+    flex: 0 0 auto;
+}
+
+/* Contour wrapper
+   margin-left is the real spacing between the 2 bottom buttons */
+.bottomContour {
+    display: flex;
+    flex: 0 0 auto;
+    margin-left: 3rem;
 }
