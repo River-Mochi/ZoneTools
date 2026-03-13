@@ -12,7 +12,7 @@ namespace ZoningToolkit
 
     [FileLocation("ModsSettings/ZoneTools/ZoneTools")]
     [SettingsUITabOrder(kActionsTab, kAboutTab)]
-    [SettingsUIGroupOrder(kActionsGrp, kCompatibilityGrp, kBindingsGrp, kAboutGrp, kAboutLinksGrp, kDebugGrp)]
+    [SettingsUIGroupOrder(kActionsGrp, kBindingsGrp, kCompatibilityGrp, kUiGrp, kAboutGrp, kAboutLinksGrp, kDebugGrp)]
     [SettingsUIShowGroupName(kAboutLinksGrp)]
     [SettingsUIKeyboardAction(Mod.kTogglePanelActionName, ActionType.Button, usages: new[] { "Game" })]
     public sealed class Setting : ModSetting
@@ -23,8 +23,9 @@ namespace ZoningToolkit
 
         // Groups
         public const string kActionsGrp = "Actions";
-        public const string kCompatibilityGrp = "Compatibility";
         public const string kBindingsGrp = "Key bindings";
+        public const string kCompatibilityGrp = "Compatibility";
+        public const string kUiGrp = "UI";
         public const string kAboutGrp = "About";
         public const string kAboutLinksGrp = "Links";
         public const string kDebugGrp = "Debug only";
@@ -42,6 +43,7 @@ namespace ZoningToolkit
             ProtectOccupiedCells = true;
             ProtectZonedCells = true;
             ShowContourButton = true;
+            UseGlassPanel = true;
 
             TogglePanelBinding = new ProxyBinding { };
         }
@@ -54,14 +56,18 @@ namespace ZoningToolkit
         [SettingsUISection(kActionsTab, kActionsGrp)]
         public bool ProtectZonedCells { get; set; } = true;
 
-        // Compatibility (Phase 1: manual user control only)
-        [SettingsUISection(kActionsTab, kCompatibilityGrp)]
-        public bool ShowContourButton { get; set; } = true;
-
         // Keybindings
         [SettingsUISection(kActionsTab, kBindingsGrp)]
         [SettingsUIKeyboardBinding(BindingKeyboard.X, Mod.kTogglePanelActionName, shift: true)]
         public ProxyBinding TogglePanelBinding { get; set; } = new ProxyBinding { };
+
+        // Compatibility
+        [SettingsUISection(kActionsTab, kCompatibilityGrp)]
+        public bool ShowContourButton { get; set; } = true;
+
+        // UI
+        [SettingsUISection(kActionsTab, kUiGrp)]
+        public bool UseGlassPanel { get; set; } = true;
 
         // ----- ABOUT TAB -----
 

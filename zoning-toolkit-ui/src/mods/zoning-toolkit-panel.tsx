@@ -8,11 +8,11 @@
 //
 // Notes:
 // - Uses React Draggable, not cs2/ui draggable.
-// - Dragging is restricted to the vanilla title-bar area.
+// - Dragging is restricted to the title bar only.
 // - grid={[5, 5]} is drag snap in JS; it is NOT CSS grid.
 // - Vanilla ToolButton still handles hover/selected/tooltip visuals.
 // - Title bar tooltip is explicit; locale entry alone does not make a tooltip appear.
-// - Swap bottomRowLeft <-> bottomRowRight below to park row 2 on left or right.
+// - bottomRowLeft is the current default; includes option to Swap to bottomRowRight later.
 
 import React from "react";
 import Draggable from "react-draggable";
@@ -94,6 +94,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const isToolEnabled = this.props.isToolEnabled === true;
         const contourEnabled = this.props.contourEnabled === true;
         const contourButtonVisible = this.props.contourButtonVisible !== false;
+        const useGlassPanel = this.props.useGlassPanel !== false;
 
         const uiVisible = this.props.uiVisible === true;
         const photomodeActive = this.props.photomodeActive === true;
@@ -101,6 +102,11 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const panelStyle = {
             display: !uiVisible || photomodeActive ? "none" : undefined,
         };
+
+        const panelClassName = [
+            panelStyles.panel,
+            useGlassPanel ? panelStyles.panelGlass : panelStyles.panelVanilla,
+        ].join(" ");
 
         const zoningModeButtonConfigs: ZoningModeButtonConfig[] = [
             {
@@ -154,7 +160,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                 handle='[class*="title-bar_"]'
             >
                 <Panel
-                    className={panelStyles.panel}
+                    className={panelClassName}
                     style={panelStyle}
                     header={
                         <DescriptionTooltip

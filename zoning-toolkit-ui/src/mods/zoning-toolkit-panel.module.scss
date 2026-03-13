@@ -5,8 +5,6 @@
 // - right: bigger = panel parks more LEFT
 // - bottom: bigger = panel parks more UP
 // - width/max-width: overall panel width
-// - outer header wrapper background-color = visible title bar tint
-// - outer content wrapper background-color = visible body tint
 // - .header height = title bar height
 // - .topRow gap = spacing between the 4 top icons
 // - .bottomRow margin-top = vertical gap between row 1 and row 2
@@ -14,6 +12,10 @@
 // - .rowBlock width:
 //     lower = tighter inner layout
 //     higher = more room inside panel
+//
+// Visual styles:
+// - .panelGlass = clearer translucent tint, no blur
+// - .panelVanilla = darker vanilla-like gray panel, no blur
 
 .panel {
     position: absolute;
@@ -30,7 +32,7 @@
     user-select: none;
     border-radius: 10rem;
     overflow: hidden;
-    /* Make vanilla shell transparent so custom wrapper tint shows through */
+    /* Kill vanilla shell fills so custom wrapper styling shows through */
     --menuPanel1: transparent;
     --menuPanel2: transparent;
     --panelColorDark: transparent;
@@ -39,45 +41,54 @@
     background-color: transparent;
 }
 
-    /* Visible outer title strip
-   This is the real glassy title bar layer. */
+    /* Shared wrapper behavior */
     .panel > div[class*="header_"] {
         width: 100% !important;
         min-height: 0 !important;
         background-image: none !important;
-        background-color: rgba(40, 58, 74, 0.34) !important;
-        backdrop-filter: blur(5px);
     }
 
-        /* Stretch the vanilla title-bar wrapper so the whole strip can drag */
         .panel > div[class*="header_"] > div[class*="title-bar_"] {
             width: 100% !important;
             cursor: move;
         }
 
-            /* Keep the title wrapper chain full-width */
             .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"],
             .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"] > div[class*="titleTooltipAnchor_"] {
                 display: block;
                 width: 100% !important;
             }
 
-    /* Visible outer body layer
-   This is what finally made the body glass work:
-   tint + blur on the REAL vanilla content wrapper, not the inner body div. */
     .panel > div[class*="content_"] {
         background-image: none !important;
-        background-color: rgba(16, 19, 29, 0.10) !important;
-        backdrop-filter: blur(5px);
     }
 
-/* Tooltip anchor for the title */
+/* Glass style: clearer translucent tint, no blur */
+.panelGlass > div[class*="header_"] {
+    background-color: rgba(40, 58, 74, 0.32) !important;
+}
+
+.panelGlass > div[class*="content_"] {
+    background-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Vanilla style: darker gray panel, still a little translucent, no blur */
+.panelVanilla > div[class*="header_"] {
+    background-color: rgba(16, 19, 29, 0.70) !important;
+}
+
+.panelVanilla > div[class*="content_"] {
+    background-image: linear-gradient( to bottom, rgba(45, 79, 92, 0.88), rgba(39, 55, 78, 0.70) ) !important;
+    background-color: transparent !important;
+}
+
+/* Tooltip anchor for title bar */
 .titleTooltipAnchor {
     display: block;
     width: 100%;
 }
 
-/* Inner title content inside the vanilla title strip */
+/* Inner drag-handle content inside the vanilla title strip */
 .header {
     display: flex;
     align-items: center;
@@ -109,7 +120,7 @@
     padding: 5rem 0rem 5rem 0rem;
 }
 
-/* Shared width used by both rows */
+/* Shared inner width for both rows */
 .rowBlock {
     display: flex;
     flex-direction: column;
@@ -118,7 +129,7 @@
     margin: 0 auto;
 }
 
-/* Row 1: Both / Left / Right / None */
+/* Top row: Both / Left / Right / None */
 .topRow {
     display: flex;
     flex-direction: row;
@@ -127,23 +138,23 @@
     gap: 3rem;
 }
 
-/* Row 2: Update Road + Contour
-   gap is the actual space between the 2 bottom buttons. */
+/* Bottom row: UER + Contour
+   gap is the real spacing between the 2 bottom buttons. */
 .bottomRow {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-top: 8rem; /* bigger = more space between row 1 and row 2 */
-    margin-bottom: 4rem;
+    margin-top: 8rem; /* bigger = more gap between row 1 and row 2 */
+    margin-bottom: 3rem;
     gap: 3rem;
 }
 
-/* Put both row-2 buttons on the LEFT side */
+/* Default: both row-2 buttons on the LEFT */
 .bottomRowLeft {
     justify-content: flex-start;
 }
 
-/* Put both row-2 buttons on the RIGHT side */
+/* Optional future variant: both row-2 buttons on the RIGHT */
 .bottomRowRight {
     justify-content: flex-end;
 }

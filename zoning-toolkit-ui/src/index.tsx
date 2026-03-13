@@ -62,6 +62,4 @@ function ZoningToolkitPanelHost() {
     return <ZoningToolkitPanel />;
 }
 
-
-
 export default register;

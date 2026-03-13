@@ -59,7 +59,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 
 ### Credits
 
-- River-mochi current author and maintainer
+- River-mochi author
 - thanks to zeeshanabid94 for original ZoningToolKit (retired)
 - yenyang for technical advisory
 - =Noel= for Chinese locale review
@@ -85,7 +85,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
-- Added transparent panel (can change from glass to gray in Options Menu)
+- Added transparent panel (change from glass to gray in Options Menu)
 - updated languages and images.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

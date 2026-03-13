@@ -98,6 +98,16 @@ namespace ZoningToolkit.Systems
                 "contour_button_visible",
                 ( ) => Mod.Settings != null && Mod.Settings.ShowContourButton));
 
+            AddUpdateBinding(new GetterValueBinding<bool>(
+                kGroup,
+                "contour_tooloptions_visible",
+                ( ) => m_Tool != null && m_UIState.visible && !m_PhotoMode!.Enabled && (m_Tool.toolEnabled || m_Tool.HasPendingEnableAfterContourHostStop)));
+
+            AddUpdateBinding(new GetterValueBinding<bool>(
+                kGroup,
+                "use_glass_panel",
+                ( ) => Mod.Settings == null || Mod.Settings.UseGlassPanel));
+
             AddBinding(new TriggerBinding<string>(
                 kGroup,
                 "zoning_mode_update",

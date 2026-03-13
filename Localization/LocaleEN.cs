@@ -33,8 +33,9 @@ namespace ZoningToolkit
 
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Actions" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp), "Compatibility" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "Key bindings" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp),  "Compatibility" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "About" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Links" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
@@ -65,18 +66,24 @@ namespace ZoningToolkit
                     "**[   ] disabled**, already zoned cells (painted RCIO) could be overwritten when using Zone Tools."
                 },
 
-                // Compatibility (Phase 1: manual user control only)
+                // Compatibility
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Contour button" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] enabled**, show the Contour button in the Zone Tools panel.\n\n" +
                     "● This lets contour lines be enabled even when no vanilla road tool is open.\n" +
-                    "● **Update Road**: when enabled, the vanilla Topography button is visible in the bottom left vanilla location.\n" +
-                    "●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●\n" +
-                    "[ ] disable this if you want to hide the contour button (smaller panel) or prefer another mod to handle terrain lines.\n" +
-                    " When this is disabled then the contour feature is only available when [Update Road] is ON.\n" +
-                    "● Even with another topography mod, leaving this on is usually still fine.\n" +
-                    "● The other mod becomes the boss and our button gets disabled/override"
+                    "● **Update Road**: when enabled, the vanilla Topography button is visible in the bottom-left vanilla location.\n" +
+                    "[ ] disable this if a smaller panel is preferred or another mod is used for terrain lines.\n" +
+                    "When disabled, contour is only available while **Update Road** is ON."
+                },
+
+                // UI
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UseGlassPanel)), "◉ Glass panel style" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.UseGlassPanel)),
+                    "**[ ✓ ] enabled**, use the clearer translucent panel style.\n" +
+                    "**[   ] disabled**, use the darker vanilla-style gray panel.\n" +
+                    "Both styles avoid blur; this is only a visual preference toggle."
                 },
 
                 // Keybinding option (Options → Mods)
@@ -92,8 +99,8 @@ namespace ZoningToolkit
                 // Debug
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Verbose debug report to log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
-                    "Write a one-time long debug report to Logs/ZoneTools.log (debug use only).\n" +
-                    "**Not needed for normal game play**; creates a huge log that you can delete."
+                    "Write a one-time longer debug report to Logs/ZoneTools.log (debug use only).\n" +
+                    "**Not needed for normal game play**; creates a huge log (you can delete)."
                 },
 
                 // -----------------------------------------------------------------
@@ -102,9 +109,7 @@ namespace ZoningToolkit
                 { "ZoneTools.UI.Tooltip.TitleBar", "Drag panel from the title bar." },
 
                 { "ZoneTools.UI.UpdateRoad", "Update Road" },
-                { "ZoneTools.UI.Tooltip.UpdateRoad",
-                    "Edit Existing roads ON / OFF"
-                },
+                { "ZoneTools.UI.Tooltip.UpdateRoad", "Edit Existing roads ON / OFF" },
 
                 { "ZoneTools.UI.Contour", "Contour" },
                 { "ZoneTools.UI.Tooltip.Contour", "Show Terrain lines." },
@@ -116,7 +121,7 @@ namespace ZoningToolkit
 
                 // GameTopLeft button tooltip
                 { "ZoneTools.UI.Fab.Title", "Zone Tools" },
-                { "ZoneTools.UI.Fab.Desc",  "Modify zones along roads.\nShortcut: Shift+X (set in Options)\n Panel can move." },
+                { "ZoneTools.UI.Fab.Desc",  "Modify zones along roads.\nShortcut: Shift+X (set in Options)\nPanel can move." },
             };
 
             return d;
