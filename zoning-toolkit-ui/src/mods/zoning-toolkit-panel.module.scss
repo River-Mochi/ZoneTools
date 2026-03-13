@@ -50,13 +50,18 @@
         backdrop-filter: blur(5px);
     }
 
-        /* Force the title wrapper chain to span full width,
-   so the whole title bar can act as the drag handle. */
-        .panel > div[class*="header_"] > div[class*="title-bar_"],
-        .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"],
-        .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"] > div[class*="titleTooltipAnchor_"] {
+        /* Make the whole vanilla title-bar strip span full width and behave as drag area */
+        .panel > div[class*="header_"] > div[class*="title-bar_"] {
             width: 100% !important;
+            cursor: move;
         }
+
+            /* Keep the title wrapper chain stretched across the strip */
+            .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"],
+            .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"] > div[class*="titleTooltipAnchor_"] {
+                display: block;
+                width: 100% !important;
+            }
 
     /* REAL OUTER BODY WRAPPER
    Keep blur, but use a clearer tint than the header. */
@@ -66,8 +71,7 @@
         backdrop-filter: blur(5px);
     }
 
-/* Drag handle: title bar only
-   Width 100% is important so drag works across the whole title strip. */
+/* Drag handle content inside the vanilla title strip */
 .header {
     display: flex;
     align-items: center;

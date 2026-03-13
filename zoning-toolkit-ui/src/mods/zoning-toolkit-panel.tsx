@@ -28,14 +28,15 @@ import { getModeFromString, zoneModeIconMap, ZoningMode } from "./zoning-toolkit
 
 const { ToolButton, DescriptionTooltip } = VanillaBindings.components;
 
-const kLocale_Title = "ZoneTools.UI.Fab.Title";
-const kLocale_Tooltip_TitleBar = "ZoneTools.UI.Tooltip.TitleBar";
-const kLocale_Tooltip_UpdateRoad = "ZoneTools.UI.Tooltip.UpdateRoad";
-const kLocale_Tooltip_ModeDefault = "ZoneTools.UI.Tooltip.ModeDefault";
-const kLocale_Tooltip_ModeLeft = "ZoneTools.UI.Tooltip.ModeLeft";
-const kLocale_Tooltip_ModeRight = "ZoneTools.UI.Tooltip.ModeRight";
-const kLocale_Tooltip_ModeNone = "ZoneTools.UI.Tooltip.ModeNone";
-const kLocale_Tooltip_Contour = "ZoneTools.UI.Tooltip.Contour";
+// Locale Keys tool tips
+const kLocale_Title                 = "ZoneTools.UI.Fab.Title";
+const kLocale_Tooltip_TitleBar      = "ZoneTools.UI.Tooltip.TitleBar";
+const kLocale_Tooltip_UpdateRoad    = "ZoneTools.UI.Tooltip.UpdateRoad";
+const kLocale_Tooltip_ModeDefault   = "ZoneTools.UI.Tooltip.ModeDefault";
+const kLocale_Tooltip_ModeLeft      = "ZoneTools.UI.Tooltip.ModeLeft";
+const kLocale_Tooltip_ModeRight     = "ZoneTools.UI.Tooltip.ModeRight";
+const kLocale_Tooltip_ModeNone      = "ZoneTools.UI.Tooltip.ModeNone";
+const kLocale_Tooltip_Contour       = "ZoneTools.UI.Tooltip.Contour";
 
 function translate(id: string, fallback: string): string {
     try {
@@ -141,7 +142,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
 
         const titleBarTooltip = translate(
             kLocale_Tooltip_TitleBar,
-            "Drag panel from the title bar.",
+            "Drag panel anywhere, grab the title bar",
         );
 
         return (
@@ -149,7 +150,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                 bounds="parent"
                 grid={[5, 5]}
                 enableUserSelectHack={false}
-                handle={`.${panelStyles.header}`}
+                handle='[class*="title-bar_"]'
             >
                 <Panel
                     className={panelStyles.panel}
