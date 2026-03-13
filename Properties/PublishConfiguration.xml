@@ -6,10 +6,12 @@
 	<!--Short description of the mod-->
 	<ShortDescription Value="Change zoning on any side of a road; for new roads or updating existing roads." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
-	<LongDescription>### Zone Tools Redux
+	<LongDescription>### Zone Tools
 
-- Change zoning along new roads or update existing roads. Enable zoning road sides for both/left/right/none. 
-- Finer control of where buildings will spawn, as well as placing roads close together without overlapping/conflicting zones.
+Direct control over road zoning for **new roads** and **existing roads**.
+
+- Movable floating panel (drag from title bar).
+- Optional **Contour** button synced with vanilla **topography**
 - This is the older mod with a movable panel. If you prefer icons in a static game panel, try new Easy Zoning mod (complete redesign).
 
 ### New roads
@@ -25,22 +27,23 @@
 - Select the side you want (both, left, right, none buttons).
 - Left click on roads to update zoning (supports click-and-drag to update many roads).
 - Left mouse applies the zone change. Select different icons to change.
-- New: right mouse click will also cycle the 4-zone options.
+- Right mouse click will also cycle the 4-zone options.
 
 Power Trick: if you have existing roads and do not want a new road intersecting it to alter zoning, pick **None**, then draw the new road. 
 Your existing road should keep zoning facing the same original direction you set.
 
-## Options
+## Options Menu
 
 - ✅ Protect occupied cells (buildings) 
 - ✅ Protect zoned-but-empty cells
 - ✅ Contour terrain lines button
 - ✅ Change keybind shortcut (Options menu)
+- ✅ Panel style option: **Glass** transparent or **Vanilla gray**
 
 ### Support and Feedback
 
-- if mods have use, give it a Like, it's free + easy :)
-- Feedback to Github link, or forum, or discord.
+- if the mod helped, give it a Like, it's free + easy :)
+- Feedback to Github link or discord, or forum.
 
 ### Tech notes
 
@@ -50,6 +53,7 @@ Your existing road should keep zoning facing the same original direction you set
 - Contour button will not do anything if Crosswalk, or Wide Sidewalk, etc., is selected as that is not allowed in vanilla.
 Main goal of the contour button is to show terrain lines while updating Existing roads; as a bonus, it happens to also work in other tool modes.
 Contour enables what is safe to do without overriding the game's vanilla system (e.g avoids Harmony patch).
+- Glass panel does not use blur (heavier work); uses a lighter plain transparent + tint (works in normal + Legacy mode).
 
 ### 11 Languages
 
@@ -71,6 +75,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <Screenshot Value="Properties/10-panel.jpg" />
 <Screenshot Value="Properties/30-OptionsEN.jpg" />
 <Screenshot Value="Properties/40-roads.jpg" />
+<Screenshot Value="Properties/45-glass-panel.jpg" />
 <Screenshot Value="Properties/50-OptionsCN.jpg" />
 <Screenshot Value="Properties/60-OptionsFR.jpg" />
 <!--Tag, can be set multiple times-->
@@ -78,15 +83,16 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/zone-tool.1888663/" />
 <!--Version of the mod-->
-<ModVersion Value="1.2.0" />
+<ModVersion Value="1.2.1" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
-- Added transparent panel (change from glass to gray in Options Menu)
-- updated languages and images.
+- Smaller panel redesign.
+- Added style toggle: pick Glass (transparent) or Vanilla gray in Options (no blur).
+- Updated languages and images
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />

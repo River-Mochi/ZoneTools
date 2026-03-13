@@ -33,11 +33,12 @@ namespace ZoningToolkit
 
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "操作" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp), "相容性" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "按鍵綁定" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp),  "相容性" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "介面" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "關於" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "連結" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "僅除錯" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "僅限除錯" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "模組名稱" },
@@ -51,67 +52,76 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "開啟作者的 Paradox Mods 頁面。" },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "保護已佔用格（有建築）" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● 保護已占用格子（有建築）" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] 啟用**：Zone Tools 不會更改已有建築之格子的分區深度/面積。\n" +
-                    "**[   ] 停用**：變更其下方分區時，建築可能會被判定為拆除。"
+                    "**[ ✓ ] 已啟用**，Zone Tools 不會修改已有建築格子的分區深度/範圍。\n" +
+                    "**[   ] 已關閉**，更改建築下方分區時，建築可能會被判定為需拆除。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "保護已分區但為空的格子" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 保護已分區但為空的格子" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 啟用**：Zone Tools 不會更改已分區的格子的分區深度/面積（即使為空）。\n" +
-                    "**[   ] 停用**：使用 Zone Tools 時，已分區的格子（塗抹的 RCIO）可能會被覆寫。"
+                    "**[ ✓ ] 已啟用**，Zone Tools 不會修改已分區格子（即使是空的）的分區深度/範圍。\n" +
+                    "**[   ] 已關閉**，已分區格子（已塗上的 RCIO）可能會被 Zone Tools 覆蓋。"
                 },
 
-                // Compatibility (Phase 1: manual user control only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "等高線按鈕" },
+                // Compatibility
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ 等高線按鈕" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] 已啟用**，在 Zone Tools 面板中顯示等高線按鈕。\n\n" +
-                    "在遊戲工具允許顯示地形線的地方，會使用遊戲自己的工具規則。\n" +
-                    "如果其他模組已經處理等高線/地形顯示，和/或不想顯示這個按鈕，請取消勾選此項。\n" +
-                    "即使有其他等高線/地形顯示模組，通常也可以繼續保持勾選，基本上是無害的。\n" +
-                    "那時另一個模組就會成為地形顯示的 boss。"
+                    "**[ ✓ ] 已啟用**，在 Zone Tools 面板中顯示 Contour 按鈕。\n\n" +
+                    "● 即使沒有開啟原版道路工具，也能啟用地形等高線。\n" +
+                    "● **Update Road** 開啟時，原版 **Topography** 按鈕會顯示在左下角原版位置。\n" +
+                    "[ ] 如果想要更小的面板，或使用其他模組處理地形線，可關閉此項。\n" +
+                    "關閉後，只有在 **Update Road** 為 ON 時才能使用 Contour。"
+                },
+
+                // UI
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UseGlassPanel)), "◉ 玻璃面板樣式" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.UseGlassPanel)),
+                    "**[ ✓ ] 已啟用**，使用更通透的半透明面板樣式。\n" +
+                    "**[   ] 已關閉**，使用原版風格的灰色面板（更深一些）。\n" +
+                    "兩種樣式都不使用模糊；這只是視覺偏好選項。"
                 },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "切換面板" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
-                    "用於顯示或隱藏 Zone Tools 面板的 **鍵盤** 快捷鍵（等同於點擊左上角選單圖示）。"
+                    "**鍵盤** 快捷鍵，用於顯示或隱藏 Zone Tools 面板（與點擊左上角圖示相同）。"
                 },
 
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – 切換面板" },
 
                 // Debug
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "輸出詳細除錯報告到日誌" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "將詳細除錯報告寫入日誌" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
-                    "將一次性的長除錯報告寫入 Logs/ZoneTools.log（僅供除錯）。\n" +
-                    "**一般遊玩不需要**；會產生很大的日誌檔，可自行刪除。"
+                    "向 Logs/ZoneTools.log 寫入一次較長的除錯報告（僅供除錯使用）。\n" +
+                    "**正常遊玩不需要**；會產生很大的日誌（可刪除）。"
                 },
 
                 // -----------------------------------------------------------------
                 // React UI strings
                 // -----------------------------------------------------------------
+                { "ZoneTools.UI.Tooltip.TitleBar", "可從標題列拖曳面板。" },
+
                 { "ZoneTools.UI.UpdateRoad", "更新道路" },
-                { "ZoneTools.UI.Tooltip.UpdateRoad",
-                    "Zone Tools 面板 開 / 關（可移動）"
-                },
+                { "ZoneTools.UI.Tooltip.UpdateRoad", "編輯現有道路 ON / OFF" },
 
                 { "ZoneTools.UI.Contour", "等高線" },
-                { "ZoneTools.UI.Tooltip.Contour", "切換地形線。" },
+                { "ZoneTools.UI.Tooltip.Contour", "顯示地形等高線。" },
 
-                { "ZoneTools.UI.Tooltip.ModeDefault", "兩側（預設）" },
+                { "ZoneTools.UI.Tooltip.ModeDefault", "兩側" },
                 { "ZoneTools.UI.Tooltip.ModeLeft",    "僅左側" },
                 { "ZoneTools.UI.Tooltip.ModeRight",   "僅右側" },
                 { "ZoneTools.UI.Tooltip.ModeNone",    "無" },
 
                 // GameTopLeft button tooltip
                 { "ZoneTools.UI.Fab.Title", "Zone Tools" },
-                { "ZoneTools.UI.Fab.Desc",  "沿道路修改分區。\n快捷鍵：Shift+X（在選項中設定）。" },
+                { "ZoneTools.UI.Fab.Desc",  "修改道路沿線分區。\n快捷鍵：Shift+X（可在選項中設定）\n面板可移動。" },
             };
 
             return d;

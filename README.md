@@ -3,12 +3,13 @@
 A Cities: Skylines II mod that gives direct control over road zoning: **both sides**, **left only**, **right only**, or **none**.  
 Works for **new roads** and for **updating existing roads**.
 
-This is the older Zone Tools style with a **movable panel**.  
+This is the older Zone Tools style with a **movable floating panel**.  
 For a different UI style with static in-panel icons, see **Easy Zoning**.
 
 ## How to use
 
 - Open the Zone Tools panel from the **top-left button** or press **Shift+X** by default
+- Drag the panel by its **title bar**
 - Pick a zoning mode: **Both / Left / Right / None**
 
 ### New roads
@@ -24,18 +25,23 @@ For a different UI style with static in-panel icons, see **Easy Zoning**.
 - **Left-click** roads to apply the selected mode
 - Supports **click-and-drag** to update many roads in one pass
 - **Right-click** cycles the 4 zoning modes while the Update Road tool is active
+- Roads that would actually change get a **hover highlight / blue outline**
 
 ### Contour / Topography
 
 - Optional **Contour** button in the Zone Tools panel
 - Toggles terrain contour lines for convenience
 - Syncs with the vanilla Road Tools **Topography** toggle
+- If the Contour button is disabled in Options, contour is still available while **Update Road** is ON
 
 ## Options UI Settings
 
 - ✅ Protect occupied cells (buildings)
 - ✅ Protect zoned-but-empty cells
 - ✅ Show or hide the Contour button
+- ✅ Choose panel style:
+  - **Glass** = clearer translucent panel
+  - **Vanilla gray** = darker vanilla-style panel
 - ✅ Change keybind: default **Shift+X** (rebindable in the Options menu)
 
 ## Why use it
@@ -43,12 +49,14 @@ For a different UI style with static in-panel icons, see **Easy Zoning**.
 - Fine control over where buildings will spawn
 - Easier placement of nearby roads without unwanted overlapping zoning
 - Existing roads can be updated without rebuilding them
+- Movable panel can be parked where it is least annoying
 
 ## Compatibility
 
 - No Harmony patches
 - Uses native CS2 systems
 - Safe to remove: cities still load without the mod, and roads keep the zoning edits already applied
+- Improved compatibility with other mods
 - Should work with Platter
 
 ## Languages

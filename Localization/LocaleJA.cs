@@ -28,16 +28,17 @@ namespace ZoningToolkit
                 { m_Setting.GetSettingsLocaleID(), Mod.ModName + " " + Mod.ModTag },
 
                 // Tabs
-                { m_Setting.GetOptionTabLocaleID(Setting.kActionsTab), "操作" },
+                { m_Setting.GetOptionTabLocaleID(Setting.kActionsTab), "アクション" },
                 { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "情報" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "操作" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp), "互換性" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "キー割り当て" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "アクション" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "キー設定" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp),  "互換性" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "情報" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "リンク" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "デバッグ専用" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "MOD名" },
@@ -51,67 +52,76 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "作者の Paradox Mods ページを開きます。" },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "使用中セルを保護（建物あり）" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● 使用中セルを保護（建物あり）" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] 有効**, Zone Tools は建物がすでにあるセルのゾーン深度/範囲を変更しません。\n" +
-                    "**[   ] 無効**, 下のゾーンを変更すると建物が立ち退きになる可能性があります。"
+                    "**[ ✓ ] 有効** の場合、建物があるセルのゾーン深さ/範囲を Zone Tools は変更しません。\n" +
+                    "**[   ] 無効** の場合、その下のゾーン変更で建物が廃墟化する可能性があります。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "ゾーン済みだが空のセルを保護" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● すでにゾーン済みの空セルを保護" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 有効**, Zone Tools は既にゾーン済み（空でも）のセルのゾーン深度/範囲を変更しません。\n" +
-                    "**[   ] 無効**, Zone Tools 使用時に既にゾーン済みのセル（塗り RCIO）が上書きされる可能性があります。"
+                    "**[ ✓ ] 有効** の場合、すでにゾーン済みのセル（空でも）を Zone Tools は変更しません。\n" +
+                    "**[   ] 無効** の場合、すでにゾーン済みのセル（塗った RCIO）が Zone Tools で上書きされる可能性があります。"
                 },
 
-                // Compatibility (Phase 1: manual user control only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "等高線ボタン" },
+                // Compatibility
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Contour ボタン" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] 有効**、Zone Tools パネルに等高線ボタンを表示します。\n\n" +
-                    "地形ラインが許可されている場面では、ゲーム本体のツールルールを使います。\n" +
-                    "別の MOD が等高線/地形表示を担当している場合や、ボタンを表示したくない場合は、このチェックを OFF にしてください。\n" +
-                    "別の等高線/地形表示 MOD が入っていても、これを ON のままにしておいて通常は問題なく無害です。\n" +
-                    "その場合は、もう一方の MOD が地形表示のボスになります。"
+                    "**[ ✓ ] 有効** の場合、Zone Tools パネルに Contour ボタンを表示します。\n\n" +
+                    "● vanilla の道路ツールが開いていなくても地形線を有効化できます。\n" +
+                    "● **Update Road** が有効なとき、vanilla の Topography ボタンが左下に表示されます。\n" +
+                    "[ ] 小さいパネルがいい場合や、別 MOD で地形線を扱う場合は無効化してください。\n" +
+                    "無効時は **Update Road** が ON の間だけ Contour が使えます。"
+                },
+
+                // UI
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UseGlassPanel)), "◉ ガラス風パネル" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.UseGlassPanel)),
+                    "**[ ✓ ] 有効** の場合、よりクリアな半透明パネルを使います。\n" +
+                    "**[   ] 無効** の場合、vanilla 風のグレーのパネル（やや暗め）を使います。\n" +
+                    "どちらも blur は使いません。見た目の好みだけです。"
                 },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "パネル切り替え" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
-                    "Zone Tools パネルを表示/非表示にする **キーボード** ショートカット（左上メニューアイコンのクリックと同じ）。"
+                    "**キーボード** ショートカットで Zone Tools パネルを表示/非表示します（左上アイコンと同じ）。"
                 },
 
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – パネル切り替え" },
 
                 // Debug
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "詳細デバッグレポートをログへ" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "詳細デバッグレポートをログに出力" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
-                    "Logs/ZoneTools.log に長いデバッグレポートを1回だけ書き込みます（デバッグ専用）。\n" +
-                    "**通常プレイでは不要**；巨大なログが作成され、削除できます。"
+                    "Logs/ZoneTools.log に長めのデバッグレポートを 1 回だけ書き出します（デバッグ専用）。\n" +
+                    "**通常プレイでは不要**。巨大なログを作ります（削除可）。"
                 },
 
                 // -----------------------------------------------------------------
                 // React UI strings
                 // -----------------------------------------------------------------
-                { "ZoneTools.UI.UpdateRoad", "道路を更新" },
-                { "ZoneTools.UI.Tooltip.UpdateRoad",
-                    "Zone Tools パネル ON / OFF（移動可能）"
-                },
+                { "ZoneTools.UI.Tooltip.TitleBar", "タイトルバーをつかんでパネルを移動します。" },
 
-                { "ZoneTools.UI.Contour", "等高線" },
-                { "ZoneTools.UI.Tooltip.Contour", "地形ラインの切り替え。" },
+                { "ZoneTools.UI.UpdateRoad", "Update Road" },
+                { "ZoneTools.UI.Tooltip.UpdateRoad", "既存の道路編集 ON / OFF" },
 
-                { "ZoneTools.UI.Tooltip.ModeDefault", "両側（デフォルト）" },
+                { "ZoneTools.UI.Contour", "Contour" },
+                { "ZoneTools.UI.Tooltip.Contour", "地形線を表示します。" },
+
+                { "ZoneTools.UI.Tooltip.ModeDefault", "両側" },
                 { "ZoneTools.UI.Tooltip.ModeLeft",    "左のみ" },
                 { "ZoneTools.UI.Tooltip.ModeRight",   "右のみ" },
                 { "ZoneTools.UI.Tooltip.ModeNone",    "なし" },
 
                 // GameTopLeft button tooltip
                 { "ZoneTools.UI.Fab.Title", "Zone Tools" },
-                { "ZoneTools.UI.Fab.Desc",  "道路に沿ってゾーンを調整します。\nショートカット: Shift+X（オプションで設定）。" },
+                { "ZoneTools.UI.Fab.Desc",  "道路沿いのゾーンを変更します。\nショートカット: Shift+X（オプションで変更可）\nパネルは移動できます。" },
             };
 
             return d;
