@@ -82,7 +82,7 @@ namespace ZoningToolkit
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.UseGlassPanel)),
                     "**[ ✓ ] enabled**, use the clearer translucent panel style.\n" +
-                    "**[   ] disabled**, use the darker vanilla-style gray panel.\n" +
+                    "**[   ] disabled**, use the vanilla-style gray panel (darker).\n" +
                     "Both styles avoid blur; this is only a visual preference toggle."
                 },
 
