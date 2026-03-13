@@ -29,15 +29,16 @@ namespace ZoningToolkit
 
                 // Tabs
                 { m_Setting.GetOptionTabLocaleID(Setting.kActionsTab), "Akcje" },
-                { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "Informacje" },
+                { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "O modzie" },
 
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Akcje" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp), "Zgodność" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "Skróty klawiszowe" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "Informacje" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp),  "Kompatybilność" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "O modzie" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Linki" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Tylko debug" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "Nazwa moda" },
@@ -51,67 +52,76 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadox)),  "Otwórz stronę autora na Paradox Mods." },
 
                 // Actions toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "Chroń zajęte komórki (są budynki)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● Chroń zajęte komórki (z budynkami)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru strefowania na komórkach, na których już stoi budynek.\n" +
-                    "**[   ] wyłączone**, budynki mogą zostać skazane do wyburzenia przy zmianie strefowania pod nimi."
+                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru strefy w komórkach, które mają już budynek.\n" +
+                    "**[   ] wyłączone**, budynki mogą zostać wyburzone po zmianie strefy pod nimi."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "Chroń ostrefowane, ale puste komórki" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Chroń już wyznaczone, ale puste komórki" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru strefowania na komórkach, które są już ostrefowane (nawet jeśli puste).\n" +
-                    "**[   ] wyłączone**, już ostrefowane komórki (pomalowane RCIO) mogą zostać nadpisane podczas używania Zone Tools."
+                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru już wyznaczonych komórek (nawet pustych).\n" +
+                    "**[   ] wyłączone**, już wyznaczone komórki (namalowane RCIO) mogą zostać nadpisane przez Zone Tools."
                 },
 
-                // Compatibility (Phase 1: manual user control only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Przycisk Kontury" },
+                // Compatibility
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Przycisk Contour" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] włączone**, pokazuje przycisk Kontury w panelu Zone Tools.\n\n" +
-                    "Używa własnych zasad narzędzi gry tam, gdzie linie terenu są dozwolone.\n" +
-                    "Odznacz to pole, jeśli inny mod już obsługuje kontury/topografię i/lub jeśli przycisk ma pozostać ukryty.\n" +
-                    "Pozostawienie tego włączonego zazwyczaj też jest w porządku i nieszkodliwe, nawet jeśli masz inny mod do konturów/topografii.\n" +
-                    "Tamten mod po prostu zostaje bossem topografii."
+                    "**[ ✓ ] włączone**, pokazuje przycisk Contour w panelu Zone Tools.\n\n" +
+                    "● Umożliwia włączenie linii terenu nawet wtedy, gdy nie jest otwarte żadne vanilla narzędzie drogowe.\n" +
+                    "● **Update Road**: po włączeniu vanilla przycisk Topography jest widoczny w lewym dolnym rogu.\n" +
+                    "[ ] wyłącz to, jeśli wolisz mniejszy panel albo inny mod obsługuje linie terenu.\n" +
+                    "Po wyłączeniu Contour jest dostępny tylko wtedy, gdy **Update Road** jest ON."
+                },
+
+                // UI
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UseGlassPanel)), "◉ Szklany styl panelu" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.UseGlassPanel)),
+                    "**[ ✓ ] włączone**, używa jaśniejszego półprzezroczystego panelu.\n" +
+                    "**[   ] wyłączone**, używa szarego panelu w stylu vanilla (ciemniejszego).\n" +
+                    "Oba style nie używają blur; to tylko wybór wyglądu."
                 },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Przełącz panel" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
-                    "Skrót **klawiaturowy** do pokazania lub ukrycia panelu Zone Tools (to samo co kliknięcie ikony menu w lewym górnym rogu)."
+                    "**Skrót klawiaturowy** do pokazywania lub ukrywania panelu Zone Tools (to samo co ikona w lewym górnym rogu)."
                 },
 
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Przełącz panel" },
 
                 // Debug
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Szczegółowy raport debug do logu" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Zapisz szczegółowy raport debug do logu" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
-                    "Zapisz jednorazowy długi raport debug do Logs/ZoneTools.log (tylko do debugowania).\n" +
-                    "**Niepotrzebne w normalnej rozgrywce**; tworzy ogromny log, który można usunąć."
+                    "Zapisuje jednorazowo dłuższy raport debug do Logs/ZoneTools.log (tylko do debugowania).\n" +
+                    "**Niepotrzebne w normalnej grze**; tworzy ogromny log (można usunąć)."
                 },
 
                 // -----------------------------------------------------------------
                 // React UI strings
                 // -----------------------------------------------------------------
-                { "ZoneTools.UI.UpdateRoad", "Aktualizuj drogę" },
-                { "ZoneTools.UI.Tooltip.UpdateRoad",
-                    "Panel Zone Tools WŁ. / WYŁ. (przesuwalny)"
-                },
+                { "ZoneTools.UI.Tooltip.TitleBar", "Przeciągnij panel za pasek tytułu." },
 
-                { "ZoneTools.UI.Contour", "Kontury" },
-                { "ZoneTools.UI.Tooltip.Contour", "Przełącz linie terenu." },
+                { "ZoneTools.UI.UpdateRoad", "Update Road" },
+                { "ZoneTools.UI.Tooltip.UpdateRoad", "Edycja istniejących dróg ON / OFF" },
 
-                { "ZoneTools.UI.Tooltip.ModeDefault", "Obie strony (domyślnie)" },
+                { "ZoneTools.UI.Contour", "Contour" },
+                { "ZoneTools.UI.Tooltip.Contour", "Pokaż linie terenu." },
+
+                { "ZoneTools.UI.Tooltip.ModeDefault", "Obie strony" },
                 { "ZoneTools.UI.Tooltip.ModeLeft",    "Tylko lewa" },
                 { "ZoneTools.UI.Tooltip.ModeRight",   "Tylko prawa" },
                 { "ZoneTools.UI.Tooltip.ModeNone",    "Brak" },
 
                 // GameTopLeft button tooltip
                 { "ZoneTools.UI.Fab.Title", "Zone Tools" },
-                { "ZoneTools.UI.Fab.Desc",  "Modyfikuj strefowanie wzdłuż dróg.\nSkrót: Shift+X (ustaw w Opcjach)." },
+                { "ZoneTools.UI.Fab.Desc",  "Modyfikuje strefy wzdłuż dróg.\nSkrót: Shift+X (ustawiany w Opcjach)\nPanel można przesuwać." },
             };
 
             return d;

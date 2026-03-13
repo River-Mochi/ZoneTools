@@ -1,28 +1,160 @@
-// src/mods/zoning-toolkit-panel.module.scss
-// Floating, draggable Zone Tools panel styling.
-// Keep minimal so vanilla handles visuals/layout as much as possible.
-
+// File: src/mods/zoning-toolkit-panel.module.scss
+// Zone Tools floating panel styling.
+//
+// Tuning guide:
+// - right: bigger = panel parks more LEFT
+// - bottom: bigger = panel parks more UP
+// - width/max-width: overall panel width
+// - .header height = title bar height
+// - .topRow gap = spacing between the 4 top icons
+// - .bottomRow margin-top = vertical gap between row 1 and row 2
+// - .bottomRow gap = spacing between UER and Contour
+// - .rowBlock width:
+//     lower = tighter inner layout
+//     higher = more room inside panel
+//
+// Visual styles:
+// - .panelGlass = clearer translucent tint, no blur
+// - .panelVanilla = darker vanilla-like gray panel, no blur
 
 .panel {
     position: absolute;
-    /* Default: bottom-right, but nudged left a bit */
-    /* Move more left: increase right, Move more up: increase bottom  */
-    right: 366rem;
+    /* Default parking spot
+       increase right = move more left
+       increase bottom = move more up */
+    right: 372rem;
     bottom: 125rem;
-    /* Make sure old top-based placement can’t interfere */
     top: auto;
     left: auto;
-    max-width: 300rem;
+    /* Overall panel width */
+    width: 129rem;
+    max-width: 129rem;
     user-select: none;
+    border-radius: 10rem;
+    overflow: hidden;
+    /* Kill vanilla shell fills so custom wrapper styling shows through */
+    --menuPanel1: transparent;
+    --menuPanel2: transparent;
+    --panelColorDark: transparent;
+    --panelColorNormal: transparent;
+    --sectionHeaderColor: transparent;
+    background-color: transparent;
 }
 
-.panelToolModeRow {
+    /* Shared wrapper behavior */
+    .panel > div[class*="header_"] {
+        width: 100% !important;
+        min-height: 0 !important;
+        background-image: none !important;
+    }
+
+        .panel > div[class*="header_"] > div[class*="title-bar_"] {
+            width: 100% !important;
+            cursor: move;
+        }
+
+            .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"],
+            .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"] > div[class*="titleTooltipAnchor_"] {
+                display: block;
+                width: 100% !important;
+            }
+
+    .panel > div[class*="content_"] {
+        background-image: none !important;
+    }
+
+/* Glass style: clearer translucent tint, no blur */
+.panelGlass > div[class*="header_"] {
+    background-color: rgba(40, 58, 74, 0.32) !important;
+}
+
+.panelGlass > div[class*="content_"] {
+    background-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Vanilla style: darker gray panel, still a little translucent, no blur */
+.panelVanilla > div[class*="header_"] {
+    background-color: rgba(16, 19, 29, 0.70) !important;
+}
+
+.panelVanilla > div[class*="content_"] {
+    background-image: linear-gradient( to bottom, rgba(45, 79, 92, 0.88), rgba(39, 55, 78, 0.70) ) !important;
+    background-color: transparent !important;
+}
+
+/* Tooltip anchor for title bar */
+.titleTooltipAnchor {
+    display: block;
+    width: 100%;
+}
+
+/* Inner drag-handle content inside the vanilla title strip */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 16rem; /* lower = shorter title bar */
+    background-color: transparent;
+    cursor: move;
+}
+
+/* Title text */
+.headerText {
+    font-size: 15rem;
+    line-height: 1;
+    font-weight: 600;
+    text-transform: none !important;
+    color: var(--accentColorNormal);
+    background-color: transparent;
+    background-image: none;
+}
+
+/* Inner body stays transparent
+   Real tint lives on the OUTER content wrapper above. */
+.body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    padding: 5rem 0rem 5rem 0rem;
+}
+
+/* Shared inner width for both rows */
+.rowBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 120rem;
+    margin: 0 auto;
+}
+
+/* Top row: Both / Left / Right / None */
+.topRow {
     display: flex;
     flex-direction: row;
-    padding-left: 0;
-    gap: 4rem;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
 }
 
-.rowLabelNoWrap {
-    white-space: nowrap;
+/* Bottom row: UER + Contour
+   gap is the real spacing between the 2 bottom buttons. */
+.bottomRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 8rem; /* bigger = more gap between row 1 and row 2 */
+    margin-bottom: 3rem;
+    gap: 3rem;
+}
+
+/* Default: both row-2 buttons on the LEFT */
+.bottomRowLeft {
+    justify-content: flex-start;
+}
+
+/* Optional future variant: both row-2 buttons on the RIGHT */
+.bottomRowRight {
+    justify-content: flex-end;
 }

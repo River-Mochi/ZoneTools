@@ -2,7 +2,7 @@
 // Purpose: Global UI state for Zone Tools (Zustand store + Cohtml event wiring + HOC).
 // Notes:
 // - C# is source of truth for: visible, tool_enabled, photomode, contour_enabled,
-//   contour_button_visible, contour_tooloptions_visible.
+//   contour_button_visible, contour_tooloptions_visible, use_glass_panel.
 // - Avoid echo loops: never call JS->C# setters inside C# subscription callbacks.
 
 import engine, { EventHandle } from "cohtml/cohtml";
@@ -33,6 +33,9 @@ export interface ModUIState {
     // From C# active-tool context (wait for C# update).
     contourToolOptionsVisible: boolean;
 
+    // From C# UI settings (wait for C# update).
+    useGlassPanel: boolean;
+
     updateZoningMode: (newValue: string) => void;
     requestToolEnabled: (newValue: boolean) => void;
     requestToggleContourLines: () => void;
@@ -55,6 +58,7 @@ export const useModUIStore = create<ModUIState>((set) => ({
     contourEnabled: false,
     contourButtonVisible: true,
     contourToolOptionsVisible: false,
+    useGlassPanel: true,
 
     updateUiVisible: (newValue: boolean) => {
         debugLog("[ZoneTools] visible <- C#", newValue);
@@ -119,6 +123,11 @@ export const setupSubscriptions = (): void => {
     subscribeOnce<boolean>("contour_tooloptions_visible", (visible) => {
         debugLog("[ZoneTools] contour_tooloptions_visible <- C#", visible);
         useModUIStore.setState({ contourToolOptionsVisible: visible === true });
+    });
+
+    subscribeOnce<boolean>("use_glass_panel", (enabled) => {
+        debugLog("[ZoneTools] use_glass_panel <- C#", enabled);
+        useModUIStore.setState({ useGlassPanel: enabled === true });
     });
 };
 

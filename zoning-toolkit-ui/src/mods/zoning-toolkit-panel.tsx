@@ -1,12 +1,22 @@
 // File: src/mods/zoning-toolkit-panel.tsx
-// Floating panel for Zone Tools (zoning mode picker + update tool toggle + contour toggle).
+// Zone Tools floating panel.
+//
+// Layout:
+// - Transparent custom title bar (drag handle)
+// - Row 1: Both / Left / Right / None
+// - Row 2: Update Road + Contour
+//
 // Notes:
-// - Panel visibility is driven by C# (Shift+X / FAB triggers C# which updates visible).
-// - tool_enabled / contour_enabled / contour_button_visible are C#-confirmed.
+// - Uses React Draggable, not cs2/ui draggable.
+// - Dragging is restricted to the title bar only.
+// - grid={[5, 5]} is drag snap in JS; it is NOT CSS grid.
+// - Vanilla ToolButton still handles hover/selected/tooltip visuals.
+// - Title bar tooltip is explicit; locale entry alone does not make a tooltip appear.
+// - bottomRowLeft is the current default; includes option to Swap to bottomRowRight later.
 
 import React from "react";
 import Draggable from "react-draggable";
-import { Panel, PanelSection, PanelSectionRow } from "cs2/ui";
+import { Panel } from "cs2/ui";
 import engine from "cohtml/cohtml";
 
 import updateToolIcon from "../../assets/icons/replace_tool_icon.svg";
@@ -17,22 +27,25 @@ import panelStyles from "./zoning-toolkit-panel.module.scss";
 import VanillaBindings from "./vanilla-bindings";
 import { getModeFromString, zoneModeIconMap, ZoningMode } from "./zoning-toolkit-utils";
 
-const { ToolButton } = VanillaBindings.components;
+const { ToolButton, DescriptionTooltip } = VanillaBindings.components;
 
-const kLocale_UpdateRoadLabel = "ZoneTools.UI.UpdateRoad";
+// Locale keys
+const kLocale_Title = "ZoneTools.UI.Fab.Title";
+const kLocale_Tooltip_TitleBar = "ZoneTools.UI.Tooltip.TitleBar";
 const kLocale_Tooltip_UpdateRoad = "ZoneTools.UI.Tooltip.UpdateRoad";
 const kLocale_Tooltip_ModeDefault = "ZoneTools.UI.Tooltip.ModeDefault";
 const kLocale_Tooltip_ModeLeft = "ZoneTools.UI.Tooltip.ModeLeft";
 const kLocale_Tooltip_ModeRight = "ZoneTools.UI.Tooltip.ModeRight";
 const kLocale_Tooltip_ModeNone = "ZoneTools.UI.Tooltip.ModeNone";
-
-const kLocale_ContourLabel = "ZoneTools.UI.Contour";
 const kLocale_Tooltip_Contour = "ZoneTools.UI.Tooltip.Contour";
 
 function translate(id: string, fallback: string): string {
     try {
         const value = engine.translate(id);
-        if (!value || value === id) return fallback;
+        if (!value || value === id) {
+            return fallback;
+        }
+
         return value;
     } catch {
         return fallback;
@@ -52,6 +65,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
             this.props.updateZoningMode(zoningMode.toString());
             return;
         }
+
         useModUIStore.getState().updateZoningMode(zoningMode.toString());
     }
 
@@ -60,6 +74,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
             this.props.requestToolEnabled(enabled);
             return;
         }
+
         useModUIStore.getState().requestToolEnabled(enabled);
     }
 
@@ -68,6 +83,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
             this.props.requestToggleContourLines();
             return;
         }
+
         useModUIStore.getState().requestToggleContourLines();
     }
 
@@ -78,6 +94,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const isToolEnabled = this.props.isToolEnabled === true;
         const contourEnabled = this.props.contourEnabled === true;
         const contourButtonVisible = this.props.contourButtonVisible !== false;
+        const useGlassPanel = this.props.useGlassPanel !== false;
 
         const uiVisible = this.props.uiVisible === true;
         const photomodeActive = this.props.photomodeActive === true;
@@ -86,12 +103,17 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
             display: !uiVisible || photomodeActive ? "none" : undefined,
         };
 
+        const panelClassName = [
+            panelStyles.panel,
+            useGlassPanel ? panelStyles.panelGlass : panelStyles.panelVanilla,
+        ].join(" ");
+
         const zoningModeButtonConfigs: ZoningModeButtonConfig[] = [
             {
                 icon: zoneModeIconMap[ZoningMode.DEFAULT],
                 mode: ZoningMode.DEFAULT,
                 tooltipKey: kLocale_Tooltip_ModeDefault,
-                tooltipFallback: "Both (default)",
+                tooltipFallback: "Both sides",
             },
             {
                 icon: zoneModeIconMap[ZoningMode.LEFT],
@@ -113,40 +135,62 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
             },
         ];
 
-        const updateRoadLabel = translate(kLocale_UpdateRoadLabel, "Update Road");
+        const titleText = translate(kLocale_Title, "Zone Tools");
+
         const updateRoadTooltip = translate(
             kLocale_Tooltip_UpdateRoad,
             "Toggle update panel ON / OFF (for existing roads).",
         );
 
-        const contourLabel = translate(kLocale_ContourLabel, "Contour");
-        const contourTooltip = translate(kLocale_Tooltip_Contour, "Terrain lines toggle.");
+        const contourTooltip = translate(
+            kLocale_Tooltip_Contour,
+            "Terrain lines toggle.",
+        );
+
+        const titleBarTooltip = translate(
+            kLocale_Tooltip_TitleBar,
+            "Drag panel from the title bar.",
+        );
 
         return (
-            <Draggable bounds="parent" grid={[5, 5]} enableUserSelectHack={false}>
-                <Panel className={panelStyles.panel} header="Zone Tools" style={panelStyle}>
-                    <PanelSection>
-                        <PanelSectionRow
-                            left={null}
-                            right={
-                                <div className={panelStyles.panelToolModeRow}>
-                                    {zoningModeButtonConfigs.map((config) => (
-                                        <ToolButton
-                                            key={config.mode}
-                                            focusKey={VanillaBindings.common.focus.disabled}
-                                            selected={currentZoningMode === config.mode}
-                                            src={config.icon}
-                                            tooltip={translate(config.tooltipKey, config.tooltipFallback)}
-                                            onSelect={() => this.handleZoneModeSelect(config.mode)}
-                                        />
-                                    ))}
+            <Draggable
+                bounds="parent"
+                grid={[1, 1]}
+                enableUserSelectHack={false}
+                handle='[class*="title-bar_"]'
+            >
+                <Panel
+                    className={panelClassName}
+                    style={panelStyle}
+                    header={
+                        <DescriptionTooltip
+                            title={titleText}
+                            description={titleBarTooltip}
+                        >
+                            <div className={panelStyles.titleTooltipAnchor}>
+                                <div className={panelStyles.header}>
+                                    <div className={panelStyles.headerText}>{titleText}</div>
                                 </div>
-                            }
-                        />
+                            </div>
+                        </DescriptionTooltip>
+                    }
+                >
+                    <div className={panelStyles.body}>
+                        <div className={panelStyles.rowBlock}>
+                            <div className={panelStyles.topRow}>
+                                {zoningModeButtonConfigs.map((config) => (
+                                    <ToolButton
+                                        key={config.mode}
+                                        focusKey={VanillaBindings.common.focus.disabled}
+                                        selected={currentZoningMode === config.mode}
+                                        src={config.icon}
+                                        tooltip={translate(config.tooltipKey, config.tooltipFallback)}
+                                        onSelect={() => this.handleZoneModeSelect(config.mode)}
+                                    />
+                                ))}
+                            </div>
 
-                        <PanelSectionRow
-                            left={<span className={panelStyles.rowLabelNoWrap}>{updateRoadLabel}</span>}
-                            right={
+                            <div className={`${panelStyles.bottomRow} ${panelStyles.bottomRowLeft}`}>
                                 <ToolButton
                                     focusKey={VanillaBindings.common.focus.disabled}
                                     selected={isToolEnabled}
@@ -154,13 +198,8 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                                     tooltip={updateRoadTooltip}
                                     onSelect={() => this.handleZoneToolSelect(!isToolEnabled)}
                                 />
-                            }
-                        />
 
-                        {contourButtonVisible ? (
-                            <PanelSectionRow
-                                left={<span className={panelStyles.rowLabelNoWrap}>{contourLabel}</span>}
-                                right={
+                                {contourButtonVisible ? (
                                     <ToolButton
                                         focusKey={VanillaBindings.common.focus.disabled}
                                         selected={contourEnabled}
@@ -168,10 +207,10 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                                         tooltip={contourTooltip}
                                         onSelect={() => this.handleContourSelect()}
                                     />
-                                }
-                            />
-                        ) : null}
-                    </PanelSection>
+                                ) : null}
+                            </div>
+                        </div>
+                    </div>
                 </Panel>
             </Draggable>
         );
