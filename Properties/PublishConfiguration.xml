@@ -85,17 +85,8 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
-Major upgrade
-- adds hover highlight/ change indication (blue outline on road).
-- moved default panel location to bottom right.
-- added contour terrain button to the ZT panel.
-- surfaces vanilla Topography button, and syncs ZT-contour to it.
-- added vanilla game sound effects.
+- Added transparent panel (can change from glass to gray in Options Menu)
 - updated languages and images.
-- changed shortcut to Shift+x to reduce conflicts. 
-- removed option to auto open/close the Zone Tools panel when the New Roads panel opens.
-- improved compatibility with other mods.
-- UX solved: removed huge Road Services panel requirement for Update Road + contour host flow
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />

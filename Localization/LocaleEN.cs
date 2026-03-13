@@ -116,7 +116,7 @@ namespace ZoningToolkit
 
                 // GameTopLeft button tooltip
                 { "ZoneTools.UI.Fab.Title", "Zone Tools" },
-                { "ZoneTools.UI.Fab.Desc",  "Modify zoning along roads.\nShortcut: Shift+X (set in Options)\n Panel can move." },
+                { "ZoneTools.UI.Fab.Desc",  "Modify zones along roads.\nShortcut: Shift+X (set in Options)\n Panel can move." },
             };
 
             return d;

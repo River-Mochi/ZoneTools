@@ -4,14 +4,15 @@
 // Layout:
 // - Transparent custom title bar (drag handle)
 // - Row 1: Both / Left / Right / None
-// - Row 2: Update Road + Contour, grouped on the right
+// - Row 2: Update Road + Contour
 //
 // Notes:
 // - Uses React Draggable, not cs2/ui draggable.
-// - Dragging is restricted to the title bar only.
+// - Dragging is restricted to the vanilla title-bar area.
 // - grid={[5, 5]} is drag snap in JS; it is NOT CSS grid.
 // - Vanilla ToolButton still handles hover/selected/tooltip visuals.
 // - Title bar tooltip is explicit; locale entry alone does not make a tooltip appear.
+// - Swap bottomRowLeft <-> bottomRowRight below to park row 2 on left or right.
 
 import React from "react";
 import Draggable from "react-draggable";
@@ -28,15 +29,15 @@ import { getModeFromString, zoneModeIconMap, ZoningMode } from "./zoning-toolkit
 
 const { ToolButton, DescriptionTooltip } = VanillaBindings.components;
 
-// Locale Keys tool tips
-const kLocale_Title                 = "ZoneTools.UI.Fab.Title";
-const kLocale_Tooltip_TitleBar      = "ZoneTools.UI.Tooltip.TitleBar";
-const kLocale_Tooltip_UpdateRoad    = "ZoneTools.UI.Tooltip.UpdateRoad";
-const kLocale_Tooltip_ModeDefault   = "ZoneTools.UI.Tooltip.ModeDefault";
-const kLocale_Tooltip_ModeLeft      = "ZoneTools.UI.Tooltip.ModeLeft";
-const kLocale_Tooltip_ModeRight     = "ZoneTools.UI.Tooltip.ModeRight";
-const kLocale_Tooltip_ModeNone      = "ZoneTools.UI.Tooltip.ModeNone";
-const kLocale_Tooltip_Contour       = "ZoneTools.UI.Tooltip.Contour";
+// Locale keys
+const kLocale_Title = "ZoneTools.UI.Fab.Title";
+const kLocale_Tooltip_TitleBar = "ZoneTools.UI.Tooltip.TitleBar";
+const kLocale_Tooltip_UpdateRoad = "ZoneTools.UI.Tooltip.UpdateRoad";
+const kLocale_Tooltip_ModeDefault = "ZoneTools.UI.Tooltip.ModeDefault";
+const kLocale_Tooltip_ModeLeft = "ZoneTools.UI.Tooltip.ModeLeft";
+const kLocale_Tooltip_ModeRight = "ZoneTools.UI.Tooltip.ModeRight";
+const kLocale_Tooltip_ModeNone = "ZoneTools.UI.Tooltip.ModeNone";
+const kLocale_Tooltip_Contour = "ZoneTools.UI.Tooltip.Contour";
 
 function translate(id: string, fallback: string): string {
     try {
@@ -142,7 +143,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
 
         const titleBarTooltip = translate(
             kLocale_Tooltip_TitleBar,
-            "Drag panel anywhere, grab the title bar",
+            "Drag panel from the title bar.",
         );
 
         return (
@@ -184,26 +185,22 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                             </div>
 
                             <div className={`${panelStyles.bottomRow} ${panelStyles.bottomRowLeft}`}>
-                                <div className={panelStyles.bottomUpdate}>
-                                    <ToolButton
-                                        focusKey={VanillaBindings.common.focus.disabled}
-                                        selected={isToolEnabled}
-                                        src={updateToolIcon}
-                                        tooltip={updateRoadTooltip}
-                                        onSelect={() => this.handleZoneToolSelect(!isToolEnabled)}
-                                    />
-                                </div>
+                                <ToolButton
+                                    focusKey={VanillaBindings.common.focus.disabled}
+                                    selected={isToolEnabled}
+                                    src={updateToolIcon}
+                                    tooltip={updateRoadTooltip}
+                                    onSelect={() => this.handleZoneToolSelect(!isToolEnabled)}
+                                />
 
                                 {contourButtonVisible ? (
-                                    <div className={panelStyles.bottomContour}>
-                                        <ToolButton
-                                            focusKey={VanillaBindings.common.focus.disabled}
-                                            selected={contourEnabled}
-                                            src={contourIcon}
-                                            tooltip={contourTooltip}
-                                            onSelect={() => this.handleContourSelect()}
-                                        />
-                                    </div>
+                                    <ToolButton
+                                        focusKey={VanillaBindings.common.focus.disabled}
+                                        selected={contourEnabled}
+                                        src={contourIcon}
+                                        tooltip={contourTooltip}
+                                        onSelect={() => this.handleContourSelect()}
+                                    />
                                 ) : null}
                             </div>
                         </div>

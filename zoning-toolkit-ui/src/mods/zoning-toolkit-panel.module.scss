@@ -10,7 +10,7 @@
 // - .header height = title bar height
 // - .topRow gap = spacing between the 4 top icons
 // - .bottomRow margin-top = vertical gap between row 1 and row 2
-// - .bottomContour margin-left = spacing between the 2 bottom icons
+// - .bottomRow gap = spacing between UER and Contour
 // - .rowBlock width:
 //     lower = tighter inner layout
 //     higher = more room inside panel
@@ -30,7 +30,7 @@
     user-select: none;
     border-radius: 10rem;
     overflow: hidden;
-    /* Kill vanilla shell fills so custom wrapper styling shows through */
+    /* Make vanilla shell transparent so custom wrapper tint shows through */
     --menuPanel1: transparent;
     --menuPanel2: transparent;
     --panelColorDark: transparent;
@@ -39,9 +39,8 @@
     background-color: transparent;
 }
 
-    /* REAL OUTER TITLE BAR WRAPPER
-   This is the visible title strip.
-   Darker than body, but still glassy. */
+    /* Visible outer title strip
+   This is the real glassy title bar layer. */
     .panel > div[class*="header_"] {
         width: 100% !important;
         min-height: 0 !important;
@@ -50,34 +49,41 @@
         backdrop-filter: blur(5px);
     }
 
-        /* Make the whole vanilla title-bar strip span full width and behave as drag area */
+        /* Stretch the vanilla title-bar wrapper so the whole strip can drag */
         .panel > div[class*="header_"] > div[class*="title-bar_"] {
             width: 100% !important;
             cursor: move;
         }
 
-            /* Keep the title wrapper chain stretched across the strip */
+            /* Keep the title wrapper chain full-width */
             .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"],
             .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"] > div[class*="titleTooltipAnchor_"] {
                 display: block;
                 width: 100% !important;
             }
 
-    /* REAL OUTER BODY WRAPPER
-   Keep blur, but use a clearer tint than the header. */
+    /* Visible outer body layer
+   This is what finally made the body glass work:
+   tint + blur on the REAL vanilla content wrapper, not the inner body div. */
     .panel > div[class*="content_"] {
         background-image: none !important;
         background-color: rgba(16, 19, 29, 0.10) !important;
         backdrop-filter: blur(5px);
     }
 
-/* Drag handle content inside the vanilla title strip */
+/* Tooltip anchor for the title */
+.titleTooltipAnchor {
+    display: block;
+    width: 100%;
+}
+
+/* Inner title content inside the vanilla title strip */
 .header {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 16rem; /* lower this to shorten the title bar more */
+    height: 16rem; /* lower = shorter title bar */
     background-color: transparent;
     cursor: move;
 }
@@ -93,8 +99,8 @@
     background-image: none;
 }
 
-/* Inner body
-   Keep transparent. The visible body tint lives on the OUTER content wrapper above. */
+/* Inner body stays transparent
+   Real tint lives on the OUTER content wrapper above. */
 .body {
     display: flex;
     flex-direction: column;
@@ -103,7 +109,7 @@
     padding: 5rem 0rem 5rem 0rem;
 }
 
-/* Shared inner content width for both rows */
+/* Shared width used by both rows */
 .rowBlock {
     display: flex;
     flex-direction: column;
@@ -112,7 +118,7 @@
     margin: 0 auto;
 }
 
-/* Top row: Both / Left / Right / None */
+/* Row 1: Both / Left / Right / None */
 .topRow {
     display: flex;
     flex-direction: row;
@@ -121,33 +127,23 @@
     gap: 3rem;
 }
 
-/* Bottom row: UER + Contour */
+/* Row 2: Update Road + Contour
+   gap is the actual space between the 2 bottom buttons. */
 .bottomRow {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-top: 8rem; /* bigger = more gap between row 1 and row 2 */
+    margin-top: 8rem; /* bigger = more space between row 1 and row 2 */
     margin-bottom: 4rem;
-    gap: 0rem; /* actual icon spacing handled by .bottomContour margin-left */
+    gap: 3rem;
 }
 
-/* Put both buttons on the LEFT side of row 2 */
+/* Put both row-2 buttons on the LEFT side */
 .bottomRowLeft {
     justify-content: flex-start;
 }
 
-/* Put both buttons on the RIGHT side of row 2 */
+/* Put both row-2 buttons on the RIGHT side */
 .bottomRowRight {
     justify-content: flex-end;
-}
-
-.bottomUpdate {
-    display: flex;
-    flex: 0 0 auto;
-}
-
-.bottomContour {
-    display: flex;
-    flex: 0 0 auto;
-    margin-left: 3rem; /* real gap between the 2 bottom icons */
 }
