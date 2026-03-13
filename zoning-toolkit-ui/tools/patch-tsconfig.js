@@ -22,8 +22,6 @@ function readTsconfig() {
 
     const raw = fs.readFileSync(tsconfigPath, "utf8");
 
-    // tsconfig is JSONC-ish, but your file is plain JSON with a trailing comma.
-    // Clean commas so JSON.parse won’t choke and editors won’t warn.
     const cleaned = stripTrailingCommas(raw);
 
     let parsed;
@@ -50,10 +48,10 @@ function patchTsconfig(tsconfig) {
     if (!tsconfig.compilerOptions) tsconfig.compilerOptions = {};
     const co = tsconfig.compilerOptions;
 
-    // Ensure JSX runtime is enabled (you already have this; we keep it)
+    // Ensure JSX runtime is enabled
     co.jsx = co.jsx ?? "react-jsx";
 
-    // The important fix:
+    // important fix:
     // Keep CS2 injected typings AND restore normal @types lookup.
     // Using relative paths that work from repo root.
     const desiredTypeRoots = ["./types", "./node_modules/@types"];

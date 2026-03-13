@@ -29,7 +29,7 @@ export default tseslint.config(
     // Base TS rules (no type-checking)
     ...tseslint.configs.recommended,
 
-    // Lint ONLY your actual mod source
+    // Lint ONLY actual mod source
     {
         files: ["src/**/*.{ts,tsx,js,jsx}"],
         languageOptions: {
