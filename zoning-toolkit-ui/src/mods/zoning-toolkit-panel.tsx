@@ -155,7 +155,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         return (
             <Draggable
                 bounds="parent"
-                grid={[5, 5]}
+                grid={[1, 1]}
                 enableUserSelectHack={false}
                 handle='[class*="title-bar_"]'
             >
