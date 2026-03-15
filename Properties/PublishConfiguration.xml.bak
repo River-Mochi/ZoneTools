@@ -53,6 +53,7 @@ Your existing road should keep zoning facing the same original direction you set
 - Contour button will not do anything if Crosswalk, or Wide Sidewalk, etc., is selected as that is not allowed in vanilla.
 Main goal of the contour button is to show terrain lines while updating Existing roads; as a bonus, it happens to also work in other tool modes.
 Contour enables what is safe to do without overriding the game's vanilla system (e.g avoids Harmony patch).
+- Glass panel does not use blur (heavier work); uses a lighter plain transparent + tint (works in normal + Legacy mode).
 
 ### 11 Languages
 
@@ -62,8 +63,8 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 
 ### Credits
 
-- River-mochi author
-- thanks to zeeshanabid94 for original ZoningToolKit (retired)
+   - River-mochi author
+    - thanks to zeeshanabid94 for original ZoningToolKit (retired)
 - yenyang for technical advisory
 - =Noel= for Chinese locale review
 
@@ -74,6 +75,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <Screenshot Value="Properties/10-panel.jpg" />
 <Screenshot Value="Properties/30-OptionsEN.jpg" />
 <Screenshot Value="Properties/40-roads.jpg" />
+<Screenshot Value="Properties/45-glass-panel.jpg" />
 <Screenshot Value="Properties/50-OptionsCN.jpg" />
 <Screenshot Value="Properties/60-OptionsFR.jpg" />
 <!--Tag, can be set multiple times-->
@@ -81,7 +83,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/zone-tool.1888663/" />
 <!--Version of the mod-->
-<ModVersion Value="1.2." />
+<ModVersion Value="" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple times-->
