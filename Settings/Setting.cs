@@ -13,10 +13,17 @@ namespace ZoningToolkit
     [FileLocation("ModsSettings/ZoneTools/ZoneTools")]
     [SettingsUITabOrder(kActionsTab, kAboutTab)]
     [SettingsUIGroupOrder(kActionsGrp, kBindingsGrp, kCompatibilityGrp, kUiGrp, kAboutGrp, kAboutLinksGrp, kDebugGrp)]
-    [SettingsUIShowGroupName(kAboutLinksGrp)]
+    [SettingsUIShowGroupName(kUiGrp, kAboutLinksGrp)]
     [SettingsUIKeyboardAction(Mod.kTogglePanelActionName, ActionType.Button, usages: new[] { "Game" })]
     public sealed class Setting : ModSetting
     {
+        public enum PanelLocation
+        {
+            ScreenTopLeft,
+            ScreenBottomLeft,
+            ScreenBottomRight
+        }
+
         // Tabs
         public const string kActionsTab = "Actions";
         public const string kAboutTab = "About";
@@ -25,7 +32,7 @@ namespace ZoningToolkit
         public const string kActionsGrp = "Actions";
         public const string kBindingsGrp = "Key bindings";
         public const string kCompatibilityGrp = "Compatibility";
-        public const string kUiGrp = "UI";
+        public const string kUiGrp = "VisualOptions";
         public const string kAboutGrp = "About";
         public const string kAboutLinksGrp = "Links";
         public const string kDebugGrp = "Debug only";
@@ -44,6 +51,7 @@ namespace ZoningToolkit
             ProtectZonedCells = true;
             ShowContourButton = true;
             UseGlassPanel = true;
+            DefaultPanelLocation = PanelLocation.ScreenBottomLeft;
 
             TogglePanelBinding = new ProxyBinding { };
         }
@@ -68,6 +76,9 @@ namespace ZoningToolkit
         // UI
         [SettingsUISection(kActionsTab, kUiGrp)]
         public bool UseGlassPanel { get; set; } = true;
+
+        [SettingsUISection(kActionsTab, kUiGrp)]
+        public PanelLocation DefaultPanelLocation { get; set; } = PanelLocation.ScreenBottomLeft;
 
         // ----- ABOUT TAB -----
 

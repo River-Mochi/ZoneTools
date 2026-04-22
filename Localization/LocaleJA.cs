@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] 無効** の場合、vanilla 風のグレーのパネル（やや暗め）を使います。\n" +
                     "どちらも blur は使いません。見た目の好みだけです。"
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "パネルの既定位置" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "左上のアイコンまたは Shift+X で開いたときに、Zone Tools パネルを表示する位置を選びます。\n" +
+                    "開いた後もパネルはドラッグできます。"
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "画面左上" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "画面左下" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "画面右下" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "パネル切り替え" },

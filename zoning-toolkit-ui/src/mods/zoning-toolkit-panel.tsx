@@ -59,6 +59,18 @@ interface ZoningModeButtonConfig {
     tooltipFallback: string;
 }
 
+function getPanelLocationClass(panelLocation: string | undefined): string {
+    switch (panelLocation) {
+        case "ScreenBottomRight":
+            return panelStyles.panelScreenBottomRight;
+        case "ScreenBottomLeft":
+            return panelStyles.panelScreenBottomLeft;
+        case "ScreenTopLeft":
+        default:
+            return panelStyles.panelScreenTopLeft;
+    }
+}
+
 export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUIState>> {
     private handleZoneModeSelect(zoningMode: ZoningMode): void {
         if (this.props.updateZoningMode) {
@@ -95,9 +107,11 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const contourEnabled = this.props.contourEnabled === true;
         const contourButtonVisible = this.props.contourButtonVisible !== false;
         const useGlassPanel = this.props.useGlassPanel !== false;
+        const panelLocation = this.props.panelLocation ?? "ScreenBottomLeft";
 
         const uiVisible = this.props.uiVisible === true;
         const photomodeActive = this.props.photomodeActive === true;
+        const draggableKey = `${panelLocation}-${uiVisible ? "open" : "closed"}`;
 
         const panelStyle = {
             display: !uiVisible || photomodeActive ? "none" : undefined,
@@ -105,6 +119,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
 
         const panelClassName = [
             panelStyles.panel,
+            getPanelLocationClass(panelLocation),
             useGlassPanel ? panelStyles.panelGlass : panelStyles.panelVanilla,
         ].join(" ");
 
@@ -154,6 +169,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
 
         return (
             <Draggable
+                key={draggableKey}
                 bounds="parent"
                 grid={[1, 1]}
                 enableUserSelectHack={false}

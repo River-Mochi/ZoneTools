@@ -2,8 +2,8 @@
 // Zone Tools floating panel styling.
 //
 // Tuning guide:
-// - right: bigger = panel parks more LEFT
-// - bottom: bigger = panel parks more UP
+// - right/left: horizontal parking spot
+// - bottom/top: vertical parking spot
 // - width/max-width: overall panel width
 // - .header height = title bar height
 // - .topRow gap = spacing between the 4 top icons
@@ -19,13 +19,6 @@
 
 .panel {
     position: absolute;
-    /* Default parking spot
-       increase right = move more left
-       increase bottom = move more up */
-    right: 372rem;
-    bottom: 125rem;
-    top: auto;
-    left: auto;
     /* Overall panel width */
     width: 129rem;
     max-width: 129rem;
@@ -39,6 +32,27 @@
     --panelColorNormal: transparent;
     --sectionHeaderColor: transparent;
     background-color: transparent;
+}
+
+.panelScreenTopLeft {
+    left: 18rem;
+    top: 72rem;
+    right: auto;
+    bottom: auto;
+}
+
+.panelScreenBottomRight {
+    right: 132rem;
+    bottom: 125rem;
+    top: auto;
+    left: auto;
+}
+
+.panelScreenBottomLeft {
+    left: 18rem;
+    bottom: 125rem;
+    top: auto;
+    right: auto;
 }
 
     /* Shared wrapper behavior */

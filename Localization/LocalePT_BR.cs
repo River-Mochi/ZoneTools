@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] desativado**, usa o painel cinza estilo vanilla (mais escuro).\n" +
                     "Os dois estilos evitam blur; isso é só uma preferência visual."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "Local padrão do painel" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "Escolha onde o painel do Zone Tools aparece ao abrir pelo ícone no canto superior esquerdo ou Shift+X.\n" +
+                    "O painel ainda pode ser arrastado depois de abrir."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Tela canto superior esquerdo" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Tela canto inferior esquerdo" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Tela canto inferior direito" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Alternar painel" },

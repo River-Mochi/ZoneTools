@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] disattivo**, usa il pannello grigio stile vanilla (più scuro).\n" +
                     "Entrambi gli stili evitano il blur; è solo una preferenza visiva."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "Posizione predefinita del pannello" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "Scegli dove appare il pannello Zone Tools quando viene aperto dall'icona in alto a sinistra o con Shift+X.\n" +
+                    "Il pannello può ancora essere trascinato dopo l'apertura."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Schermo in alto a sinistra" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Schermo in basso a sinistra" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Schermo in basso a destra" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Mostra/Nascondi pannello" },

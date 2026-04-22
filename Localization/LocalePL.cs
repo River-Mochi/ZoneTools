@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] wyłączone**, używa szarego panelu w stylu vanilla (ciemniejszego).\n" +
                     "Oba style nie używają blur; to tylko wybór wyglądu."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "Domyślne położenie panelu" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "Wybierz, gdzie pojawia się panel Zone Tools po otwarciu ikoną w lewym górnym rogu lub Shift+X.\n" +
+                    "Panel nadal można przeciągać po otwarciu."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Ekran: lewy górny róg" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Ekran: lewy dolny róg" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Ekran: prawy dolny róg" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Przełącz panel" },

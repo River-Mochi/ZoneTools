@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] 已關閉**，使用原版風格的灰色面板（更深一些）。\n" +
                     "兩種樣式都不使用模糊；這只是視覺偏好選項。"
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "面板預設位置" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "選擇透過左上角圖示或 Shift+X 開啟時 Zone Tools 面板出現的位置。\n" +
+                    "面板開啟後仍然可以拖曳。"
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "螢幕左上角" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "螢幕左下角" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "螢幕右下角" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "切換面板" },

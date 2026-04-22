@@ -108,6 +108,11 @@ namespace ZoningToolkit.Systems
                 "use_glass_panel",
                 ( ) => Mod.Settings == null || Mod.Settings.UseGlassPanel));
 
+            AddUpdateBinding(new GetterValueBinding<string>(
+                kGroup,
+                "panel_location",
+                ( ) => (Mod.Settings?.DefaultPanelLocation ?? Setting.PanelLocation.ScreenBottomLeft).ToString()));
+
             AddBinding(new TriggerBinding<string>(
                 kGroup,
                 "zoning_mode_update",

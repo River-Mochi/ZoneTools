@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] deaktiviert**, verwendet das graue Panel im Vanilla-Stil (dunkler).\n" +
                     "Beide Stile vermeiden Unschärfe; das ist nur eine optische Einstellung."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "Standardposition des Panels" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "Wähle, wo das Zone Tools-Panel erscheint, wenn es über das Symbol oben links oder Shift+X geöffnet wird.\n" +
+                    "Das Panel kann danach weiterhin verschoben werden."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Bildschirm oben links" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Bildschirm unten links" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Bildschirm unten rechts" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Panel umschalten" },

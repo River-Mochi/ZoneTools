@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] 비활성화** 시, 바닐라 스타일의 회색 패널(더 어두움)을 사용합니다.\n" +
                     "두 스타일 모두 blur를 쓰지 않습니다. 단순한 시각적 선택입니다."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "패널 기본 위치" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "왼쪽 상단 아이콘이나 Shift+X로 열 때 Zone Tools 패널이 나타날 위치를 선택합니다.\n" +
+                    "패널은 열린 뒤에도 드래그할 수 있습니다."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "화면 왼쪽 상단" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "화면 왼쪽 하단" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "화면 오른쪽 하단" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "패널 토글" },
