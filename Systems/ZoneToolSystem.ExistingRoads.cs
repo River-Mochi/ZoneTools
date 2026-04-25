@@ -459,8 +459,9 @@ namespace ZoningToolkit.Systems
                 Mod.s_Log.Info($"{Mod.ModTag} activeTool                  = {activeToolId}");
                 Mod.s_Log.Info($"{Mod.ModTag} this.Enabled                = {Enabled}");
                 Mod.s_Log.Info($"{Mod.ModTag} toolEnabled                 = {toolEnabled}");
-                Mod.s_Log.Info($"{Mod.ModTag} contourHostActive           = {m_ContourHostActive}");
-                Mod.s_Log.Info($"{Mod.ModTag} pendingEnableAfterHostStop  = {m_PendingEnableAfterContourHostStop}");
+                Mod.s_Log.Info($"{Mod.ModTag} contour button option       = {Mod.Settings?.ShowContourButton ?? false}");
+                Mod.s_Log.Info($"{Mod.ModTag} contour host active         = {m_ContourHostActive}");
+                Mod.s_Log.Info($"{Mod.ModTag} resume after contour stop   = {m_PendingEnableAfterContourHostStop}");
                 Mod.s_Log.Info($"{Mod.ModTag} selectedSnap                = {selectedSnap}");
                 Mod.s_Log.Info($"{Mod.ModTag} netTool.selectedSnap        = {m_NetToolSystem.selectedSnap}");
                 Mod.s_Log.Info($"{Mod.ModTag} Diagnostic report end");
