@@ -261,8 +261,8 @@ namespace ZoningToolkit.Systems
 
         private void OnToolChanged(ToolBaseSystem tool)
         {
-            // Road build tool active => Update Road tool must not stay enabled.
-            if (m_Tool != null && m_UIState.toolEnabled && IsRoadBuildTool(tool))
+            // Vanilla road build or upgrade tools must take over cleanly.
+            if (m_Tool != null && m_UIState.toolEnabled && (IsRoadBuildTool(tool) || tool is UpgradeToolSystem))
             {
                 ToggleUpdateRoadTool(false);
                 m_UIState.toolEnabled = false;

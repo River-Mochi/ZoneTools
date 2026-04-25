@@ -22,9 +22,7 @@ namespace ZoningToolkit.Systems
             if (m_Hovered != Entity.Null && EntityManager.Exists(m_Hovered))
             {
                 ZoningMode desired = m_UISystem.CurrentZoningMode;
-                ZoningMode current = EntityManager.HasComponent<ZoningInfo>(m_Hovered)
-                    ? EntityManager.GetComponentData<ZoningInfo>(m_Hovered).zoningMode
-                    : ZoningMode.Default;
+                ZoningMode current = GetEffectiveRoadZoningMode(m_Hovered);
 
                 if (current != desired)
                 {
