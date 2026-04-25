@@ -109,10 +109,8 @@ namespace ZoningToolkit
             if (!s_BannerLogged)
             {
                 s_BannerLogged = true;
-                LogUtils.TryLog(
-                    s_Log,
-                    Level.Info,
-                    ( ) => $"{ModName} {ModTag} v{ModVersion} OnLoad {BuildTag}");
+                // Write the startup banner directly so a fresh release log always gets a first line.
+                s_Log.Info($"{ModName} {ModTag} v{ModVersion} OnLoad {BuildTag}");
             }
 
             // ----- Settings + localization -----

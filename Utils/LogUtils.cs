@@ -1,28 +1,35 @@
 // File: Utils/LogUtils.cs
-// Shared version 0.3.3
-// Purpose:
-// - WarnOnce: prevents repeated WARN spam in hot paths
-// - TryLog: lazy message construction inside try/catch
-// - Popup-safe: do NOT attach Exception objects at Warn level (can surface in-game popups)
-// - Optional: attach Exception only at Error level
+// Shared version 0.4.1
+// Purpose: popup-safe logging helpers for CS2 mods.
+// River-Mochi shared CS2 utilities.
 
 namespace CS2HonuShared
 {
-    using Colossal.Logging;               // ILog + Level
-    using System;                         // Exception, Func<T>, StringComparer
-    using System.Collections.Generic;     // HashSet<T>
+    using Colossal.Logging;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
 
     public static class LogUtils
     {
-        private static readonly object s_WarnOnceLock = new object();
+        private const string FallbackLogName = "ZoneTools";
+        private const int MaxWarnOnceKeys = 2048;
 
-        // Each mod is a separate assembly; one static set per mod.
-        // Prefix keys with log.name to avoid collisions across loggers.
+        private static readonly object s_WarnOnceLock = new object();
+        private static readonly object s_FileWriteLock = new object();
+
         private static readonly HashSet<string> s_WarnOnceKeys =
             new HashSet<string>(StringComparer.Ordinal);
 
-        // Safety valve: don’t let a bad key strategy grow unbounded.
-        private const int MaxWarnOnceKeys = 2048;
+        public static void Info(ILog log, Func<string> messageFactory)
+        {
+            TryLog(log, Level.Info, messageFactory);
+        }
+
+        public static void Warn(ILog log, Func<string> messageFactory, Exception? exception = null)
+        {
+            TryLog(log, Level.Warn, messageFactory, exception);
+        }
 
         public static bool WarnOnce(ILog log, string key, Func<string> messageFactory, Exception? exception = null)
         {
@@ -31,13 +38,12 @@ namespace CS2HonuShared
                 return false;
             }
 
-            // Avoid locking if WARN is filtered out.
-            if (!log.isLevelEnabled(Level.Warn))
+            if (!IsLevelEnabled(log, Level.Warn))
             {
                 return false;
             }
 
-            string fullKey = log.name + "|" + key;
+            string fullKey = GetLogName(log) + "|" + key;
 
             lock (s_WarnOnceLock)
             {
@@ -56,12 +62,6 @@ namespace CS2HonuShared
             return true;
         }
 
-        /// <summary>
-        /// Safe logging wrapper:
-        /// - Only evaluates messageFactory if the level is enabled
-        /// - Never throws outward (even if messageFactory or the logger throws)
-        /// - Avoids attaching Exception objects except at Error (optional policy)
-        /// </summary>
         public static void TryLog(ILog log, Level level, Func<string> messageFactory, Exception? exception = null)
         {
             if (log == null || messageFactory == null)
@@ -69,7 +69,7 @@ namespace CS2HonuShared
                 return;
             }
 
-            if (!log.isLevelEnabled(level))
+            if (!IsLevelEnabled(log, level))
             {
                 return;
             }
@@ -82,20 +82,19 @@ namespace CS2HonuShared
             }
             catch (Exception ex)
             {
-                // Message factory failed; best effort log without attaching Exception (popup-safe).
                 SafeLogNoException(log, Level.Warn, "Log message factory threw: " + ex.GetType().Name + ": " + ex.Message);
                 return;
             }
 
             try
             {
-                // Optional policy: only attach Exception at Error level.
-                Exception? attach = (exception != null && level == Level.Error) ? exception : null;
-                log.Log(level, message, attach ?? null!);
+                // Routine logs bypass Colossal's Unity logger path; that path can show
+                // a UI popup if its internal file stream fails while writing.
+                AppendDirect(log, level, message, exception);
             }
             catch
             {
-                // Logging must never throw back into gameplay/mod loading.
+                // Logging must never throw back into gameplay or mod loading.
             }
         }
 
@@ -103,14 +102,128 @@ namespace CS2HonuShared
         {
             try
             {
-                if (log != null && log.isLevelEnabled(level))
+                if (log != null && IsLevelEnabled(log, level))
                 {
-                    log.Log(level, message, null!);
+                    AppendDirect(log, level, message, null);
                 }
             }
             catch
             {
             }
+        }
+
+        private static void AppendDirect(ILog log, Level level, string message, Exception? exception)
+        {
+            string logPath = GetLogPath(log);
+            if (string.IsNullOrEmpty(logPath))
+            {
+                return;
+            }
+
+            lock (s_FileWriteLock)
+            {
+                string? directory = Path.GetDirectoryName(logPath);
+                if (!string.IsNullOrEmpty(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                using FileStream stream = new FileStream(
+                    logPath,
+                    FileMode.Append,
+                    FileAccess.Write,
+                    FileShare.ReadWrite);
+                using StreamWriter writer = new StreamWriter(stream);
+
+                writer.Write('[');
+                writer.Write(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss,fff"));
+                writer.Write("] [");
+                writer.Write(GetLevelName(level));
+                writer.Write("]  ");
+                writer.WriteLine(message ?? string.Empty);
+
+                if (exception != null && level == Level.Error)
+                {
+                    writer.WriteLine(exception);
+                }
+            }
+        }
+
+        private static string GetLogPath(ILog log)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(log.logPath))
+                {
+                    return log.logPath;
+                }
+
+                string logName = GetLogName(log);
+                if (string.IsNullOrEmpty(logName))
+                {
+                    return string.Empty;
+                }
+
+                return Path.Combine(LogManager.kDefaultLogPath, logName + ".log");
+            }
+            catch
+            {
+                return Path.Combine(LogManager.kDefaultLogPath, FallbackLogName + ".log");
+            }
+        }
+
+        private static string GetLogName(ILog log)
+        {
+            try
+            {
+                return string.IsNullOrEmpty(log.name) ? FallbackLogName : log.name;
+            }
+            catch
+            {
+                return FallbackLogName;
+            }
+        }
+
+        private static bool IsLevelEnabled(ILog log, Level level)
+        {
+            try
+            {
+                return log.isLevelEnabled(level);
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        private static string GetLevelName(Level level)
+        {
+            if (level == Level.Warn)
+            {
+                return "WARN";
+            }
+
+            if (level == Level.Error)
+            {
+                return "ERROR";
+            }
+
+            if (level == Level.Debug)
+            {
+                return "DEBUG";
+            }
+
+            if (level == Level.Trace)
+            {
+                return "TRACE";
+            }
+
+            if (level == Level.Verbose)
+            {
+                return "VERBOSE";
+            }
+
+            return "INFO";
         }
     }
 }

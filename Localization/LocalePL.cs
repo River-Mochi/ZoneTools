@@ -38,7 +38,7 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "O modzie" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Linki" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "Nazwa moda" },
@@ -67,7 +67,7 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Przycisk Contour" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Przycisk Contour" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] włączone**, pokazuje przycisk Contour w panelu Zone Tools.\n\n" +
@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] wyłączone**, używa szarego panelu w stylu vanilla (ciemniejszego).\n" +
                     "Oba style nie używają blur; to tylko wybór wyglądu."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "Domyślne położenie panelu" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "Wybierz, gdzie pojawia się panel Zone Tools po otwarciu ikoną w lewym górnym rogu lub Shift+X.\n" +
+                    "Panel nadal można przeciągać po otwarciu."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Ekran: lewy górny róg" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Ekran: lewy dolny róg" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Ekran: prawy dolny róg" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Przełącz panel" },
@@ -101,6 +110,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
                     "Zapisuje jednorazowo dłuższy raport debug do Logs/ZoneTools.log (tylko do debugowania).\n" +
                     "**Niepotrzebne w normalnej grze**; tworzy ogromny log (można usunąć)."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "Otwórz log" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "Otwiera **ZoneTools.log**, jeśli istnieje.\n" +
+                    "Jeśli plik logu jeszcze nie istnieje, zamiast tego otwiera folder **Logs**."
                 },
 
                 // -----------------------------------------------------------------

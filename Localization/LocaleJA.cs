@@ -38,7 +38,7 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "情報" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "リンク" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "MOD名" },
@@ -67,7 +67,7 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Contour ボタン" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Contour ボタン" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] 有効** の場合、Zone Tools パネルに Contour ボタンを表示します。\n\n" +
@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] 無効** の場合、vanilla 風のグレーのパネル（やや暗め）を使います。\n" +
                     "どちらも blur は使いません。見た目の好みだけです。"
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "パネルの既定位置" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "左上のアイコンまたは Shift+X で開いたときに、Zone Tools パネルを表示する位置を選びます。\n" +
+                    "開いた後もパネルはドラッグできます。"
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "画面左上" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "画面左下" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "画面右下" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "パネル切り替え" },
@@ -101,6 +110,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
                     "Logs/ZoneTools.log に長めのデバッグレポートを 1 回だけ書き出します（デバッグ専用）。\n" +
                     "**通常プレイでは不要**。巨大なログを作ります（削除可）。"
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "ログを開く" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "**ZoneTools.log** があれば開きます。\n" +
+                    "まだログ ファイルがない場合は、代わりに **Logs** フォルダーを開きます。"
                 },
 
                 // -----------------------------------------------------------------

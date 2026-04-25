@@ -38,7 +38,7 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "界面" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "关于" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "链接" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "仅调试" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "模组名称" },
@@ -67,7 +67,7 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ 等高线按钮" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● 等高线按钮" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] 已启用**，在 Zone Tools 面板中显示 Contour 按钮。\n\n" +
@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] 已关闭**，使用原版风格的灰色面板（更深一些）。\n" +
                     "两种样式都不使用模糊；这只是视觉偏好选项。"
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "面板默认位置" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "选择通过左上角图标或 Shift+X 打开时 Zone Tools 面板出现的位置。\n" +
+                    "面板打开后仍然可以拖动。"
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "屏幕左上角" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "屏幕左下角" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "屏幕右下角" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "切换面板" },
@@ -101,6 +110,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
                     "向 Logs/ZoneTools.log 写入一次更长的调试报告（仅调试用）。\n" +
                     "**正常游玩不需要**；会生成很大的日志（可删除）。"
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "打开日志" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "如果 **ZoneTools.log** 存在，就打开它。\n" +
+                    "如果日志文件还不存在，就改为打开 **Logs** 文件夹。"
                 },
 
                 // -----------------------------------------------------------------

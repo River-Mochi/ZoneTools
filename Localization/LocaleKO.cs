@@ -38,7 +38,7 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "정보" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "링크" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "모드 이름" },
@@ -67,7 +67,7 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Contour 버튼" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Contour 버튼" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] 활성화** 시, Zone Tools 패널에 Contour 버튼을 표시합니다.\n\n" +
@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] 비활성화** 시, 바닐라 스타일의 회색 패널(더 어두움)을 사용합니다.\n" +
                     "두 스타일 모두 blur를 쓰지 않습니다. 단순한 시각적 선택입니다."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "패널 기본 위치" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "왼쪽 상단 아이콘이나 Shift+X로 열 때 Zone Tools 패널이 나타날 위치를 선택합니다.\n" +
+                    "패널은 열린 뒤에도 드래그할 수 있습니다."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "화면 왼쪽 상단" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "화면 왼쪽 하단" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "화면 오른쪽 하단" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "패널 토글" },
@@ -101,6 +110,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
                     "Logs/ZoneTools.log 에 더 긴 디버그 보고서를 한 번 기록합니다 (디버그 전용).\n" +
                     "**일반 플레이에는 필요 없음**. 매우 큰 로그를 만듭니다 (삭제 가능)."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "로그 열기" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "**ZoneTools.log** 가 있으면 엽니다.\n" +
+                    "아직 로그 파일이 없으면 대신 **Logs** 폴더를 엽니다."
                 },
 
                 // -----------------------------------------------------------------

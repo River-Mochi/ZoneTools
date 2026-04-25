@@ -2,8 +2,8 @@
 // Zone Tools floating panel styling.
 //
 // Tuning guide:
-// - right: bigger = panel parks more LEFT
-// - bottom: bigger = panel parks more UP
+// - right/left: horizontal parking spot
+// - bottom/top: vertical parking spot
 // - width/max-width: overall panel width
 // - .header height = title bar height
 // - .topRow gap = spacing between the 4 top icons
@@ -14,18 +14,12 @@
 //     higher = more room inside panel
 //
 // Visual styles:
-// - .panelGlass = clearer translucent tint, no blur
-// - .panelVanilla = darker vanilla-like gray panel, no blur
+// -  No blur filter used for better performance
+// - .panelGlass = clearer translucent tint
+// - .panelVanilla = darker vanilla-like gray panel
 
 .panel {
     position: absolute;
-    /* Default parking spot
-       increase right = move more left
-       increase bottom = move more up */
-    right: 372rem;
-    bottom: 125rem;
-    top: auto;
-    left: auto;
     /* Overall panel width */
     width: 129rem;
     max-width: 129rem;
@@ -40,6 +34,31 @@
     --sectionHeaderColor: transparent;
     background-color: transparent;
 }
+/* bigger left = move right, smaller left = move left */
+/* bigger top = move down, smaller top = move up */
+.panelTopLeft {
+    left: 18rem; 
+    top: 72rem; 
+    right: auto;
+    bottom: auto;
+}
+
+.panelBottomLeft {
+    left: 18rem;
+    bottom: 125rem;
+    top: auto;
+    right: auto;
+}
+
+/* smaller right = move more right, bigger right = move more left */
+/* bigger bottom = move up, smaller bottom = move down */
+.panelBottomRight {
+    right: 100rem; 
+    bottom: 125rem; 
+    top: auto;
+    left: auto;
+}
+
 
     /* Shared wrapper behavior */
     .panel > div[class*="header_"] {
@@ -63,7 +82,7 @@
         background-image: none !important;
     }
 
-/* Glass style: clearer translucent tint, no blur */
+/* Glass style: clearer translucent tint, no blur filter */
 .panelGlass > div[class*="header_"] {
     background-color: rgba(40, 58, 74, 0.32) !important;
 }

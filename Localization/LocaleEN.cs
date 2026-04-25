@@ -35,10 +35,10 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Actions" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "Key bindings" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp),  "Compatibility" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "Visual Options" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "About" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Links" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "Mod name" },
@@ -53,54 +53,67 @@ namespace ZoningToolkit
 
                 // Actions toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● Protect occupied cells (has buildings)" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
                     "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on cells that already have a building.\n" +
                     "**[   ] disabled**, buildings could be condemned when changing the zoning under them."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protect zoned-but-empty cells" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
                     "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on cells that are already zoned (even if empty).\n" +
                     "**[   ] disabled**, already zoned cells (painted RCIO) could be overwritten when using Zone Tools."
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Contour button" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] enabled**, show the Contour button in the Zone Tools panel.\n\n" +
-                    "● This lets contour lines be enabled even when no vanilla road tool is open.\n" +
-                    "● **Update Road**: when enabled, the vanilla Topography button is visible in the bottom-left vanilla location.\n" +
-                    "[ ] disable this if a smaller panel is preferred or another mod is used for terrain lines.\n" +
-                    "When disabled, contour is only available while **Update Road** is ON."
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Contour button" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
+                    "● Make Contour terrain lines viewable even when no road tool is open.\n" +
+                    "Compatibility option\n" +
+                    "**[ ] disable** this if another mod is used to show terrain lines (or to make the panel smaller).\n" +
+                    "**[ ✓ ] enabled** shows the Contour button in the Zone Tools panel.\n\n" +
+                    "● Note: when you enable the **Update Road** icon, then the Topography button appears in the bottom-left vanilla location.\n" +
+                    "   - When this is disabled, then contour is still available while **Update Road** is ON since that activates the game's vanilla tool."
                 },
 
                 // UI
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UseGlassPanel)), "◉ Glass panel style" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.UseGlassPanel)),
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UseGlassPanel)),
                     "**[ ✓ ] enabled**, use the clearer translucent panel style.\n" +
-                    "**[   ] disabled**, use the vanilla-style gray panel (darker).\n" +
-                    "Both styles avoid blur; this is only a visual preference toggle."
+                    "**[   ] disabled**, use the vanilla style gray panel (darker).\n" +
+                    "This is only a visual preference choice."
                 },
-
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "Panel default location" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "Choose the **default location** of the Zone Tools panel (when opened from either top-left button or hotkey Shift+X).\n" +
+                    "● Panel can be dragged after it opens by grabbing it in the title bar."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Top Left" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Bottom Left" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Bottom Right" },
+                
                 // Keybinding option (Options → Mods)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Toggle panel" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
-                    "**Keyboard** shortcut to show or hide the Zone Tools panel (same as clicking the top-left menu icon)."
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "● Keybind, toggle panel" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
+                    "**Keyboard** shortcut to show or hide the Zone Tools panel\n" +
+                    "This is the same as clicking the top-left menu icon to open the ZT panel.\n"+
+                    "Reset to what you prefer."
                 },
 
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Toggle panel" },
 
                 // Debug
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "Verbose debug report to log" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "One-time snapshot report to log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
-                    "Write a one-time longer debug report to Logs/ZoneTools.log (debug use only).\n" +
-                    "**Not needed for normal game play**; creates a huge log (you can delete)."
+                    "Writes a one-time long debug report to \n" +
+                    "<Logs/ZoneTools.log> (debug use only).\n" +
+                    "**Not needed for normal game play**;\n" +
+                    "creates a large log (you can delete later)."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "Open Log" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "Opens <Logs/ZoneTools.log> if it exists.\n" +
+                    "If the log file is not there, it opens the **Logs/** folder instead."
                 },
 
                 // -----------------------------------------------------------------

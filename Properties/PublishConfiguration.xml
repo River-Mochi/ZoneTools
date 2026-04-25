@@ -6,7 +6,8 @@
 	<!--Short description of the mod-->
 	<ShortDescription Value="Change zoning on any side of a road; for new roads or updating existing roads." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
-	<LongDescription>### Zone Tools
+	<LongDescription>
+### Zone Tools
 
 Direct control over road zoning for **new roads** and **existing roads**.
 
@@ -29,16 +30,17 @@ Direct control over road zoning for **new roads** and **existing roads**.
 - Left mouse applies the zone change. Select different icons to change.
 - Right mouse click will also cycle the 4-zone options.
 
-Power Trick: if you have existing roads and do not want a new road intersecting it to alter zoning, pick **None**, then draw the new road. 
+Power Trick: if you have existing roads and do not want a new road intersecting it to alter zoning, pick **None**, then draw the new road.
 Your existing road should keep zoning facing the same original direction you set.
 
 ## Options Menu
 
-- ✅ Protect occupied cells (buildings) 
+- ✅ Protect occupied cells (buildings)
 - ✅ Protect zoned-but-empty cells
 - ✅ Contour terrain lines button
 - ✅ Change keybind shortcut (Options menu)
 - ✅ Panel style option: **Glass** transparent or **Vanilla gray**
+- ✅ Dropdown list to pick from 3 locations for ZT panel: top left, bottom left, bottom right.
 
 ### Support and Feedback
 
@@ -83,15 +85,15 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/zone-tool.1888663/" />
 <!--Version of the mod-->
-<ModVersion Value="1.2.1" />
+<ModVersion Value="1.3.0" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.5.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
-- Smaller panel redesign.
-- Added style toggle: pick Glass (transparent) or Vanilla gray in Options (no blur).
+- Added Dropdown list with 3 choices for default location of panel: top left, bottom left, bottom right.
+- Added Open Log button in the DEBUG section of About tab.
 - Updated languages and images
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

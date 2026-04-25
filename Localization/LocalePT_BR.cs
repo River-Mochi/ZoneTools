@@ -38,7 +38,7 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "Sobre" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Links" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "Nome do mod" },
@@ -67,7 +67,7 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Botão Contour" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Botão Contour" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] ativado**, mostra o botão Contour no painel do Zone Tools.\n\n" +
@@ -85,6 +85,15 @@ namespace ZoningToolkit
                     "**[   ] desativado**, usa o painel cinza estilo vanilla (mais escuro).\n" +
                     "Os dois estilos evitam blur; isso é só uma preferência visual."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "Local padrão do painel" },
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
+                    "Escolha onde o painel do Zone Tools aparece ao abrir pelo ícone no canto superior esquerdo ou Shift+X.\n" +
+                    "O painel ainda pode ser arrastado depois de abrir."
+                },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Tela canto superior esquerdo" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Tela canto inferior esquerdo" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Tela canto inferior direito" },
 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Alternar painel" },
@@ -101,6 +110,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
                     "Grava uma vez um relatório de debug mais longo em Logs/ZoneTools.log (só para debug).\n" +
                     "**Não é necessário para jogar normalmente**; cria um log enorme (pode apagar)."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "Abrir log" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "Abre **ZoneTools.log** se ele existir.\n" +
+                    "Se o arquivo de log ainda não existir, abre a pasta **Logs** no lugar."
                 },
 
                 // -----------------------------------------------------------------
