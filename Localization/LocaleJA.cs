@@ -111,6 +111,11 @@ namespace ZoningToolkit
                     "Logs/ZoneTools.log に長めのデバッグレポートを 1 回だけ書き出します（デバッグ専用）。\n" +
                     "**通常プレイでは不要**。巨大なログを作ります（削除可）。"
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "ログを開く" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "**ZoneTools.log** があれば開きます。\n" +
+                    "まだログ ファイルがない場合は、代わりに **Logs** フォルダーを開きます。"
+                },
 
                 // -----------------------------------------------------------------
                 // React UI strings

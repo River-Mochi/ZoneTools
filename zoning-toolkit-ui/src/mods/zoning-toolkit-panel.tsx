@@ -62,12 +62,12 @@ interface ZoningModeButtonConfig {
 function getPanelLocationClass(panelLocation: string | undefined): string {
     switch (panelLocation) {
         case "ScreenBottomRight":
-            return panelStyles.panelScreenBottomRight;
+            return panelStyles.panelBottomRight;
         case "ScreenBottomLeft":
-            return panelStyles.panelScreenBottomLeft;
+            return panelStyles.panelBottomLeft;
         case "ScreenTopLeft":
         default:
-            return panelStyles.panelScreenTopLeft;
+            return panelStyles.panelTopLeft;
     }
 }
 

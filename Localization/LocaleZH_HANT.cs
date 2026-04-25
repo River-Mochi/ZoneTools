@@ -111,6 +111,11 @@ namespace ZoningToolkit
                     "向 Logs/ZoneTools.log 寫入一次較長的除錯報告（僅供除錯使用）。\n" +
                     "**正常遊玩不需要**；會產生很大的日誌（可刪除）。"
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "開啟日誌" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "如果 **ZoneTools.log** 存在，就開啟它。\n" +
+                    "如果日誌檔案還不存在，就改為開啟 **Logs** 資料夾。"
+                },
 
                 // -----------------------------------------------------------------
                 // React UI strings

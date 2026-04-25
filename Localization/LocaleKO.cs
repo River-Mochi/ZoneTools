@@ -111,6 +111,11 @@ namespace ZoningToolkit
                     "Logs/ZoneTools.log 에 더 긴 디버그 보고서를 한 번 기록합니다 (디버그 전용).\n" +
                     "**일반 플레이에는 필요 없음**. 매우 큰 로그를 만듭니다 (삭제 가능)."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "로그 열기" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "**ZoneTools.log** 가 있으면 엽니다.\n" +
+                    "아직 로그 파일이 없으면 대신 **Logs** 폴더를 엽니다."
+                },
 
                 // -----------------------------------------------------------------
                 // React UI strings

@@ -111,6 +111,11 @@ namespace ZoningToolkit
                     "Écrit un rapport debug plus long dans Logs/ZoneTools.log (debug uniquement).\n" +
                     "**Pas nécessaire en jeu normal** ; crée un énorme log (supprimable)."
                 },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "Ouvrir le log" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "Ouvre **ZoneTools.log** s'il existe.\n" +
+                    "Si le fichier de log n'existe pas encore, ouvre le dossier **Logs** à la place."
+                },
 
                 // -----------------------------------------------------------------
                 // React UI strings

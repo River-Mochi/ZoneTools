@@ -14,8 +14,9 @@
 //     higher = more room inside panel
 //
 // Visual styles:
-// - .panelGlass = clearer translucent tint, no blur
-// - .panelVanilla = darker vanilla-like gray panel, no blur
+// -  No blur filter used for better performance
+// - .panelGlass = clearer translucent tint
+// - .panelVanilla = darker vanilla-like gray panel
 
 .panel {
     position: absolute;
@@ -33,27 +34,31 @@
     --sectionHeaderColor: transparent;
     background-color: transparent;
 }
-
-.panelScreenTopLeft {
-    left: 18rem;
-    top: 72rem;
+/* bigger left = move right, smaller left = move left */
+/* bigger top = move down, smaller top = move up */
+.panelTopLeft {
+    left: 18rem; 
+    top: 72rem; 
     right: auto;
     bottom: auto;
 }
 
-.panelScreenBottomRight {
-    right: 132rem;
-    bottom: 125rem;
-    top: auto;
-    left: auto;
-}
-
-.panelScreenBottomLeft {
+.panelBottomLeft {
     left: 18rem;
     bottom: 125rem;
     top: auto;
     right: auto;
 }
+
+/* smaller right = move more right, bigger right = move more left */
+/* bigger bottom = move up, smaller bottom = move down */
+.panelBottomRight {
+    right: 100rem; 
+    bottom: 125rem; 
+    top: auto;
+    left: auto;
+}
+
 
     /* Shared wrapper behavior */
     .panel > div[class*="header_"] {
@@ -77,7 +82,7 @@
         background-image: none !important;
     }
 
-/* Glass style: clearer translucent tint, no blur */
+/* Glass style: clearer translucent tint, no blur filter */
 .panelGlass > div[class*="header_"] {
     background-color: rgba(40, 58, 74, 0.32) !important;
 }

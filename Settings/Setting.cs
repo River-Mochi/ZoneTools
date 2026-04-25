@@ -13,7 +13,7 @@ namespace ZoningToolkit
     [FileLocation("ModsSettings/ZoneTools/ZoneTools")]
     [SettingsUITabOrder(kActionsTab, kAboutTab)]
     [SettingsUIGroupOrder(kActionsGrp, kBindingsGrp, kCompatibilityGrp, kUiGrp, kAboutGrp, kAboutLinksGrp, kDebugGrp)]
-    [SettingsUIShowGroupName(kUiGrp, kAboutLinksGrp)]
+    [SettingsUIShowGroupName(kUiGrp, kAboutLinksGrp, kDebugGrp)]
     [SettingsUIKeyboardAction(Mod.kTogglePanelActionName, ActionType.Button, usages: new[] { "Game" })]
     public sealed class Setting : ModSetting
     {
@@ -36,6 +36,7 @@ namespace ZoningToolkit
         public const string kAboutGrp = "About";
         public const string kAboutLinksGrp = "Links";
         public const string kDebugGrp = "Debug only";
+        public const string kDebugButtonsRow = "DebugButtonsRow";
 
         private const string kUrlParadox =
             "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
@@ -108,6 +109,7 @@ namespace ZoningToolkit
         }
 
         [SettingsUISection(kAboutTab, kDebugGrp)]
+        [SettingsUIButtonGroup(kDebugButtonsRow)]
         [SettingsUIButton]
         public bool DumpDebugReport
         {
@@ -117,6 +119,20 @@ namespace ZoningToolkit
                     return;
 
                 Mod.RequestDebugReport();
+            }
+        }
+
+        [SettingsUISection(kAboutTab, kDebugGrp)]
+        [SettingsUIButtonGroup(kDebugButtonsRow)]
+        [SettingsUIButton]
+        public bool OpenLog
+        {
+            set
+            {
+                if (!value)
+                    return;
+
+                ShellOpen.OpenModLogOrLogsFolder();
             }
         }
 

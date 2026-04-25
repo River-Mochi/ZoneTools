@@ -38,7 +38,7 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "Visual Options" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "About" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Links" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "Debug only" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "Mod name" },
@@ -65,14 +65,14 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ Contour button" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Contour button" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
+                    "● Make Contour terrain lines viewable even when no road tool is open.\n" +
                     "Compatibility option\n" +
-                    "**[ ] disable** this if another mod is used to show terrain lines, or to make the panel smaller.\n" +
+                    "**[ ] disable** this if another mod is used to show terrain lines (or to make the panel smaller).\n" +
                     "**[ ✓ ] enabled** shows the Contour button in the Zone Tools panel.\n\n" +
-                    "● Contour lines available even when no vanilla road tool is open.\n" +
                     "● Note: when you enable the **Update Road** icon, then the Topography button appears in the bottom-left vanilla location.\n" +
-                    "  - When this toggle is disabled, then contour is only available while **Update Road** is ON (vanilla tool)."
+                    "   - When this is disabled, then contour is still available while **Update Road** is ON since that activates the game's vanilla tool."
                 },
 
                 // UI
@@ -84,12 +84,12 @@ namespace ZoningToolkit
                 },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DefaultPanelLocation)), "Panel default location" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DefaultPanelLocation)),
-                    "Choose where the Zone Tools panel parks when opened from the top-left button or Shift+X.\n" +
-                    "The panel can still be dragged after it opens by grabbing it in the title bar."
+                    "Choose the **default location** of the Zone Tools panel (when opened from either top-left button or hotkey Shift+X).\n" +
+                    "● Panel can be dragged after it opens by grabbing it in the title bar."
                 },
-                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Screen top left" },
-                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Screen bottom left" },
-                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Screen bottom right" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenTopLeft), "Top Left" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomLeft), "Bottom Left" },
+                { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Bottom Right" },
                 
                 // Keybinding option (Options → Mods)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Keybind, toggle panel" },
@@ -104,8 +104,15 @@ namespace ZoningToolkit
                 // Debug
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DumpDebugReport)), "One-time snapshot report to log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DumpDebugReport)),
-                    "Writes a one-time longer debug report to Logs/ZoneTools.log (debug use only).\n" +
-                    "**Not needed for normal game play**; creates a large log (you can delete)."
+                    "Writes a one-time long debug report to \n" +
+                    "<Logs/ZoneTools.log> (debug use only).\n" +
+                    "**Not needed for normal game play**;\n" +
+                    "creates a large log (you can delete later)."
+                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLog)), "Open Log" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLog)),
+                    "Opens <Logs/ZoneTools.log> if it exists.\n" +
+                    "If the log file is not there, it opens the **Logs/** folder instead."
                 },
 
                 // -----------------------------------------------------------------
