@@ -39,6 +39,10 @@ For a different UI style with static in-panel icons, see **Easy Zoning**.
 - ✅ Protect occupied cells (buildings)
 - ✅ Protect zoned-but-empty cells
 - ✅ Show or hide the Contour button
+- ✅ Choose the panel default location when opened:
+  - **Top Left**
+  - **Bottom Left**
+  - **Bottom Right**
 - ✅ Choose panel style:
   - **Glass** = clearer translucent panel
   - **Vanilla gray** = darker vanilla-style panel
@@ -50,6 +54,7 @@ For a different UI style with static in-panel icons, see **Easy Zoning**.
 - Easier placement of nearby roads without unwanted overlapping zoning
 - Existing roads can be updated without rebuilding them
 - Movable panel can be parked where it is least annoying
+- Default parking spot can be chosen in Options, then moved again in-game whenever you want
 
 ## Compatibility
 
