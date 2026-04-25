@@ -88,9 +88,7 @@ namespace ZoningToolkit.Systems
                     continue;
                 }
 
-                ZoningMode current = EntityManager.HasComponent<ZoningInfo>(roadEntity)
-                    ? EntityManager.GetComponentData<ZoningInfo>(roadEntity).zoningMode
-                    : ZoningMode.Default;
+                ZoningMode current = GetEffectiveRoadZoningMode(roadEntity);
 
                 if (current == desired)
                 {
@@ -104,6 +102,7 @@ namespace ZoningToolkit.Systems
                 }
 
                 AddOrSetZoningInfo(ecb, roadEntity, desired);
+                SyncVanillaZoneFlags(ecb, roadEntity, desired);
                 TagSubBlocksForUpdate(ecb, roadEntity);
             }
 
