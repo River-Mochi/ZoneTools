@@ -7,10 +7,12 @@
 namespace ZoningToolkit.Systems
 {
     using Game.Common;               // Updated
-    using Game.Net;                  // Upgraded
+    using Game.Net;                  // Curve, Upgraded
     using Game.Prefabs;              // CompositionFlags
+    using Game.Zones;                // Block, ValidArea, SubBlock
     using Unity.Entities;            // Entity, EntityCommandBuffer
     using ZoningToolkit.Components;  // ZoningInfo, ZoningMode
+    using ZoningToolkit.Utils;       // BlockUtils
 
     internal sealed partial class ZoneToolSystemExistingRoads
     {
@@ -33,6 +35,12 @@ namespace ZoningToolkit.Systems
                 }
             }
 
+            // When vanilla flags are clear, prefer the actual block layout over stale legacy data.
+            if (TryGetModeFromBlockLayout(roadEntity, out ZoningMode blockLayoutMode))
+            {
+                return blockLayoutMode;
+            }
+
             if (roadEntity != Entity.Null &&
                 EntityManager.Exists(roadEntity) &&
                 EntityManager.HasComponent<ZoningInfo>(roadEntity))
@@ -41,6 +49,70 @@ namespace ZoningToolkit.Systems
             }
 
             return ZoningMode.Default;
+        }
+
+        private bool TryGetModeFromBlockLayout(Entity roadEntity, out ZoningMode mode)
+        {
+            mode = ZoningMode.Default;
+
+            if (roadEntity == Entity.Null ||
+                !EntityManager.Exists(roadEntity) ||
+                !EntityManager.HasComponent<Curve>(roadEntity) ||
+                !EntityManager.HasBuffer<SubBlock>(roadEntity))
+            {
+                return false;
+            }
+
+            Curve curve = EntityManager.GetComponentData<Curve>(roadEntity);
+            DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
+
+            bool sawLeft = false;
+            bool sawRight = false;
+            bool leftEnabled = false;
+            bool leftDisabled = false;
+            bool rightEnabled = false;
+            bool rightDisabled = false;
+
+            for (int i = 0; i < subBlocks.Length; i++)
+            {
+                Entity blockEntity = subBlocks[i].m_SubBlock;
+                if (blockEntity == Entity.Null ||
+                    !EntityManager.Exists(blockEntity) ||
+                    !EntityManager.HasComponent<Block>(blockEntity) ||
+                    !EntityManager.HasComponent<ValidArea>(blockEntity))
+                {
+                    continue;
+                }
+
+                Block block = EntityManager.GetComponentData<Block>(blockEntity);
+                ValidArea validArea = EntityManager.GetComponentData<ValidArea>(blockEntity);
+                float dot = BlockUtils.blockCurveDotProduct(block, curve);
+                bool enabled = block.m_Size.y > 0 && validArea.m_Area.w > 0;
+
+                if (dot > 0f)
+                {
+                    sawLeft = true;
+                    leftEnabled |= enabled;
+                    leftDisabled |= !enabled;
+                }
+                else
+                {
+                    sawRight = true;
+                    rightEnabled |= enabled;
+                    rightDisabled |= !enabled;
+                }
+            }
+
+            // Mixed block states usually mean protections or partial edits; keep the legacy fallback there.
+            if (!sawLeft || !sawRight ||
+                (leftEnabled && leftDisabled) ||
+                (rightEnabled && rightDisabled))
+            {
+                return false;
+            }
+
+            mode = GetZoningModeFromDisabledSides(leftDisabled, rightDisabled);
+            return true;
         }
 
         private void SyncVanillaZoneFlags(EntityCommandBuffer ecb, Entity roadEntity, ZoningMode mode)
