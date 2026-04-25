@@ -92,10 +92,11 @@ namespace ZoningToolkit
                 { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Bottom Right" },
                 
                 // Keybinding option (Options → Mods)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Keybind, toggle panel" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
-                    "**Keyboard** shortcut to show or hide the Zone Tools panel (same as clicking the top-left menu icon)."
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "● Keybind, toggle panel" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
+                    "**Keyboard** shortcut to show or hide the Zone Tools panel\n" +
+                    "This is the same as clicking the top-left menu icon to open the ZT panel.\n"+
+                    "Reset to what you prefer."
                 },
 
                 // Keybinding action name (Options → Keybindings)

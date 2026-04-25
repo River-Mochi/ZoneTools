@@ -38,7 +38,7 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "介面" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "關於" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "連結" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "僅限除錯" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
 
                 // About fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ModName)), "模組名稱" },
@@ -67,7 +67,7 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "◉ 等高線按鈕" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● 等高線按鈕" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "**[ ✓ ] 已啟用**，在 Zone Tools 面板中顯示 Contour 按鈕。\n\n" +
