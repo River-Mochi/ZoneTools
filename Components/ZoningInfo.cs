@@ -50,4 +50,11 @@ namespace ZoningToolkit.Components
     public struct ZoningInfoUpdated : IComponentData, IQueryTypeParameter
     {
     }
+
+    // One-shot preview payload.
+    // Added to block entities while the Existing Roads tool is previewing a road.
+    public struct ZoningPreviewMode : IComponentData, IQueryTypeParameter
+    {
+        public ZoningMode zoningMode;
+    }
 }

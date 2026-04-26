@@ -15,10 +15,42 @@ namespace ZoningToolkit.Utils
     using Unity.Entities;           // Entity
     using Unity.Mathematics;        // float2
     using UnityEngine;              // Vector2
-    using ZoningToolkit.Components; // ZoningInfo
+    using ZoningToolkit.Components; // ZoningInfo, ZoningMode
 
     internal static class BlockUtils
     {
+        public static void applyBlockSizes(float dotProduct, ZoningMode zoningMode, ref ValidArea validArea, ref Block block)
+        {
+            // Set zone depth to 0 to disable zoning on that side.
+            // Set zone depth to 6 to keep or restore normal zoning on that side.
+            if (dotProduct > 0)
+            {
+                if (zoningMode == ZoningMode.Right || zoningMode == ZoningMode.None)
+                {
+                    validArea.m_Area.w = 0;
+                    block.m_Size.y = 0;
+                }
+                else
+                {
+                    validArea.m_Area.w = 6;
+                    block.m_Size.y = 6;
+                }
+            }
+            else
+            {
+                if (zoningMode == ZoningMode.Left || zoningMode == ZoningMode.None)
+                {
+                    validArea.m_Area.w = 0;
+                    block.m_Size.y = 0;
+                }
+                else
+                {
+                    validArea.m_Area.w = 6;
+                    block.m_Size.y = 6;
+                }
+            }
+        }
+
         public static float blockCurveDotProduct(Block block, Curve curve)
         {
 #if DEBUG
@@ -45,34 +77,7 @@ namespace ZoningToolkit.Utils
 
         public static void editBlockSizes(float dotProduct, ZoningInfo newZoningInfo, ValidArea validArea, Block block, Entity entity, EntityCommandBuffer ecb)
         {
-            // Set zone depth to 0 to disable zoning on that side.
-            // Set zone depth to 6 to keep or restore normal zoning on that side.
-            if (dotProduct > 0)
-            {
-                if (newZoningInfo.zoningMode == ZoningMode.Right || newZoningInfo.zoningMode == ZoningMode.None)
-                {
-                    validArea.m_Area.w = 0;
-                    block.m_Size.y = 0;
-                }
-                else
-                {
-                    validArea.m_Area.w = 6;
-                    block.m_Size.y = 6;
-                }
-            }
-            else
-            {
-                if (newZoningInfo.zoningMode == ZoningMode.Left || newZoningInfo.zoningMode == ZoningMode.None)
-                {
-                    validArea.m_Area.w = 0;
-                    block.m_Size.y = 0;
-                }
-                else
-                {
-                    validArea.m_Area.w = 6;
-                    block.m_Size.y = 6;
-                }
-            }
+            applyBlockSizes(dotProduct, newZoningInfo.zoningMode, ref validArea, ref block);
 
             ecb.SetComponent(entity, validArea);
             ecb.SetComponent(entity, block);

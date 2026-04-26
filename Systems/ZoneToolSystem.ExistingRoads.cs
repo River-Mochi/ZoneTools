@@ -19,6 +19,7 @@ namespace ZoningToolkit.Systems
     using Unity.Collections;    // NativeHashSet, Allocator
     using Unity.Entities;       // Entity, EntityCommandBuffer
     using Unity.Jobs;           // JobHandle
+    using ZoningToolkit.Components; // ZoningMode
 
     internal sealed partial class ZoneToolSystemExistingRoads : ToolBaseSystem
     {
@@ -43,6 +44,9 @@ namespace ZoningToolkit.Systems
         private int m_SelectedCount;
         private Entity m_Hovered;
         private Entity m_Highlighted;
+        private Entity m_PreviewRoad;
+        private ZoningMode m_PreviewDesired;
+        private ZoningMode m_PreviewCurrent;
 
         internal bool toolEnabled
         {
@@ -73,6 +77,9 @@ namespace ZoningToolkit.Systems
 
             m_Hovered = Entity.Null;
             m_Highlighted = Entity.Null;
+            m_PreviewRoad = Entity.Null;
+            m_PreviewDesired = ZoningMode.Default;
+            m_PreviewCurrent = ZoningMode.Default;
 
             toolEnabled = false;
             m_PendingEnableAfterContourHostStop = false;
@@ -154,6 +161,7 @@ namespace ZoningToolkit.Systems
 
             // ToolOutputBarrier.CreateCommandBuffer() is not allowed in OnStopRunning().
             // Highlight cleanup uses immediate EntityManager structural changes.
+            ClearRoadPreviewImmediate();
             ClearHoverHighlightImmediate();
         }
 

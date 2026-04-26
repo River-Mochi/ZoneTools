@@ -16,7 +16,7 @@ namespace ZoningToolkit.Systems
     using Unity.Jobs;              // JobHandle, IJob, IJobChunk
     using Unity.Mathematics;       // float2
     using UnityEngine.Scripting;   // Preserve (keep OnUpdate/OnCreate from stripping)
-    using ZoningToolkit.Components; // ZoningInfo, ZoningInfoUpdated, ZoningMode
+    using ZoningToolkit.Components; // ZoningInfo, ZoningInfoUpdated, ZoningMode, ZoningPreviewMode
     using ZoningToolkit.Utils;     // BlockUtils (block sizing helpers)
 
     public partial class ZoneToolSystemCore : GameSystemBase
@@ -25,12 +25,15 @@ namespace ZoningToolkit.Systems
         private EntityQuery m_NewBlocksQuery;
         // Updated blocks: blocks tagged with ZoningInfoUpdated are re-applied once.
         private EntityQuery m_UpdateBlocksQuery;
+        // Preview blocks: blocks tagged with ZoningPreviewMode are resized for UER hover preview.
+        private EntityQuery m_PreviewBlocksQuery;
 
         // Chunk access handles (refreshed each frame in OnUpdate).
         private ComponentTypeHandle<Block> m_BlockTypeHandle;
         private EntityTypeHandle m_EntityTypeHandle;
         private ComponentTypeHandle<ValidArea> m_ValidAreaTypeHandle;
         private ComponentTypeHandle<Deleted> m_DeletedTypeHandle;
+        private ComponentTypeHandle<ZoningPreviewMode> m_ZoningPreviewModeTypeHandle;
 
         // Exposed as fields because jobs need them frequently.
         public ComponentTypeHandle<Owner> ownerTypeHandle;
@@ -88,12 +91,25 @@ namespace ZoningToolkit.Systems
                 }
             });
 
+            m_PreviewBlocksQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new[]
+                {
+                    ComponentType.ReadWrite<Block>(),
+                    ComponentType.ReadWrite<Owner>(),
+                    ComponentType.ReadOnly<Cell>(),
+                    ComponentType.ReadOnly<ValidArea>(),
+                    ComponentType.ReadOnly<ZoningPreviewMode>()
+                }
+            });
+
             m_BlockTypeHandle = GetComponentTypeHandle<Block>();
             ownerTypeHandle = GetComponentTypeHandle<Owner>();
             cellBufferTypeHandle = GetBufferTypeHandle<Cell>();
             m_EntityTypeHandle = GetEntityTypeHandle();
             m_ValidAreaTypeHandle = GetComponentTypeHandle<ValidArea>();
             m_DeletedTypeHandle = GetComponentTypeHandle<Deleted>();
+            m_ZoningPreviewModeTypeHandle = GetComponentTypeHandle<ZoningPreviewMode>();
 
             ownerComponentLookup = GetComponentLookup<Owner>();
             curveComponentLookup = GetComponentLookup<Curve>(true);
@@ -106,7 +122,7 @@ namespace ZoningToolkit.Systems
             m_ModificationBarrier4B = World.GetOrCreateSystemManaged<ModificationBarrier4B>();
 
             // System stays idle unless there is work in either query.
-            RequireAnyForUpdate(m_NewBlocksQuery, m_UpdateBlocksQuery);
+            RequireAnyForUpdate(m_NewBlocksQuery, m_UpdateBlocksQuery, m_PreviewBlocksQuery);
 
             zoningMode = ZoningMode.Default;
         }
@@ -122,6 +138,7 @@ namespace ZoningToolkit.Systems
             m_EntityTypeHandle.Update(ref CheckedStateRef);
             m_ValidAreaTypeHandle.Update(ref CheckedStateRef);
             m_DeletedTypeHandle.Update(ref CheckedStateRef);
+            m_ZoningPreviewModeTypeHandle.Update(ref CheckedStateRef);
             ownerTypeHandle.Update(ref CheckedStateRef);
             deletedLookup.Update(ref CheckedStateRef);
             cellBufferTypeHandle.Update(ref CheckedStateRef);
@@ -203,6 +220,27 @@ namespace ZoningToolkit.Systems
                     entityCommandBuffer = ecb,
                     updatedLookup = updatedLookup
                 }.Schedule(m_UpdateBlocksQuery, deps);
+
+                deps = JobHandle.CombineDependencies(deps, job);
+            }
+
+            // Preview blocks: apply hover-preview sizing once, then remove the preview payload.
+            if (!m_PreviewBlocksQuery.IsEmptyIgnoreFilter)
+            {
+                JobHandle job = new UpdatePreviewZoningJob
+                {
+                    protectOccupiedCells = protectOccupiedCells,
+                    protectZonedCells = protectZonedCells,
+
+                    entityTypeHandle = m_EntityTypeHandle,
+                    blockComponentTypeHandle = m_BlockTypeHandle,
+                    validAreaComponentTypeHandle = m_ValidAreaTypeHandle,
+                    previewModeTypeHandle = m_ZoningPreviewModeTypeHandle,
+                    bufferTypeHandle = cellBufferTypeHandle,
+                    ownerComponentLookup = ownerComponentLookup,
+                    curveComponentLookup = curveComponentLookup,
+                    entityCommandBuffer = ecb
+                }.Schedule(m_PreviewBlocksQuery, deps);
 
                 deps = JobHandle.CombineDependencies(deps, job);
             }
@@ -449,6 +487,71 @@ namespace ZoningToolkit.Systems
 
                     // ZoningInfo is persisted on the owner (curve/edge entity) so future blocks inherit it.
                     AddOrSetZoningInfo(entityCommandBuffer, zoningInfoComponentLookup, owner.m_Owner, zi);
+                }
+            }
+        }
+
+        private struct UpdatePreviewZoningJob : IJobChunk
+        {
+            [ReadOnly] public bool protectOccupiedCells;
+            [ReadOnly] public bool protectZonedCells;
+
+            [ReadOnly] public EntityTypeHandle entityTypeHandle;
+            public ComponentTypeHandle<Block> blockComponentTypeHandle;
+            public ComponentTypeHandle<ValidArea> validAreaComponentTypeHandle;
+            [ReadOnly] public ComponentTypeHandle<ZoningPreviewMode> previewModeTypeHandle;
+            public BufferTypeHandle<Cell> bufferTypeHandle;
+
+            [ReadOnly] public ComponentLookup<Owner> ownerComponentLookup;
+            [ReadOnly] public ComponentLookup<Curve> curveComponentLookup;
+
+            public EntityCommandBuffer entityCommandBuffer;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<Block> blocks = chunk.GetNativeArray(ref blockComponentTypeHandle);
+                NativeArray<Entity> entities = chunk.GetNativeArray(entityTypeHandle);
+                BufferAccessor<Cell> cellBufs = chunk.GetBufferAccessor(ref bufferTypeHandle);
+                NativeArray<ValidArea> validAreas = chunk.GetNativeArray(ref validAreaComponentTypeHandle);
+                NativeArray<ZoningPreviewMode> previewModes = chunk.GetNativeArray(ref previewModeTypeHandle);
+
+                for (int i = 0; i < entities.Length; i++)
+                {
+                    Entity entity = entities[i];
+
+                    if (!ownerComponentLookup.HasComponent(entity))
+                    {
+                        entityCommandBuffer.RemoveComponent<ZoningPreviewMode>(entity);
+                        continue;
+                    }
+
+                    Owner owner = ownerComponentLookup[entity];
+                    if (!curveComponentLookup.HasComponent(owner.m_Owner))
+                    {
+                        entityCommandBuffer.RemoveComponent<ZoningPreviewMode>(entity);
+                        continue;
+                    }
+
+                    Curve curve = curveComponentLookup[owner.m_Owner];
+                    Block block = blocks[i];
+                    DynamicBuffer<Cell> cells = cellBufs[i];
+                    ValidArea validArea = validAreas[i];
+                    ZoningPreviewMode preview = previewModes[i];
+
+                    bool blocked =
+                        (protectOccupiedCells && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea)) ||
+                        (protectZonedCells && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea));
+
+                    if (!blocked)
+                    {
+                        float dot = BlockUtils.blockCurveDotProduct(block, curve);
+                        BlockUtils.applyBlockSizes(dot, preview.zoningMode, ref validArea, ref block);
+
+                        entityCommandBuffer.SetComponent(entity, validArea);
+                        entityCommandBuffer.SetComponent(entity, block);
+                    }
+
+                    entityCommandBuffer.RemoveComponent<ZoningPreviewMode>(entity);
                 }
             }
         }

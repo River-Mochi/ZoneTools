@@ -76,7 +76,7 @@ English, French, German, Spanish, Italian, Japanese, Korean, Polish, Portuguese 
 - Thanks to =Noel= for Chinese locale review
 
 ## License
-
+Copyright 2026 River-Mochi
 Copyright 2025 River-Mochi
 
 Licensed under the Apache License, Version 2.0 (the "License");  
