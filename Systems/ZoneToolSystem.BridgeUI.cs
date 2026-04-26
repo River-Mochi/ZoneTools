@@ -209,6 +209,12 @@ namespace ZoningToolkit.Systems
                 m_ZoningSystem.zoningMode = m_UIState.zoningMode;
             }
 
+            // Vanilla's upgrade-side tools create temp road previews too.
+            // Do not let ZT's selected side mode resize those temp blocks while the
+            // player is using UpgradeToolSystem, or the vanilla FAB starts acting like
+            // it is "stuck" to the last ZT icon choice.
+            m_ZoningSystem.suppressTempRoadZoning = m_ToolSystem.activeTool is UpgradeToolSystem;
+
             if (m_UIState.toolEnabled != m_Tool.toolEnabled)
             {
                 m_UIState.toolEnabled = m_Tool.toolEnabled;

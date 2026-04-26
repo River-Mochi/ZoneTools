@@ -21,6 +21,10 @@ namespace ZoningToolkit.Systems
 
     public partial class ZoneToolSystemCore : GameSystemBase
     {
+        // When vanilla UpgradeToolSystem is driving temp road previews, leave those
+        // temp blocks alone so ZT's selected side mode does not bleed into vanilla tools.
+        internal bool suppressTempRoadZoning;
+
         // New blocks: Created/Deleted blocks are observed so initial zone sizing is applied.
         private EntityQuery m_NewBlocksQuery;
         // Updated blocks: blocks tagged with ZoningInfoUpdated are re-applied once.
@@ -44,6 +48,7 @@ namespace ZoningToolkit.Systems
         [ReadOnly] protected ComponentLookup<Curve> curveComponentLookup;
         private ComponentLookup<ZoningInfo> zoningInfoComponentLookup;
         private ComponentLookup<Deleted> deletedLookup;
+        private ComponentLookup<Game.Tools.Temp> tempLookup;
         private ComponentLookup<Applied> appliedLookup;
         private ComponentLookup<Updated> updatedLookup;
         private ComponentLookup<ZoningInfoUpdated> zoningInfoUpdatedLookup;
@@ -115,6 +120,7 @@ namespace ZoningToolkit.Systems
             curveComponentLookup = GetComponentLookup<Curve>(true);
             zoningInfoComponentLookup = GetComponentLookup<ZoningInfo>();
             deletedLookup = GetComponentLookup<Deleted>();
+            tempLookup = GetComponentLookup<Game.Tools.Temp>(true);
             appliedLookup = GetComponentLookup<Applied>();
             updatedLookup = GetComponentLookup<Updated>();
             zoningInfoUpdatedLookup = GetComponentLookup<ZoningInfoUpdated>();
@@ -141,6 +147,7 @@ namespace ZoningToolkit.Systems
             m_ZoningPreviewModeTypeHandle.Update(ref CheckedStateRef);
             ownerTypeHandle.Update(ref CheckedStateRef);
             deletedLookup.Update(ref CheckedStateRef);
+            tempLookup.Update(ref CheckedStateRef);
             cellBufferTypeHandle.Update(ref CheckedStateRef);
             appliedLookup.Update(ref CheckedStateRef);
             updatedLookup.Update(ref CheckedStateRef);
@@ -191,8 +198,10 @@ namespace ZoningToolkit.Systems
                     ownerComponentLookup = ownerComponentLookup,
                     curveComponentLookup = curveComponentLookup,
                     zoningInfoComponentLookup = zoningInfoComponentLookup,
+                    tempLookup = tempLookup,
                     appliedLookup = appliedLookup,
                     entityCommandBuffer = ecb,
+                    suppressTempRoadZoning = suppressTempRoadZoning,
                     entitiesByStartPoint = deletedByStart,
                     entitiesByEndPoint = deletedByEnd
                 }.Schedule(m_NewBlocksQuery, deps);
@@ -374,9 +383,11 @@ namespace ZoningToolkit.Systems
             [ReadOnly] public ComponentLookup<Owner> ownerComponentLookup;
             [ReadOnly] public ComponentLookup<Curve> curveComponentLookup;
             [ReadOnly] public ComponentLookup<ZoningInfo> zoningInfoComponentLookup;
+            [ReadOnly] public ComponentLookup<Game.Tools.Temp> tempLookup;
             [ReadOnly] public ComponentLookup<Applied> appliedLookup;
 
             public EntityCommandBuffer entityCommandBuffer;
+            [ReadOnly] public bool suppressTempRoadZoning;
             [ReadOnly] public NativeParallelHashMap<float2, Entity> entitiesByStartPoint;
             [ReadOnly] public NativeParallelHashMap<float2, Entity> entitiesByEndPoint;
 
@@ -410,6 +421,11 @@ namespace ZoningToolkit.Systems
                     }
 
                     Curve curve = curveComponentLookup[owner.m_Owner];
+
+                    if (suppressTempRoadZoning && tempLookup.HasComponent(owner.m_Owner))
+                    {
+                        continue;
+                    }
 
                     // Default: use current UI mode for brand new curves.
                     ZoningInfo zi = new ZoningInfo { zoningMode = zoningMode };
