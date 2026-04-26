@@ -88,7 +88,7 @@ namespace ZoningToolkit.Systems
                     continue;
                 }
 
-                ZoningMode current = GetEffectiveRoadZoningMode(roadEntity);
+                ZoningMode current = GetToolRoadZoningMode(roadEntity);
 
                 if (current == desired)
                 {
@@ -104,6 +104,12 @@ namespace ZoningToolkit.Systems
                 AddOrSetZoningInfo(ecb, roadEntity, desired);
                 SyncVanillaZoneFlags(ecb, roadEntity, desired);
                 TagSubBlocksForUpdate(ecb, roadEntity);
+
+                if (roadEntity == m_PreviewRoad)
+                {
+                    m_PreviewCurrent = desired;
+                    m_PreviewDesired = desired;
+                }
             }
 
             ClearSelection();

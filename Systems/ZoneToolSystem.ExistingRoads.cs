@@ -14,7 +14,7 @@ namespace ZoningToolkit.Systems
     using Game.Common;
     using Game.Net;             // Layer
     using Game.Prefabs;         // PrefabBase
-    using Game.Tools;           // ToolSystem, DefaultToolSystem, NetToolSystem, ToolOutputBarrier, Snap, ApplyMode
+    using Game.Tools;           // ToolSystem, DefaultToolSystem, NetToolSystem, ToolOutputBarrier, Snap, ApplyMode, Temp
     using System;               // Exception
     using Unity.Collections;    // NativeHashSet, Allocator
     using Unity.Entities;       // Entity, EntityCommandBuffer
@@ -47,6 +47,9 @@ namespace ZoningToolkit.Systems
         private Entity m_PreviewRoad;
         private ZoningMode m_PreviewDesired;
         private ZoningMode m_PreviewCurrent;
+        private Entity m_VanillaPreviewRoad;
+        private bool m_VanillaPreviewLeft;
+        private bool m_VanillaPreviewRight;
 
         internal bool toolEnabled
         {
@@ -80,6 +83,9 @@ namespace ZoningToolkit.Systems
             m_PreviewRoad = Entity.Null;
             m_PreviewDesired = ZoningMode.Default;
             m_PreviewCurrent = ZoningMode.Default;
+            m_VanillaPreviewRoad = Entity.Null;
+            m_VanillaPreviewLeft = false;
+            m_VanillaPreviewRight = false;
 
             toolEnabled = false;
             m_PendingEnableAfterContourHostStop = false;
@@ -162,6 +168,7 @@ namespace ZoningToolkit.Systems
             // ToolOutputBarrier.CreateCommandBuffer() is not allowed in OnStopRunning().
             // Highlight cleanup uses immediate EntityManager structural changes.
             ClearRoadPreviewImmediate();
+            ClearVanillaRemovalPreviewImmediate();
             ClearHoverHighlightImmediate();
         }
 

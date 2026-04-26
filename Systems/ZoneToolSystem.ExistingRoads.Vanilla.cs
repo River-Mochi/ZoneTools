@@ -18,6 +18,20 @@ namespace ZoningToolkit.Systems
     {
         private static readonly CompositionFlags.Side kZonesDisabled = CompositionFlags.Side.ZonesDisabled;
 
+        private ZoningMode GetToolRoadZoningMode(Entity roadEntity)
+        {
+            if (roadEntity != Entity.Null &&
+                roadEntity == m_PreviewRoad &&
+                m_PreviewCurrent != m_PreviewDesired)
+            {
+                // While preview is active, keep comparing against the committed road state.
+                // Otherwise the tool reads its own preview back and flickers on/off.
+                return m_PreviewCurrent;
+            }
+
+            return GetEffectiveRoadZoningMode(roadEntity);
+        }
+
         private ZoningMode GetEffectiveRoadZoningMode(Entity roadEntity)
         {
             if (roadEntity != Entity.Null &&

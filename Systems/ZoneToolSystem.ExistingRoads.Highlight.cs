@@ -11,6 +11,7 @@ namespace ZoningToolkit.Systems
     using Game.Tools;       // Highlighted
     using Game.Zones;       // Block, Cell, SubBlock, ValidArea
     using Unity.Entities;   // Entity, EntityCommandBuffer
+    using Unity.Mathematics;
     using ZoningToolkit.Components; // ZoningInfo, ZoningMode, ZoningPreviewMode
     using ZoningToolkit.Utils; // BlockUtils
 
@@ -26,7 +27,7 @@ namespace ZoningToolkit.Systems
             if (m_Hovered != Entity.Null && EntityManager.Exists(m_Hovered))
             {
                 desired = m_UISystem.CurrentZoningMode;
-                current = GetEffectiveRoadZoningMode(m_Hovered);
+                current = GetToolRoadZoningMode(m_Hovered);
 
                 if (current != desired)
                 {
@@ -50,6 +51,7 @@ namespace ZoningToolkit.Systems
             }
 
             UpdateRoadPreview(ecb, target, current, desired);
+            UpdateVanillaRemovalPreview(target, current, desired);
         }
 
         // Immediate cleanup path (no ECB).
@@ -70,8 +72,10 @@ namespace ZoningToolkit.Systems
             m_Highlighted = Entity.Null;
         }
 
-        // Queue preview updates so the core zoning system can resize the real zone blocks.
-        // This gives ZT a true UER preview instead of only a road outline.
+        // Queue preview updates so the core zoning system can resize the visible zone blocks.
+        // Preview shows the union of current + desired zoning:
+        // - added cells appear in the normal translucent style
+        // - removed cells stay visible so vanilla can tint them red
         private void UpdateRoadPreview(EntityCommandBuffer ecb, Entity roadEntity, ZoningMode current, ZoningMode desired)
         {
             if (roadEntity == m_PreviewRoad &&
@@ -88,24 +92,24 @@ namespace ZoningToolkit.Systems
             {
                 if (hadPreview)
                 {
-                    QueuePreviewMode(ecb, m_PreviewRoad, m_PreviewCurrent);
+                    QueuePreviewMode(ecb, m_PreviewRoad, m_PreviewCurrent, m_PreviewCurrent);
                 }
 
                 if (wantsPreview)
                 {
-                    QueuePreviewMode(ecb, roadEntity, desired);
+                    QueuePreviewMode(ecb, roadEntity, current, desired);
                 }
             }
             else
             {
                 if (hadPreview && !wantsPreview)
                 {
-                    QueuePreviewMode(ecb, roadEntity, current);
+                    QueuePreviewMode(ecb, roadEntity, current, current);
                 }
                 else if (wantsPreview &&
                          (current != m_PreviewCurrent || desired != m_PreviewDesired))
                 {
-                    QueuePreviewMode(ecb, roadEntity, desired);
+                    QueuePreviewMode(ecb, roadEntity, current, desired);
                 }
             }
 
@@ -114,7 +118,7 @@ namespace ZoningToolkit.Systems
             m_PreviewDesired = desired;
         }
 
-        private void QueuePreviewMode(EntityCommandBuffer ecb, Entity roadEntity, ZoningMode mode)
+        private void QueuePreviewMode(EntityCommandBuffer ecb, Entity roadEntity, ZoningMode current, ZoningMode desired)
         {
             if (roadEntity == Entity.Null ||
                 !EntityManager.Exists(roadEntity) ||
@@ -124,7 +128,17 @@ namespace ZoningToolkit.Systems
             }
 
             DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
-            ZoningPreviewMode preview = new() { zoningMode = mode };
+            int currentLeft = ShouldDisableLeft(current) ? 0 : 6;
+            int currentRight = ShouldDisableRight(current) ? 0 : 6;
+            int desiredLeft = ShouldDisableLeft(desired) ? 0 : 6;
+            int desiredRight = ShouldDisableRight(desired) ? 0 : 6;
+
+            ZoningPreviewMode preview = new()
+            {
+                depths = new int2(
+                    math.max(currentLeft, desiredLeft),
+                    math.max(currentRight, desiredRight))
+            };
 
             for (int i = 0; i < subBlocks.Length; i++)
             {
@@ -166,6 +180,134 @@ namespace ZoningToolkit.Systems
             m_PreviewRoad = Entity.Null;
             m_PreviewCurrent = ZoningMode.Default;
             m_PreviewDesired = ZoningMode.Default;
+        }
+
+        private void UpdateVanillaRemovalPreview(Entity roadEntity, ZoningMode current, ZoningMode desired)
+        {
+            bool removeLeft = !ShouldDisableLeft(current) && ShouldDisableLeft(desired);
+            bool removeRight = !ShouldDisableRight(current) && ShouldDisableRight(desired);
+            bool wantsRemovalPreview = roadEntity != Entity.Null && (removeLeft || removeRight);
+
+            if (!wantsRemovalPreview)
+            {
+                ClearVanillaRemovalPreviewImmediate();
+                return;
+            }
+
+            if (roadEntity == m_VanillaPreviewRoad &&
+                removeLeft == m_VanillaPreviewLeft &&
+                removeRight == m_VanillaPreviewRight)
+            {
+                return;
+            }
+
+            ClearVanillaRemovalPreviewImmediate();
+
+            if (!EntityManager.Exists(roadEntity) ||
+                !EntityManager.HasComponent<Curve>(roadEntity) ||
+                !EntityManager.HasBuffer<SubBlock>(roadEntity))
+            {
+                return;
+            }
+
+            ApplyVanillaRemovalHighlights(roadEntity, removeLeft, removeRight);
+
+            m_VanillaPreviewRoad = roadEntity;
+            m_VanillaPreviewLeft = removeLeft;
+            m_VanillaPreviewRight = removeRight;
+        }
+
+        private void ApplyVanillaRemovalHighlights(Entity roadEntity, bool removeLeft, bool removeRight)
+        {
+            if (roadEntity == Entity.Null ||
+                !EntityManager.Exists(roadEntity) ||
+                !EntityManager.HasComponent<Curve>(roadEntity) ||
+                !EntityManager.HasBuffer<SubBlock>(roadEntity))
+            {
+                return;
+            }
+
+            Curve curve = EntityManager.GetComponentData<Curve>(roadEntity);
+            DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
+
+            for (int i = 0; i < subBlocks.Length; i++)
+            {
+                Entity blockEntity = subBlocks[i].m_SubBlock;
+                if (blockEntity == Entity.Null ||
+                    !EntityManager.Exists(blockEntity) ||
+                    !EntityManager.HasComponent<Block>(blockEntity) ||
+                    !EntityManager.HasComponent<ValidArea>(blockEntity) ||
+                    !EntityManager.HasBuffer<Cell>(blockEntity))
+                {
+                    continue;
+                }
+
+                Block block = EntityManager.GetComponentData<Block>(blockEntity);
+                ValidArea validArea = EntityManager.GetComponentData<ValidArea>(blockEntity);
+                DynamicBuffer<Cell> cells = EntityManager.GetBuffer<Cell>(blockEntity);
+                float dot = BlockUtils.blockCurveDotProduct(block, curve);
+
+                bool isLeftSide = dot > 0f;
+                bool highlightSide = isLeftSide ? removeLeft : removeRight;
+                bool blocked =
+                    (Mod.Settings?.ProtectOccupiedCells ?? true) && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea) ||
+                    (Mod.Settings?.ProtectZonedCells ?? true) && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea);
+
+                for (int cellIndex = 0; cellIndex < cells.Length; cellIndex++)
+                {
+                    Cell cell = cells[cellIndex];
+                    cell.m_State &= ~CellFlags.Highlight;
+
+                    if (highlightSide && !blocked)
+                    {
+                        cell.m_State |= CellFlags.Highlight;
+                    }
+
+                    cells[cellIndex] = cell;
+                }
+
+                if (!EntityManager.HasComponent<Updated>(blockEntity))
+                {
+                    EntityManager.AddComponent<Updated>(blockEntity);
+                }
+            }
+        }
+
+        private void ClearVanillaRemovalPreviewImmediate()
+        {
+            if (m_VanillaPreviewRoad != Entity.Null &&
+                EntityManager.Exists(m_VanillaPreviewRoad) &&
+                EntityManager.HasBuffer<SubBlock>(m_VanillaPreviewRoad))
+            {
+                DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(m_VanillaPreviewRoad, isReadOnly: true);
+                for (int i = 0; i < subBlocks.Length; i++)
+                {
+                    Entity blockEntity = subBlocks[i].m_SubBlock;
+                    if (blockEntity == Entity.Null ||
+                        !EntityManager.Exists(blockEntity) ||
+                        !EntityManager.HasBuffer<Cell>(blockEntity))
+                    {
+                        continue;
+                    }
+
+                    DynamicBuffer<Cell> cells = EntityManager.GetBuffer<Cell>(blockEntity);
+                    for (int cellIndex = 0; cellIndex < cells.Length; cellIndex++)
+                    {
+                        Cell cell = cells[cellIndex];
+                        cell.m_State &= ~CellFlags.Highlight;
+                        cells[cellIndex] = cell;
+                    }
+
+                    if (!EntityManager.HasComponent<Updated>(blockEntity))
+                    {
+                        EntityManager.AddComponent<Updated>(blockEntity);
+                    }
+                }
+            }
+
+            m_VanillaPreviewRoad = Entity.Null;
+            m_VanillaPreviewLeft = false;
+            m_VanillaPreviewRight = false;
         }
 
         private void ApplyPreviewModeImmediate(Entity roadEntity, ZoningMode mode)

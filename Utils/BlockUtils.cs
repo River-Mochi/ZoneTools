@@ -51,6 +51,18 @@ namespace ZoningToolkit.Utils
             }
         }
 
+        public static void applyBlockDepth(int depth, ref ValidArea validArea, ref Block block)
+        {
+            validArea.m_Area.w = depth;
+            block.m_Size.y = depth;
+        }
+
+        public static void applyPreviewDepths(float dotProduct, int2 depths, ref ValidArea validArea, ref Block block)
+        {
+            int depth = dotProduct > 0f ? depths.x : depths.y;
+            applyBlockDepth(depth, ref validArea, ref block);
+        }
+
         public static float blockCurveDotProduct(Block block, Curve curve)
         {
 #if DEBUG

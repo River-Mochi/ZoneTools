@@ -14,7 +14,7 @@ namespace ZoningToolkit.Systems
     using Unity.Collections;       // NativeArray, NativeParallelHashMap
     using Unity.Entities;          // EntityQuery, ComponentLookup, ECB
     using Unity.Jobs;              // JobHandle, IJob, IJobChunk
-    using Unity.Mathematics;       // float2
+    using Unity.Mathematics;       // float2, int2
     using UnityEngine.Scripting;   // Preserve (keep OnUpdate/OnCreate from stripping)
     using ZoningToolkit.Components; // ZoningInfo, ZoningInfoUpdated, ZoningMode, ZoningPreviewMode
     using ZoningToolkit.Utils;     // BlockUtils (block sizing helpers)
@@ -229,9 +229,6 @@ namespace ZoningToolkit.Systems
             {
                 JobHandle job = new UpdatePreviewZoningJob
                 {
-                    protectOccupiedCells = protectOccupiedCells,
-                    protectZonedCells = protectZonedCells,
-
                     entityTypeHandle = m_EntityTypeHandle,
                     blockComponentTypeHandle = m_BlockTypeHandle,
                     validAreaComponentTypeHandle = m_ValidAreaTypeHandle,
@@ -493,9 +490,6 @@ namespace ZoningToolkit.Systems
 
         private struct UpdatePreviewZoningJob : IJobChunk
         {
-            [ReadOnly] public bool protectOccupiedCells;
-            [ReadOnly] public bool protectZonedCells;
-
             [ReadOnly] public EntityTypeHandle entityTypeHandle;
             public ComponentTypeHandle<Block> blockComponentTypeHandle;
             public ComponentTypeHandle<ValidArea> validAreaComponentTypeHandle;
@@ -534,22 +528,14 @@ namespace ZoningToolkit.Systems
 
                     Curve curve = curveComponentLookup[owner.m_Owner];
                     Block block = blocks[i];
-                    DynamicBuffer<Cell> cells = cellBufs[i];
                     ValidArea validArea = validAreas[i];
                     ZoningPreviewMode preview = previewModes[i];
 
-                    bool blocked =
-                        (protectOccupiedCells && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea)) ||
-                        (protectZonedCells && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea));
+                    float dot = BlockUtils.blockCurveDotProduct(block, curve);
+                    BlockUtils.applyPreviewDepths(dot, preview.depths, ref validArea, ref block);
 
-                    if (!blocked)
-                    {
-                        float dot = BlockUtils.blockCurveDotProduct(block, curve);
-                        BlockUtils.applyBlockSizes(dot, preview.zoningMode, ref validArea, ref block);
-
-                        entityCommandBuffer.SetComponent(entity, validArea);
-                        entityCommandBuffer.SetComponent(entity, block);
-                    }
+                    entityCommandBuffer.SetComponent(entity, validArea);
+                    entityCommandBuffer.SetComponent(entity, block);
 
                     entityCommandBuffer.RemoveComponent<ZoningPreviewMode>(entity);
                 }
