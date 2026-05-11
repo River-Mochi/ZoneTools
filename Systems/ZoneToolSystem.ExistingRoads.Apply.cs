@@ -79,6 +79,7 @@ namespace ZoningToolkit.Systems
 
             // Only create an ECB if at least one entity actually needs changes.
             bool didWork = false;
+            bool clearPreviewState = false;
             EntityCommandBuffer ecb = default;
 
             foreach (Entity roadEntity in m_Selected)
@@ -107,12 +108,20 @@ namespace ZoningToolkit.Systems
 
                 if (roadEntity == m_PreviewRoad)
                 {
-                    m_PreviewCurrent = desired;
-                    m_PreviewDesired = desired;
+                    clearPreviewState = true;
                 }
+
             }
 
             ClearSelection();
+
+            if (clearPreviewState)
+            {
+                m_PreviewRoad = Entity.Null;
+                m_PreviewCurrent = ZoningMode.Default;
+                m_PreviewDesired = ZoningMode.Default;
+                ClearVanillaRemovalPreviewImmediate();
+            }
 
             if (didWork)
             {

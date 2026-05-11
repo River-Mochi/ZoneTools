@@ -51,7 +51,6 @@ namespace ZoningToolkit.Systems
             }
 
             UpdateRoadPreview(ecb, target, current, desired);
-            UpdateVanillaRemovalPreview(target, current, desired);
         }
 
         // Immediate cleanup path (no ECB).
@@ -73,9 +72,8 @@ namespace ZoningToolkit.Systems
         }
 
         // Queue preview updates so the core zoning system can resize the visible zone blocks.
-        // Preview shows the union of current + desired zoning:
-        // - added cells appear in the normal translucent style
-        // - removed cells stay visible so vanilla can tint them red
+        // EasyZoning-style behavior is more reliable for ZT right now:
+        // show the actual desired side depths on hover, even for removals.
         private void UpdateRoadPreview(EntityCommandBuffer ecb, Entity roadEntity, ZoningMode current, ZoningMode desired)
         {
             if (roadEntity == m_PreviewRoad &&
@@ -128,16 +126,12 @@ namespace ZoningToolkit.Systems
             }
 
             DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
-            int currentLeft = ShouldDisableLeft(current) ? 0 : 6;
-            int currentRight = ShouldDisableRight(current) ? 0 : 6;
             int desiredLeft = ShouldDisableLeft(desired) ? 0 : 6;
             int desiredRight = ShouldDisableRight(desired) ? 0 : 6;
 
             ZoningPreviewMode preview = new()
             {
-                depths = new int2(
-                    math.max(currentLeft, desiredLeft),
-                    math.max(currentRight, desiredRight))
+                depths = new int2(desiredLeft, desiredRight)
             };
 
             for (int i = 0; i < subBlocks.Length; i++)
@@ -184,93 +178,10 @@ namespace ZoningToolkit.Systems
 
         private void UpdateVanillaRemovalPreview(Entity roadEntity, ZoningMode current, ZoningMode desired)
         {
-            bool removeLeft = !ShouldDisableLeft(current) && ShouldDisableLeft(desired);
-            bool removeRight = !ShouldDisableRight(current) && ShouldDisableRight(desired);
-            bool wantsRemovalPreview = roadEntity != Entity.Null && (removeLeft || removeRight);
-
-            if (!wantsRemovalPreview)
-            {
-                ClearVanillaRemovalPreviewImmediate();
-                return;
-            }
-
-            if (roadEntity == m_VanillaPreviewRoad &&
-                removeLeft == m_VanillaPreviewLeft &&
-                removeRight == m_VanillaPreviewRight)
-            {
-                return;
-            }
-
+            // Disabled for now.
+            // The direct Highlight attempt did not produce reliable vanilla-red results in ZT,
+            // so this branch is focusing on stable desired-depth preview first.
             ClearVanillaRemovalPreviewImmediate();
-
-            if (!EntityManager.Exists(roadEntity) ||
-                !EntityManager.HasComponent<Curve>(roadEntity) ||
-                !EntityManager.HasBuffer<SubBlock>(roadEntity))
-            {
-                return;
-            }
-
-            ApplyVanillaRemovalHighlights(roadEntity, removeLeft, removeRight);
-
-            m_VanillaPreviewRoad = roadEntity;
-            m_VanillaPreviewLeft = removeLeft;
-            m_VanillaPreviewRight = removeRight;
-        }
-
-        private void ApplyVanillaRemovalHighlights(Entity roadEntity, bool removeLeft, bool removeRight)
-        {
-            if (roadEntity == Entity.Null ||
-                !EntityManager.Exists(roadEntity) ||
-                !EntityManager.HasComponent<Curve>(roadEntity) ||
-                !EntityManager.HasBuffer<SubBlock>(roadEntity))
-            {
-                return;
-            }
-
-            Curve curve = EntityManager.GetComponentData<Curve>(roadEntity);
-            DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
-
-            for (int i = 0; i < subBlocks.Length; i++)
-            {
-                Entity blockEntity = subBlocks[i].m_SubBlock;
-                if (blockEntity == Entity.Null ||
-                    !EntityManager.Exists(blockEntity) ||
-                    !EntityManager.HasComponent<Block>(blockEntity) ||
-                    !EntityManager.HasComponent<ValidArea>(blockEntity) ||
-                    !EntityManager.HasBuffer<Cell>(blockEntity))
-                {
-                    continue;
-                }
-
-                Block block = EntityManager.GetComponentData<Block>(blockEntity);
-                ValidArea validArea = EntityManager.GetComponentData<ValidArea>(blockEntity);
-                DynamicBuffer<Cell> cells = EntityManager.GetBuffer<Cell>(blockEntity);
-                float dot = BlockUtils.blockCurveDotProduct(block, curve);
-
-                bool isLeftSide = dot > 0f;
-                bool highlightSide = isLeftSide ? removeLeft : removeRight;
-                bool blocked =
-                    (Mod.Settings?.ProtectOccupiedCells ?? true) && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea) ||
-                    (Mod.Settings?.ProtectZonedCells ?? true) && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea);
-
-                for (int cellIndex = 0; cellIndex < cells.Length; cellIndex++)
-                {
-                    Cell cell = cells[cellIndex];
-                    cell.m_State &= ~CellFlags.Highlight;
-
-                    if (highlightSide && !blocked)
-                    {
-                        cell.m_State |= CellFlags.Highlight;
-                    }
-
-                    cells[cellIndex] = cell;
-                }
-
-                if (!EntityManager.HasComponent<Updated>(blockEntity))
-                {
-                    EntityManager.AddComponent<Updated>(blockEntity);
-                }
-            }
         }
 
         private void ClearVanillaRemovalPreviewImmediate()
@@ -306,8 +217,6 @@ namespace ZoningToolkit.Systems
             }
 
             m_VanillaPreviewRoad = Entity.Null;
-            m_VanillaPreviewLeft = false;
-            m_VanillaPreviewRight = false;
         }
 
         private void ApplyPreviewModeImmediate(Entity roadEntity, ZoningMode mode)
