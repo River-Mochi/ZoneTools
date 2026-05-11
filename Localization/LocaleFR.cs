@@ -62,8 +62,8 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protéger les cases zonées peintes" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] activé**, Zone Tools ne change pas la profondeur/la zone des cases RCIO peintes encore vides.\n" +
-                    "**[   ] désactivé**, les cases zonées vides et peintes peuvent être écrasées avec Zone Tools."
+                    "**[ ✓ ] activé**, Zone Tools ne change pas la profondeur/la zone des cases RCIO peintes (vides ou occupées).\n" +
+                    "**[   ] désactivé**, les cases zonées peintes peuvent être écrasées avec Zone Tools."
                 },
 
                 // Compatibility

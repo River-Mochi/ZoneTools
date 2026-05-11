@@ -62,8 +62,8 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Bemalte Zonen-Zellen schützen" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] aktiviert**, Zone Tools ändert Tiefe/Bereich leerer, bemalter RCIO-Zellen nicht.\n" +
-                    "**[   ] deaktiviert**, bemalte leere Zonen-Zellen können mit Zone Tools überschrieben werden."
+                    "**[ ✓ ] aktiviert**, Zone Tools ändert Tiefe/Bereich bemalter RCIO-Zellen nicht (leer oder belegt).\n" +
+                    "**[   ] deaktiviert**, bemalte Zonen-Zellen können mit Zone Tools überschrieben werden."
                 },
 
                 // Compatibility

@@ -62,8 +62,8 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 保護已塗刷的分區格子" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 已啟用**，Zone Tools 不會修改仍為空的已塗刷 RCIO 格子的分區深度/範圍。\n" +
-                    "**[   ] 已關閉**，已塗刷的空分區格子可能會被 Zone Tools 覆蓋。"
+                    "**[ ✓ ] 已啟用**，Zone Tools 不會修改已塗刷 RCIO 格子（空置或已占用）的分區深度/範圍。\n" +
+                    "**[   ] 已關閉**，已塗刷的分區格子可能會被 Zone Tools 覆蓋。"
                 },
 
                 // Compatibility

@@ -62,8 +62,8 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Chroń pomalowane komórki stref" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru pustych, pomalowanych komórek RCIO.\n" +
-                    "**[   ] wyłączone**, pomalowane puste komórki stref mogą zostać nadpisane przez Zone Tools."
+                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru pomalowanych komórek RCIO (pustych lub zajętych).\n" +
+                    "**[   ] wyłączone**, pomalowane komórki stref mogą zostać nadpisane przez Zone Tools."
                 },
 
                 // Compatibility

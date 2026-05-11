@@ -62,8 +62,8 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 칠해진 구역 셀 보호" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 활성화** 시, 아직 비어 있는 칠해진 RCIO 셀의 구역 깊이/범위를 Zone Tools가 바꾸지 않습니다.\n" +
-                    "**[   ] 비활성화** 시, 칠해진 빈 구역 셀이 Zone Tools로 덮어써질 수 있습니다."
+                    "**[ ✓ ] 활성화** 시, 칠해진 RCIO 셀(비어 있거나 점유됨)의 구역 깊이/범위를 Zone Tools가 바꾸지 않습니다.\n" +
+                    "**[   ] 비활성화** 시, 칠해진 구역 셀이 Zone Tools로 덮어써질 수 있습니다."
                 },
 
                 // Compatibility

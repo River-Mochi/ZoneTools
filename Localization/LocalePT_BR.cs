@@ -62,8 +62,8 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Proteger células zoneadas pintadas" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] ativado**, o Zone Tools não altera a profundidade/área de células RCIO pintadas que ainda estão vazias.\n" +
-                    "**[   ] desativado**, células zoneadas vazias pintadas podem ser sobrescritas pelo Zone Tools."
+                    "**[ ✓ ] ativado**, o Zone Tools não altera a profundidade/área de células RCIO pintadas (vazias ou ocupadas).\n" +
+                    "**[   ] desativado**, células zoneadas pintadas podem ser sobrescritas pelo Zone Tools."
                 },
 
                 // Compatibility

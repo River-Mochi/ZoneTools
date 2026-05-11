@@ -60,8 +60,8 @@ namespace ZoningToolkit
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protect painted zoned cells" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on painted RCIO cells that are still empty.\n" +
-                    "**[   ] disabled**, painted empty zone cells could be overwritten when using Zone Tools."
+                    "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on painted RCIO cells (empty or occupied).\n" +
+                    "**[   ] disabled**, painted zone cells could be overwritten when using Zone Tools."
                 },
 
                 // Compatibility

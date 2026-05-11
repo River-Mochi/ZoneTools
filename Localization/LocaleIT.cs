@@ -62,8 +62,8 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Proteggi celle zonizzate dipinte" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] attivo**, Zone Tools non cambia profondità/area delle celle RCIO dipinte che sono ancora vuote.\n" +
-                    "**[   ] disattivo**, le celle zonizzate vuote dipinte potrebbero essere sovrascritte con Zone Tools."
+                    "**[ ✓ ] attivo**, Zone Tools non cambia profondità/area delle celle RCIO dipinte (vuote o occupate).\n" +
+                    "**[   ] disattivo**, le celle zonizzate dipinte potrebbero essere sovrascritte con Zone Tools."
                 },
 
                 // Compatibility
