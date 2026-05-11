@@ -58,7 +58,7 @@ namespace ZoningToolkit
                     "**[   ] disabled**, buildings could be condemned when changing the zoning under them."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protect zoned-but-empty cells" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protect painted zoned cells" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
                     "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on cells that are already zoned (even if empty).\n" +
                     "**[   ] disabled**, already zoned cells (painted RCIO) could be overwritten when using Zone Tools."
