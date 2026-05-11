@@ -133,7 +133,7 @@ namespace ZoningToolkit.Systems
         private ZoningMode ConstrainModeForProtectedCells(Entity roadEntity, ZoningMode current, ZoningMode desired)
         {
             bool protectOccupiedCells = Mod.Settings?.ProtectOccupiedCells ?? true;
-            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? false;
+            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? true;
 
             if (!protectOccupiedCells && !protectZonedCells)
             {

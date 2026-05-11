@@ -294,7 +294,7 @@ namespace ZoningToolkit.Systems
             Curve curve = EntityManager.GetComponentData<Curve>(roadEntity);
             DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
             bool protectOccupiedCells = Mod.Settings?.ProtectOccupiedCells ?? true;
-            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? false;
+            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? true;
             int2 depths = GetDepthsForMode(mode);
 
             for (int i = 0; i < subBlocks.Length; i++)

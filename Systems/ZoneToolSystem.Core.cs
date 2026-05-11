@@ -2,7 +2,7 @@
 // Core zoning application system (new + updated blocks).
 // Applies optional protection rules from Settings:
 // - ProtectOccupiedCells (default ON)
-// - ProtectZonedCells (default OFF)
+// - ProtectZonedCells (default ON)
 
 namespace ZoningToolkit.Systems
 {
@@ -155,7 +155,7 @@ namespace ZoningToolkit.Systems
             EntityCommandBuffer ecb = m_ModificationBarrier4B.CreateCommandBuffer();
 
             bool protectOccupiedCells = Mod.Settings?.ProtectOccupiedCells ?? true;
-            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? false;
+            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? true;
 
             // Hash maps track deleted curves by endpoint so zoning mode can be inherited
             // across split/replace operations (common during road edits).
