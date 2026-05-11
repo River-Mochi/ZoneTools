@@ -146,11 +146,13 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
+            ZoningMode visualMode = current != desired ? desired : current;
+
             if (current != desired)
             {
                 ZoningPreviewMode preview = new()
                 {
-                    depths = GetDepthsForMode(desired)
+                    depths = GetDepthsForMode(visualMode)
                 };
 
                 if (EntityManager.HasComponent<ZoningPreviewMode>(roadEntity))
@@ -166,7 +168,7 @@ namespace ZoningToolkit.Systems
 
                 // Temporarily align vanilla's per-side ZonesDisabled flags too.
                 // This lets add-previews show on roads whose zones are currently disabled.
-                SyncVanillaZoneFlags(ecb, roadEntity, desired);
+                SyncVanillaZoneFlags(ecb, roadEntity, visualMode);
             }
             else
             {
@@ -174,7 +176,7 @@ namespace ZoningToolkit.Systems
 
                 ZoningRestoreMode restore = new()
                 {
-                    depths = GetDepthsForMode(current)
+                    depths = GetDepthsForMode(visualMode)
                 };
 
                 if (EntityManager.HasComponent<ZoningRestoreMode>(roadEntity))
@@ -186,8 +188,12 @@ namespace ZoningToolkit.Systems
                     ecb.AddComponent(roadEntity, restore);
                 }
 
-                SyncVanillaZoneFlags(ecb, roadEntity, current);
+                SyncVanillaZoneFlags(ecb, roadEntity, visualMode);
             }
+
+            // Apply the visual block depth immediately so add-side previews do not
+            // wait on vanilla's later refresh pass, which can leave disabled sides hidden.
+            ApplyPreviewModeImmediate(roadEntity, visualMode);
 
             TagRoadForUpdate(ecb, roadEntity);
             TagSubBlocksForUpdate(ecb, roadEntity);
