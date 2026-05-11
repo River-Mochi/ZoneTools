@@ -1,5 +1,5 @@
 // File: Systems/ZoneToolSystem.ExistingRoads.Vanilla.cs
-// Purpose: Vanilla road-zoning compatibility helpers for Update Existing Roads.
+// Purpose: Vanilla road-zoning compatibility bridge helpers for Update Existing Roads.
 // Notes:
 // - Reads/writes the game's per-side ZonesDisabled flags when present.
 // - Keeps Zone Tools' 4-mode UI, but aligns the road state with vanilla.
