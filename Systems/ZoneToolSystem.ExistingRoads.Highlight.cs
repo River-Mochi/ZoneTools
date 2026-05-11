@@ -28,6 +28,7 @@ namespace ZoningToolkit.Systems
             {
                 desired = m_UISystem.CurrentZoningMode;
                 current = GetToolRoadZoningMode(m_Hovered);
+                desired = ConstrainModeForProtectedCells(m_Hovered, current, desired);
 
                 if (current != desired)
                 {
@@ -312,16 +313,20 @@ namespace ZoningToolkit.Systems
                 ValidArea validArea = EntityManager.GetComponentData<ValidArea>(blockEntity);
                 DynamicBuffer<Cell> cells = EntityManager.GetBuffer<Cell>(blockEntity);
 
-                bool blocked =
-                    (protectOccupiedCells && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea)) ||
-                    (protectZonedCells && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea));
-                if (blocked)
+                bool isLeftSide = BlockUtils.isBlockOnLeft(block, curve);
+                int targetDepth = isLeftSide ? depths.x : depths.y;
+                if (BlockUtils.shouldProtectDepthReduction(
+                        targetDepth,
+                        ref cells,
+                        ref block,
+                        ref validArea,
+                        protectOccupiedCells,
+                        protectZonedCells))
                 {
                     continue;
                 }
 
-                bool isLeftSide = BlockUtils.isBlockOnLeft(block, curve);
-                BlockUtils.applyPreviewDepths(isLeftSide, depths, ref validArea, ref block);
+                BlockUtils.applyBlockDepth(targetDepth, ref validArea, ref block);
 
                 EntityManager.SetComponentData(blockEntity, block);
                 EntityManager.SetComponentData(blockEntity, validArea);

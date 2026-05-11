@@ -9,7 +9,7 @@ namespace ZoningToolkit.Systems
     using Game.Common;               // Updated
     using Game.Net;                  // Curve, Upgraded
     using Game.Prefabs;              // CompositionFlags
-    using Game.Zones;                // Block, ValidArea, SubBlock
+    using Game.Zones;                // Block, Cell, ValidArea, SubBlock
     using Unity.Entities;            // Entity, EntityCommandBuffer
     using Unity.Mathematics;         // int2
     using ZoningToolkit.Components;  // ZoningInfo, ZoningMode, ZoningPreviewMode, ZoningRestoreMode
@@ -128,6 +128,79 @@ namespace ZoningToolkit.Systems
 
             mode = GetZoningModeFromDisabledSides(leftDisabled, rightDisabled);
             return true;
+        }
+
+        private ZoningMode ConstrainModeForProtectedCells(Entity roadEntity, ZoningMode current, ZoningMode desired)
+        {
+            bool protectOccupiedCells = Mod.Settings?.ProtectOccupiedCells ?? true;
+            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? false;
+
+            if (!protectOccupiedCells && !protectZonedCells)
+            {
+                return desired;
+            }
+
+            bool leftDisabled = ShouldDisableLeft(desired);
+            bool rightDisabled = ShouldDisableRight(desired);
+
+            bool removingLeft = !ShouldDisableLeft(current) && leftDisabled;
+            bool removingRight = !ShouldDisableRight(current) && rightDisabled;
+
+            if (removingLeft && HasProtectedCellsOnSide(roadEntity, leftSide: true, protectOccupiedCells, protectZonedCells))
+            {
+                leftDisabled = false;
+            }
+
+            if (removingRight && HasProtectedCellsOnSide(roadEntity, leftSide: false, protectOccupiedCells, protectZonedCells))
+            {
+                rightDisabled = false;
+            }
+
+            return GetZoningModeFromDisabledSides(leftDisabled, rightDisabled);
+        }
+
+        private bool HasProtectedCellsOnSide(Entity roadEntity, bool leftSide, bool protectOccupiedCells, bool protectZonedCells)
+        {
+            if (roadEntity == Entity.Null ||
+                !EntityManager.Exists(roadEntity) ||
+                !EntityManager.HasComponent<Curve>(roadEntity) ||
+                !EntityManager.HasBuffer<SubBlock>(roadEntity))
+            {
+                return false;
+            }
+
+            Curve curve = EntityManager.GetComponentData<Curve>(roadEntity);
+            DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
+
+            for (int i = 0; i < subBlocks.Length; i++)
+            {
+                Entity blockEntity = subBlocks[i].m_SubBlock;
+                if (blockEntity == Entity.Null ||
+                    !EntityManager.Exists(blockEntity) ||
+                    !EntityManager.HasComponent<Block>(blockEntity) ||
+                    !EntityManager.HasComponent<ValidArea>(blockEntity) ||
+                    !EntityManager.HasBuffer<Cell>(blockEntity))
+                {
+                    continue;
+                }
+
+                Block block = EntityManager.GetComponentData<Block>(blockEntity);
+                if (BlockUtils.isBlockOnLeft(block, curve) != leftSide)
+                {
+                    continue;
+                }
+
+                ValidArea validArea = EntityManager.GetComponentData<ValidArea>(blockEntity);
+                DynamicBuffer<Cell> cells = EntityManager.GetBuffer<Cell>(blockEntity, isReadOnly: true);
+
+                if ((protectOccupiedCells && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea)) ||
+                    (protectZonedCells && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void SyncVanillaZoneFlags(EntityCommandBuffer ecb, Entity roadEntity, ZoningMode mode)

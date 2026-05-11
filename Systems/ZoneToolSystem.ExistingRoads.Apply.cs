@@ -79,7 +79,7 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
-            ZoningMode desired = m_UISystem.CurrentZoningMode;
+            ZoningMode requested = m_UISystem.CurrentZoningMode;
 
             // Only create an ECB if at least one entity actually needs changes.
             bool didWork = false;
@@ -94,11 +94,12 @@ namespace ZoningToolkit.Systems
                 }
 
                 ZoningMode current = GetToolRoadZoningMode(roadEntity);
+                ZoningMode desired = ConstrainModeForProtectedCells(roadEntity, current, requested);
 
                 if (current == desired)
                 {
 #if DEBUG
-                    Mod.s_Log.Info($"{Mod.ModTag} UER apply skipped road={roadEntity}; already {desired}; {DescribeRoadForDebug(roadEntity)}");
+                    Mod.s_Log.Info($"{Mod.ModTag} UER apply skipped road={roadEntity}; requested={requested}; effective={desired}; {DescribeRoadForDebug(roadEntity)}");
 #endif
                     continue;
                 }
@@ -116,7 +117,7 @@ namespace ZoningToolkit.Systems
                 ClearQueuedRoadPreview(ecb, roadEntity);
 
 #if DEBUG
-                Mod.s_Log.Info($"{Mod.ModTag} UER apply road={roadEntity}; current={current}; desired={desired}; {DescribeRoadForDebug(roadEntity)}");
+                Mod.s_Log.Info($"{Mod.ModTag} UER apply road={roadEntity}; current={current}; requested={requested}; effective={desired}; {DescribeRoadForDebug(roadEntity)}");
 #endif
 
                 if (roadEntity == m_PreviewRoad)

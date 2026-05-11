@@ -64,6 +64,34 @@ namespace ZoningToolkit.Utils
             applyBlockDepth(depth, ref validArea, ref block);
         }
 
+        public static int getDepthForMode(bool isLeftSide, ZoningMode zoningMode)
+        {
+            bool disabled = isLeftSide
+                ? zoningMode == ZoningMode.Right || zoningMode == ZoningMode.None
+                : zoningMode == ZoningMode.Left || zoningMode == ZoningMode.None;
+
+            return disabled ? 0 : 6;
+        }
+
+        public static bool shouldProtectDepthReduction(
+            int targetDepth,
+            ref DynamicBuffer<Cell> cells,
+            ref Block block,
+            ref ValidArea validArea,
+            bool protectOccupiedCells,
+            bool protectZonedCells)
+        {
+            int currentDepth = math.max(block.m_Size.y, validArea.m_Area.w);
+            if (targetDepth >= currentDepth)
+            {
+                return false;
+            }
+
+            return
+                (protectOccupiedCells && isAnyCellOccupied(ref cells, ref block, ref validArea)) ||
+                (protectZonedCells && isAnyCellZoned(ref cells, ref block, ref validArea));
+        }
+
         public static bool isBlockOnLeft(Block block, Curve curve)
         {
             float dot = blockCurveDotProduct(block, curve);

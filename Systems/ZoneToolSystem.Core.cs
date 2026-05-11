@@ -343,29 +343,37 @@ namespace ZoningToolkit.Systems
                     bool hasRestore = zoningRestoreComponentLookup.TryGetComponent(owner.m_Owner, out ZoningRestoreMode restore);
                     bool hasZoningInfo = zoningInfoComponentLookup.TryGetComponent(owner.m_Owner, out ZoningInfo zi);
 
-                    bool blocked =
-                        (protectOccupiedCells && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea)) ||
-                        (protectZonedCells && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea));
+                    bool applyDepth = false;
+                    int targetDepth = block.m_Size.y;
 
-                    if (!blocked)
+                    if (hasPreview)
                     {
-                        if (hasPreview)
-                        {
-                            BlockUtils.applyPreviewDepths(isLeftSide, preview.depths, ref validArea, ref block);
-                            entityCommandBuffer.SetComponent(entity, validArea);
-                            entityCommandBuffer.SetComponent(entity, block);
-                        }
-                        else if (hasRestore)
-                        {
-                            BlockUtils.applyPreviewDepths(isLeftSide, restore.depths, ref validArea, ref block);
-                            entityCommandBuffer.SetComponent(entity, validArea);
-                            entityCommandBuffer.SetComponent(entity, block);
-                        }
-                        else if (hasZoningInfo)
-                        {
-                            float dot = isLeftSide ? 1f : -1f;
-                            BlockUtils.editBlockSizes(dot, zi, validArea, block, entity, entityCommandBuffer);
-                        }
+                        targetDepth = isLeftSide ? preview.depths.x : preview.depths.y;
+                        applyDepth = true;
+                    }
+                    else if (hasRestore)
+                    {
+                        targetDepth = isLeftSide ? restore.depths.x : restore.depths.y;
+                        applyDepth = true;
+                    }
+                    else if (hasZoningInfo)
+                    {
+                        targetDepth = BlockUtils.getDepthForMode(isLeftSide, zi.zoningMode);
+                        applyDepth = true;
+                    }
+
+                    if (applyDepth &&
+                        !BlockUtils.shouldProtectDepthReduction(
+                            targetDepth,
+                            ref cells,
+                            ref block,
+                            ref validArea,
+                            protectOccupiedCells,
+                            protectZonedCells))
+                    {
+                        BlockUtils.applyBlockDepth(targetDepth, ref validArea, ref block);
+                        entityCommandBuffer.SetComponent(entity, validArea);
+                        entityCommandBuffer.SetComponent(entity, block);
                     }
 
                     if (hasRestore)
@@ -494,20 +502,23 @@ namespace ZoningToolkit.Systems
                     DynamicBuffer<Cell> cells = cellBufs[i];
                     ValidArea validArea = validAreas[i];
 
-                    float dot = BlockUtils.blockCurveDotProduct(block, curve);
+                    bool isLeftSide = BlockUtils.isBlockOnLeft(block, curve);
+                    int targetDepth = BlockUtils.getDepthForMode(isLeftSide, zi.zoningMode);
 
-                    // Protection options prevent resizing zones in certain scenarios.
-                    if (protectOccupiedCells && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea))
+                    if (BlockUtils.shouldProtectDepthReduction(
+                            targetDepth,
+                            ref cells,
+                            ref block,
+                            ref validArea,
+                            protectOccupiedCells,
+                            protectZonedCells))
                     {
                         continue;
                     }
 
-                    if (protectZonedCells && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea))
-                    {
-                        continue;
-                    }
-
-                    BlockUtils.editBlockSizes(dot, zi, validArea, block, entity, entityCommandBuffer);
+                    BlockUtils.applyBlockDepth(targetDepth, ref validArea, ref block);
+                    entityCommandBuffer.SetComponent(entity, validArea);
+                    entityCommandBuffer.SetComponent(entity, block);
 
                     // ZoningInfo is persisted on the owner (curve/edge entity) so future blocks inherit it.
                     AddOrSetZoningInfo(entityCommandBuffer, zoningInfoComponentLookup, owner.m_Owner, zi);

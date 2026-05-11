@@ -63,10 +63,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Legacy\" />
-        <Folder Include="NewFolder\" />
+        <Folder Include="docs\" />
         <Folder Include="Scripts\" />
         <Folder Include="zoning-toolkit-ui\src\shared\" />
+    </ItemGroup>
+
+    <!-- Private developer notes: visible in the project, never copied or published. -->
+    <ItemGroup>
+        <Content Remove="docs\**\*" />
+        <None Update="docs\**\*">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+            <Pack>false</Pack>
+        </None>
     </ItemGroup>
 
     <!-- AUTO UPDATE PublishConfiguration ModVersion using CSPROJ (source of truth):
