@@ -51,6 +51,11 @@ namespace ZoningToolkit.Systems
         private ComponentLookup<Updated> updatedLookup;
         private ComponentLookup<ZoningInfoUpdated> zoningInfoUpdatedLookup;
 
+#if DEBUG
+        private int m_DebugUpdateLogTick;
+        private int m_DebugLastUpdateBlockCount;
+#endif
+
         // Barrier providing an ECB that plays back in Modification4B (safe structural changes).
         private ModificationBarrier4B m_ModificationBarrier4B = null!;
 
@@ -113,6 +118,11 @@ namespace ZoningToolkit.Systems
             zoningInfoUpdatedLookup = GetComponentLookup<ZoningInfoUpdated>();
 
             m_ModificationBarrier4B = World.GetOrCreateSystemManaged<ModificationBarrier4B>();
+
+#if DEBUG
+            m_DebugUpdateLogTick = 0;
+            m_DebugLastUpdateBlockCount = -1;
+#endif
 
             // System stays idle unless there is work in either query.
             RequireAnyForUpdate(m_NewBlocksQuery, m_UpdateBlocksQuery);
@@ -200,6 +210,15 @@ namespace ZoningToolkit.Systems
             // Updated blocks: re-apply sizing once, then remove the marker component.
             if (!m_UpdateBlocksQuery.IsEmptyIgnoreFilter)
             {
+#if DEBUG
+                int updateCount = m_UpdateBlocksQuery.CalculateEntityCount();
+                m_DebugUpdateLogTick++;
+                if (updateCount != m_DebugLastUpdateBlockCount || (m_DebugUpdateLogTick % 30) == 0)
+                {
+                    Mod.s_Log.Info($"{Mod.ModTag} Core update pass blocks={updateCount} (preview/apply markers)");
+                    m_DebugLastUpdateBlockCount = updateCount;
+                }
+#endif
                 JobHandle job = new UpdateZoningInfoJob
                 {
                     zoningMode = zoningMode,

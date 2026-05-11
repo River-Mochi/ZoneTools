@@ -48,6 +48,9 @@ namespace ZoningToolkit.Systems
         private ZoningMode m_PreviewDesired;
         private ZoningMode m_PreviewCurrent;
         private Entity m_VanillaPreviewRoad;
+#if DEBUG
+        private int m_DebugPreviewRefreshTick;
+#endif
 
         internal bool toolEnabled
         {
@@ -82,6 +85,9 @@ namespace ZoningToolkit.Systems
             m_PreviewDesired = ZoningMode.Default;
             m_PreviewCurrent = ZoningMode.Default;
             m_VanillaPreviewRoad = Entity.Null;
+#if DEBUG
+            m_DebugPreviewRefreshTick = 0;
+#endif
 
             toolEnabled = false;
             m_PendingEnableAfterContourHostStop = false;

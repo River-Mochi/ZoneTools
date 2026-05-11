@@ -28,6 +28,10 @@ namespace ZoningToolkit.Systems
             };
 
             m_UISystem.SetZoningModeFromTool(next);
+
+#if DEBUG
+            Mod.s_Log.Info($"{Mod.ModTag} UER cycle mode {current} -> {next}; hovered={m_Hovered}; previewRoad={m_PreviewRoad}; previewCommitted={m_PreviewCurrent}; previewDesired={m_PreviewDesired}");
+#endif
         }
 
         private void UpdateHover( )
@@ -93,6 +97,9 @@ namespace ZoningToolkit.Systems
 
                 if (current == desired)
                 {
+#if DEBUG
+                    Mod.s_Log.Info($"{Mod.ModTag} UER apply skipped road={roadEntity}; already {desired}; {DescribeRoadForDebug(roadEntity)}");
+#endif
                     continue;
                 }
 
@@ -104,8 +111,13 @@ namespace ZoningToolkit.Systems
 
                 AddOrSetZoningInfo(ecb, roadEntity, desired);
                 SyncVanillaZoneFlags(ecb, roadEntity, desired);
+                TagRoadForUpdate(ecb, roadEntity);
                 TagSubBlocksForUpdate(ecb, roadEntity);
                 ClearQueuedRoadPreview(ecb, roadEntity);
+
+#if DEBUG
+                Mod.s_Log.Info($"{Mod.ModTag} UER apply road={roadEntity}; current={current}; desired={desired}; {DescribeRoadForDebug(roadEntity)}");
+#endif
 
                 if (roadEntity == m_PreviewRoad)
                 {
@@ -203,6 +215,19 @@ namespace ZoningToolkit.Systems
                 {
                     ecb.AddComponent<Updated>(blockEntity);
                 }
+            }
+        }
+
+        private void TagRoadForUpdate(EntityCommandBuffer ecb, Entity roadEntity)
+        {
+            if (roadEntity == Entity.Null || !EntityManager.Exists(roadEntity))
+            {
+                return;
+            }
+
+            if (!EntityManager.HasComponent<Updated>(roadEntity))
+            {
+                ecb.AddComponent<Updated>(roadEntity);
             }
         }
 

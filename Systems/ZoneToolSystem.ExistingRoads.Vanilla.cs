@@ -11,7 +11,8 @@ namespace ZoningToolkit.Systems
     using Game.Prefabs;              // CompositionFlags
     using Game.Zones;                // Block, ValidArea, SubBlock
     using Unity.Entities;            // Entity, EntityCommandBuffer
-    using ZoningToolkit.Components;  // ZoningInfo, ZoningMode
+    using Unity.Mathematics;         // int2
+    using ZoningToolkit.Components;  // ZoningInfo, ZoningMode, ZoningPreviewMode, ZoningRestoreMode
     using ZoningToolkit.Utils;       // BlockUtils
 
     internal sealed partial class ZoneToolSystemExistingRoads
@@ -250,5 +251,118 @@ namespace ZoningToolkit.Systems
 
             return side & ~kZonesDisabled;
         }
+
+#if DEBUG
+        private void LogRoadPreviewState(string label, Entity roadEntity, ZoningMode current, ZoningMode desired)
+        {
+            int2 currentDepths = GetDepthsForMode(current);
+            int2 desiredDepths = GetDepthsForMode(desired);
+            Mod.s_Log.Info(
+                $"{Mod.ModTag} UER {label}: road={roadEntity}; " +
+                $"current={current}({currentDepths.x},{currentDepths.y}); " +
+                $"desired={desired}({desiredDepths.x},{desiredDepths.y}); " +
+                DescribeRoadForDebug(roadEntity));
+        }
+
+        private string DescribeRoadForDebug(Entity roadEntity)
+        {
+            if (roadEntity == Entity.Null)
+            {
+                return "road=null";
+            }
+
+            if (!EntityManager.Exists(roadEntity))
+            {
+                return "road=missing";
+            }
+
+            bool hasUpgraded = EntityManager.HasComponent<Upgraded>(roadEntity);
+            bool leftDisabled = false;
+            bool rightDisabled = false;
+
+            if (hasUpgraded)
+            {
+                Upgraded upgraded = EntityManager.GetComponentData<Upgraded>(roadEntity);
+                leftDisabled = (upgraded.m_Flags.m_Left & kZonesDisabled) != 0;
+                rightDisabled = (upgraded.m_Flags.m_Right & kZonesDisabled) != 0;
+            }
+
+            string preview = EntityManager.HasComponent<ZoningPreviewMode>(roadEntity)
+                ? "preview=yes"
+                : "preview=no";
+            string restore = EntityManager.HasComponent<ZoningRestoreMode>(roadEntity)
+                ? "restore=yes"
+                : "restore=no";
+            string legacy = EntityManager.HasComponent<ZoningInfo>(roadEntity)
+                ? $"legacy={EntityManager.GetComponentData<ZoningInfo>(roadEntity).zoningMode}"
+                : "legacy=none";
+
+            return
+                $"flags: upgraded={hasUpgraded} leftDisabled={leftDisabled} rightDisabled={rightDisabled}; " +
+                $"{preview}; {restore}; {legacy}; " +
+                DescribeBlockLayoutForDebug(roadEntity);
+        }
+
+        private string DescribeBlockLayoutForDebug(Entity roadEntity)
+        {
+            if (!EntityManager.HasComponent<Curve>(roadEntity) ||
+                !EntityManager.HasBuffer<SubBlock>(roadEntity))
+            {
+                return "blocks=unavailable";
+            }
+
+            Curve curve = EntityManager.GetComponentData<Curve>(roadEntity);
+            DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
+
+            int leftEnabled = 0;
+            int leftDisabled = 0;
+            int rightEnabled = 0;
+            int rightDisabled = 0;
+            int readable = 0;
+
+            for (int i = 0; i < subBlocks.Length; i++)
+            {
+                Entity blockEntity = subBlocks[i].m_SubBlock;
+                if (blockEntity == Entity.Null ||
+                    !EntityManager.Exists(blockEntity) ||
+                    !EntityManager.HasComponent<Block>(blockEntity) ||
+                    !EntityManager.HasComponent<ValidArea>(blockEntity))
+                {
+                    continue;
+                }
+
+                Block block = EntityManager.GetComponentData<Block>(blockEntity);
+                ValidArea validArea = EntityManager.GetComponentData<ValidArea>(blockEntity);
+                bool enabled = block.m_Size.y > 0 && validArea.m_Area.w > 0;
+                bool isLeft = BlockUtils.isBlockOnLeft(block, curve);
+                readable++;
+
+                if (isLeft)
+                {
+                    if (enabled)
+                    {
+                        leftEnabled++;
+                    }
+                    else
+                    {
+                        leftDisabled++;
+                    }
+                }
+                else
+                {
+                    if (enabled)
+                    {
+                        rightEnabled++;
+                    }
+                    else
+                    {
+                        rightDisabled++;
+                    }
+                }
+            }
+
+            return $"blocks: total={subBlocks.Length} readable={readable} L(en={leftEnabled},off={leftDisabled}) R(en={rightEnabled},off={rightDisabled})";
+        }
+#endif
     }
 }

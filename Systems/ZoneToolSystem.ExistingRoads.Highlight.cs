@@ -80,6 +80,22 @@ namespace ZoningToolkit.Systems
                 current == m_PreviewCurrent &&
                 desired == m_PreviewDesired)
             {
+                if (roadEntity != Entity.Null && current != desired)
+                {
+                    // Keep the preview warm while hovering/cycling. Add-previews can need
+                    // a later game refresh after vanilla ZonesDisabled flags change.
+                    TagRoadForUpdate(ecb, roadEntity);
+                    TagSubBlocksForUpdate(ecb, roadEntity);
+
+#if DEBUG
+                    m_DebugPreviewRefreshTick++;
+                    if ((m_DebugPreviewRefreshTick % 30) == 0)
+                    {
+                        LogRoadPreviewState("preview refresh", roadEntity, current, desired);
+                    }
+#endif
+                }
+
                 return;
             }
 
@@ -114,6 +130,11 @@ namespace ZoningToolkit.Systems
             m_PreviewRoad = roadEntity;
             m_PreviewCurrent = current;
             m_PreviewDesired = desired;
+
+#if DEBUG
+            m_DebugPreviewRefreshTick = 0;
+            LogRoadPreviewState("preview state", roadEntity, current, desired);
+#endif
         }
 
         private void QueuePreviewMode(EntityCommandBuffer ecb, Entity roadEntity, ZoningMode current, ZoningMode desired)
@@ -168,7 +189,12 @@ namespace ZoningToolkit.Systems
                 SyncVanillaZoneFlags(ecb, roadEntity, current);
             }
 
+            TagRoadForUpdate(ecb, roadEntity);
             TagSubBlocksForUpdate(ecb, roadEntity);
+
+#if DEBUG
+            LogRoadPreviewState("preview queue", roadEntity, current, desired);
+#endif
         }
 
         private void ClearRoadPreviewImmediate( )
