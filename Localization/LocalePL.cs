@@ -59,11 +59,11 @@ namespace ZoningToolkit
                     "**[   ] wyłączone**, budynki mogą zostać wyburzone po zmianie strefy pod nimi."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Chroń już wyznaczone, ale puste komórki" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Chroń pomalowane komórki stref" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru już wyznaczonych komórek (nawet pustych).\n" +
-                    "**[   ] wyłączone**, już wyznaczone komórki (namalowane RCIO) mogą zostać nadpisane przez Zone Tools."
+                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru pustych, pomalowanych komórek RCIO.\n" +
+                    "**[   ] wyłączone**, pomalowane puste komórki stref mogą zostać nadpisane przez Zone Tools."
                 },
 
                 // Compatibility

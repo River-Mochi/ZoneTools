@@ -59,11 +59,11 @@ namespace ZoningToolkit
                     "**[   ] désactivé**, des bâtiments peuvent être condamnés en changeant le zonage dessous."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protéger les cases déjà zonées mais vides" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protéger les cases zonées peintes" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] activé**, Zone Tools ne change pas la profondeur/la zone des cases déjà zonées (même vides).\n" +
-                    "**[   ] désactivé**, les cases déjà zonées (RCIO peint) peuvent être écrasées avec Zone Tools."
+                    "**[ ✓ ] activé**, Zone Tools ne change pas la profondeur/la zone des cases RCIO peintes encore vides.\n" +
+                    "**[   ] désactivé**, les cases zonées vides et peintes peuvent être écrasées avec Zone Tools."
                 },
 
                 // Compatibility

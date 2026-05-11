@@ -59,11 +59,11 @@ namespace ZoningToolkit
                     "**[   ] 已关闭**，更改建筑下方分区时，建筑可能会被判定为需拆除。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 保护已分区但为空的格子" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 保护已涂刷的分区格子" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 已启用**，Zone Tools 不会修改已分区格子（即使是空的）的分区深度/范围。\n" +
-                    "**[   ] 已关闭**，已分区格子（已涂上的 RCIO）可能会被 Zone Tools 覆盖。"
+                    "**[ ✓ ] 已启用**，Zone Tools 不会修改仍为空的已涂刷 RCIO 格子的分区深度/范围。\n" +
+                    "**[   ] 已关闭**，已涂刷的空分区格子可能会被 Zone Tools 覆盖。"
                 },
 
                 // Compatibility

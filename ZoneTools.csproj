@@ -82,7 +82,7 @@
        - match Version number
        - remove bom, make EOL=CRLF, and left-align text
        - update any mod.json version found under repo root -->
-    <Target Name="UpdatePublishConfigVersion" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'&#xD;&#xA;                 AND Exists('$(MSBuildProjectDirectory)\Scripts\Update-PublishConfig.ps1')&#xD;&#xA;                 AND Exists('$(MSBuildProjectDirectory)\$(PublishConfigurationPath)')">
+    <Target Name="UpdatePublishConfigVersion" BeforeTargets="Build" Condition="Exists('$(MSBuildProjectDirectory)\Scripts\Update-PublishConfig.ps1') AND Exists('$(MSBuildProjectDirectory)\$(PublishConfigurationPath)')">
 
         <Message Text="$(AssemblyTitle) PublishConfig: syncing ModVersion + normalize EOL/BOM + left-align blocks + mod.json version..." Importance="high" />
 

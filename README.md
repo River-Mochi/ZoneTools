@@ -37,7 +37,7 @@ For a different UI style with static in-panel icons, see **Easy Zoning**.
 ## Options UI Settings
 
 - ✅ Protect occupied cells (buildings)
-- ✅ Protect zoned-but-empty cells
+- ✅ Protect painted zoned cells
 - ✅ Show or hide the Contour button
 - ✅ Choose the panel default location when opened:
   - **Top Left**

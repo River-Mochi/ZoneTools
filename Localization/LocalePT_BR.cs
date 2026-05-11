@@ -59,11 +59,11 @@ namespace ZoningToolkit
                     "**[   ] desativado**, construções podem ser condenadas ao mudar o zoneamento por baixo."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Proteger células já zoneadas, mas vazias" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Proteger células zoneadas pintadas" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] ativado**, o Zone Tools não altera a profundidade/área de células já zoneadas (mesmo vazias).\n" +
-                    "**[   ] desativado**, células já zoneadas (RCIO pintado) podem ser sobrescritas pelo Zone Tools."
+                    "**[ ✓ ] ativado**, o Zone Tools não altera a profundidade/área de células RCIO pintadas que ainda estão vazias.\n" +
+                    "**[   ] desativado**, células zoneadas vazias pintadas podem ser sobrescritas pelo Zone Tools."
                 },
 
                 // Compatibility

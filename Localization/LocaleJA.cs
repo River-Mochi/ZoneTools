@@ -59,11 +59,11 @@ namespace ZoningToolkit
                     "**[   ] 無効** の場合、その下のゾーン変更で建物が廃墟化する可能性があります。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● すでにゾーン済みの空セルを保護" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 塗り分け済みゾーンセルを保護" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 有効** の場合、すでにゾーン済みのセル（空でも）を Zone Tools は変更しません。\n" +
-                    "**[   ] 無効** の場合、すでにゾーン済みのセル（塗った RCIO）が Zone Tools で上書きされる可能性があります。"
+                    "**[ ✓ ] 有効** の場合、まだ空いている塗り分け済み RCIO セルの深さ/範囲を Zone Tools は変更しません。\n" +
+                    "**[   ] 無効** の場合、塗り分け済みの空ゾーンセルが Zone Tools で上書きされる可能性があります。"
                 },
 
                 // Compatibility

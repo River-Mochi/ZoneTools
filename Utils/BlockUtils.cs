@@ -197,7 +197,8 @@ namespace ZoningToolkit.Utils
             }
 
             // Scan only the active zone area.
-            // Any painted zone blocks the edit when the protection option is enabled.
+            // Painted-zone protection is separate from occupied-building protection,
+            // so occupied cells are left for ProtectOccupiedCells to decide.
             for (int z = validArea.m_Area.z; z < validArea.m_Area.w; z++)
             {
                 for (int x = validArea.m_Area.x; x < validArea.m_Area.y; x++)
@@ -209,7 +210,8 @@ namespace ZoningToolkit.Utils
                     }
 
                     Cell cell = cells[index];
-                    if (cell.m_Zone.m_Index != ZoneType.None.m_Index)
+                    if ((cell.m_State & CellFlags.Occupied) == 0 &&
+                        cell.m_Zone.m_Index != ZoneType.None.m_Index)
                     {
                         return true;
                     }

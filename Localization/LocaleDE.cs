@@ -59,11 +59,11 @@ namespace ZoningToolkit
                     "**[   ] deaktiviert**, Gebäude könnten beim Ändern der Zonierung darunter aufgegeben werden."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Bereits zonierte, leere Zellen schützen" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Bemalte Zonen-Zellen schützen" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] aktiviert**, Zone Tools ändert Tiefe/Bereich bereits zonierter Zellen nicht (auch wenn leer).\n" +
-                    "**[   ] deaktiviert**, bereits zonierte Zellen (gemaltes RCIO) können mit Zone Tools überschrieben werden."
+                    "**[ ✓ ] aktiviert**, Zone Tools ändert Tiefe/Bereich leerer, bemalter RCIO-Zellen nicht.\n" +
+                    "**[   ] deaktiviert**, bemalte leere Zonen-Zellen können mit Zone Tools überschrieben werden."
                 },
 
                 // Compatibility
