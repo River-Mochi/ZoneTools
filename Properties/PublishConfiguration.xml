@@ -92,7 +92,9 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
-- updated mod to align with game patch and work better with new vanilla zone tool.
+  - added Preview feature when cycling all 4 choices with right mouse click: both, left, right, none. quality of life improvement to see the zoning change before applying it with left click.
+- fixed Protection toggles not working for zoned but empty cells
+- fixed Protection toggle for occupied cells with buildings.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />
