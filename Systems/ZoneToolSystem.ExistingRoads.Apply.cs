@@ -11,7 +11,7 @@ namespace ZoningToolkit.Systems
     using Game.Tools;                // RaycastHit
     using Game.Zones;
     using Unity.Entities;            // Entity, EntityCommandBuffer, DynamicBuffer
-    using ZoningToolkit.Components;  // ZoningInfo, ZoningInfoUpdated, ZoningMode
+    using ZoningToolkit.Components;  // ZoningInfo, ZoningInfoUpdated, ZoningMode, ZoningPreviewMode, ZoningRestoreMode
 
     internal sealed partial class ZoneToolSystemExistingRoads
     {
@@ -105,6 +105,7 @@ namespace ZoningToolkit.Systems
                 AddOrSetZoningInfo(ecb, roadEntity, desired);
                 SyncVanillaZoneFlags(ecb, roadEntity, desired);
                 TagSubBlocksForUpdate(ecb, roadEntity);
+                ClearQueuedRoadPreview(ecb, roadEntity);
 
                 if (roadEntity == m_PreviewRoad)
                 {
@@ -203,6 +204,14 @@ namespace ZoningToolkit.Systems
                     ecb.AddComponent<Updated>(blockEntity);
                 }
             }
+        }
+
+        private void ClearQueuedRoadPreview(EntityCommandBuffer ecb, Entity roadEntity)
+        {
+            // Remove unconditionally so an apply in the same frame as a hover-preview add
+            // still clears the transient road payload when the ECBs play back.
+            ecb.RemoveComponent<ZoningPreviewMode>(roadEntity);
+            ecb.RemoveComponent<ZoningRestoreMode>(roadEntity);
         }
     }
 }

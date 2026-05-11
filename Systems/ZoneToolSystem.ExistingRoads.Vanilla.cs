@@ -100,10 +100,10 @@ namespace ZoningToolkit.Systems
 
                 Block block = EntityManager.GetComponentData<Block>(blockEntity);
                 ValidArea validArea = EntityManager.GetComponentData<ValidArea>(blockEntity);
-                float dot = BlockUtils.blockCurveDotProduct(block, curve);
+                bool isLeftSide = BlockUtils.isBlockOnLeft(block, curve);
                 bool enabled = block.m_Size.y > 0 && validArea.m_Area.w > 0;
 
-                if (dot > 0f)
+                if (isLeftSide)
                 {
                     sawLeft = true;
                     leftEnabled |= enabled;
@@ -167,6 +167,47 @@ namespace ZoningToolkit.Systems
             if (!EntityManager.HasComponent<Updated>(roadEntity))
             {
                 ecb.AddComponent<Updated>(roadEntity);
+            }
+        }
+
+        private void SyncVanillaZoneFlagsImmediate(Entity roadEntity, ZoningMode mode)
+        {
+            if (roadEntity == Entity.Null || !EntityManager.Exists(roadEntity))
+            {
+                return;
+            }
+
+            bool hasUpgraded = EntityManager.HasComponent<Upgraded>(roadEntity);
+            CompositionFlags flags = hasUpgraded
+                ? EntityManager.GetComponentData<Upgraded>(roadEntity).m_Flags
+                : default;
+
+            flags.m_Left = SetZonesDisabled(flags.m_Left, ShouldDisableLeft(mode));
+            flags.m_Right = SetZonesDisabled(flags.m_Right, ShouldDisableRight(mode));
+
+            bool hasAnyUpgradeFlags = !flags.Equals(default(CompositionFlags));
+
+            if (hasAnyUpgradeFlags)
+            {
+                Upgraded upgraded = new Upgraded { m_Flags = flags };
+
+                if (hasUpgraded)
+                {
+                    EntityManager.SetComponentData(roadEntity, upgraded);
+                }
+                else
+                {
+                    EntityManager.AddComponentData(roadEntity, upgraded);
+                }
+            }
+            else if (hasUpgraded)
+            {
+                EntityManager.RemoveComponent<Upgraded>(roadEntity);
+            }
+
+            if (!EntityManager.HasComponent<Updated>(roadEntity))
+            {
+                EntityManager.AddComponent<Updated>(roadEntity);
             }
         }
 

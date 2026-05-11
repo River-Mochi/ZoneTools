@@ -12,7 +12,7 @@ namespace ZoningToolkit.Systems
     using Game.Zones;       // Block, Cell, SubBlock, ValidArea
     using Unity.Entities;   // Entity, EntityCommandBuffer
     using Unity.Mathematics;
-    using ZoningToolkit.Components; // ZoningInfo, ZoningMode, ZoningPreviewMode
+    using ZoningToolkit.Components; // ZoningInfo, ZoningMode, ZoningPreviewMode, ZoningRestoreMode
     using ZoningToolkit.Utils; // BlockUtils
 
     internal sealed partial class ZoneToolSystemExistingRoads
@@ -125,41 +125,50 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
-            DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
-            int desiredLeft = ShouldDisableLeft(desired) ? 0 : 6;
-            int desiredRight = ShouldDisableRight(desired) ? 0 : 6;
-
-            ZoningPreviewMode preview = new()
+            if (current != desired)
             {
-                depths = new int2(desiredLeft, desiredRight)
-            };
-
-            for (int i = 0; i < subBlocks.Length; i++)
-            {
-                Entity blockEntity = subBlocks[i].m_SubBlock;
-                if (blockEntity == Entity.Null ||
-                    !EntityManager.Exists(blockEntity) ||
-                    !EntityManager.HasComponent<Block>(blockEntity) ||
-                    !EntityManager.HasComponent<ValidArea>(blockEntity) ||
-                    !EntityManager.HasBuffer<Cell>(blockEntity))
+                ZoningPreviewMode preview = new()
                 {
-                    continue;
-                }
+                    depths = GetDepthsForMode(desired)
+                };
 
-                if (EntityManager.HasComponent<ZoningPreviewMode>(blockEntity))
+                if (EntityManager.HasComponent<ZoningPreviewMode>(roadEntity))
                 {
-                    ecb.SetComponent(blockEntity, preview);
+                    ecb.SetComponent(roadEntity, preview);
                 }
                 else
                 {
-                    ecb.AddComponent(blockEntity, preview);
+                    ecb.AddComponent(roadEntity, preview);
                 }
 
-                if (!EntityManager.HasComponent<Updated>(blockEntity))
-                {
-                    ecb.AddComponent<Updated>(blockEntity);
-                }
+                ecb.RemoveComponent<ZoningRestoreMode>(roadEntity);
+
+                // Temporarily align vanilla's per-side ZonesDisabled flags too.
+                // This lets add-previews show on roads whose zones are currently disabled.
+                SyncVanillaZoneFlags(ecb, roadEntity, desired);
             }
+            else
+            {
+                ecb.RemoveComponent<ZoningPreviewMode>(roadEntity);
+
+                ZoningRestoreMode restore = new()
+                {
+                    depths = GetDepthsForMode(current)
+                };
+
+                if (EntityManager.HasComponent<ZoningRestoreMode>(roadEntity))
+                {
+                    ecb.SetComponent(roadEntity, restore);
+                }
+                else
+                {
+                    ecb.AddComponent(roadEntity, restore);
+                }
+
+                SyncVanillaZoneFlags(ecb, roadEntity, current);
+            }
+
+            TagSubBlocksForUpdate(ecb, roadEntity);
         }
 
         private void ClearRoadPreviewImmediate( )
@@ -168,12 +177,32 @@ namespace ZoningToolkit.Systems
                 EntityManager.Exists(m_PreviewRoad) &&
                 m_PreviewCurrent != m_PreviewDesired)
             {
+                ClearRoadPreviewComponentsImmediate(m_PreviewRoad);
+                SyncVanillaZoneFlagsImmediate(m_PreviewRoad, m_PreviewCurrent);
                 ApplyPreviewModeImmediate(m_PreviewRoad, m_PreviewCurrent);
             }
 
             m_PreviewRoad = Entity.Null;
             m_PreviewCurrent = ZoningMode.Default;
             m_PreviewDesired = ZoningMode.Default;
+        }
+
+        private void ClearRoadPreviewComponentsImmediate(Entity roadEntity)
+        {
+            if (roadEntity == Entity.Null || !EntityManager.Exists(roadEntity))
+            {
+                return;
+            }
+
+            if (EntityManager.HasComponent<ZoningPreviewMode>(roadEntity))
+            {
+                EntityManager.RemoveComponent<ZoningPreviewMode>(roadEntity);
+            }
+
+            if (EntityManager.HasComponent<ZoningRestoreMode>(roadEntity))
+            {
+                EntityManager.RemoveComponent<ZoningRestoreMode>(roadEntity);
+            }
         }
 
         private void UpdateVanillaRemovalPreview(Entity roadEntity, ZoningMode current, ZoningMode desired)
@@ -233,6 +262,7 @@ namespace ZoningToolkit.Systems
             DynamicBuffer<SubBlock> subBlocks = EntityManager.GetBuffer<SubBlock>(roadEntity, isReadOnly: true);
             bool protectOccupiedCells = Mod.Settings?.ProtectOccupiedCells ?? true;
             bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? false;
+            int2 depths = GetDepthsForMode(mode);
 
             for (int i = 0; i < subBlocks.Length; i++)
             {
@@ -258,8 +288,8 @@ namespace ZoningToolkit.Systems
                     continue;
                 }
 
-                float dot = BlockUtils.blockCurveDotProduct(block, curve);
-                BlockUtils.applyBlockSizes(dot, mode, ref validArea, ref block);
+                bool isLeftSide = BlockUtils.isBlockOnLeft(block, curve);
+                BlockUtils.applyPreviewDepths(isLeftSide, depths, ref validArea, ref block);
 
                 EntityManager.SetComponentData(blockEntity, block);
                 EntityManager.SetComponentData(blockEntity, validArea);
@@ -269,6 +299,13 @@ namespace ZoningToolkit.Systems
                     EntityManager.AddComponent<Updated>(blockEntity);
                 }
             }
+        }
+
+        private static int2 GetDepthsForMode(ZoningMode mode)
+        {
+            return new int2(
+                ShouldDisableLeft(mode) ? 0 : 6,
+                ShouldDisableRight(mode) ? 0 : 6);
         }
 
         private void SetHighlighted(EntityCommandBuffer ecb, Entity entity, bool value)

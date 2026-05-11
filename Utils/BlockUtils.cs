@@ -9,16 +9,17 @@
 
 namespace ZoningToolkit.Utils
 {
-    using Colossal.Mathematics;     // Bezier4x2, MathUtils
+    using Colossal.Mathematics;     // MathUtils
     using Game.Net;                 // Curve
     using Game.Zones;               // Block, Cell, ValidArea
     using Unity.Entities;           // Entity
     using Unity.Mathematics;        // float2
-    using UnityEngine;              // Vector2
     using ZoningToolkit.Components; // ZoningInfo, ZoningMode
 
     internal static class BlockUtils
     {
+        private const float SideEpsilon = 0.01f;
+
         public static void applyBlockSizes(float dotProduct, ZoningMode zoningMode, ref ValidArea validArea, ref Block block)
         {
             // Set zone depth to 0 to disable zoning on that side.
@@ -57,10 +58,26 @@ namespace ZoningToolkit.Utils
             block.m_Size.y = depth;
         }
 
-        public static void applyPreviewDepths(float dotProduct, int2 depths, ref ValidArea validArea, ref Block block)
+        public static void applyPreviewDepths(bool isLeftSide, int2 depths, ref ValidArea validArea, ref Block block)
         {
-            int depth = dotProduct > 0f ? depths.x : depths.y;
+            int depth = isLeftSide ? depths.x : depths.y;
             applyBlockDepth(depth, ref validArea, ref block);
+        }
+
+        public static bool isBlockOnLeft(Block block, Curve curve)
+        {
+            float dot = blockCurveDotProduct(block, curve);
+            if (dot > SideEpsilon)
+            {
+                return true;
+            }
+
+            if (dot < -SideEpsilon)
+            {
+                return false;
+            }
+
+            return math.dot(new float2(1f, 1f), block.m_Direction) < 0f;
         }
 
         public static float blockCurveDotProduct(Block block, Curve curve)
@@ -70,21 +87,33 @@ namespace ZoningToolkit.Utils
             Mod.s_Log.Debug($"Block position {block.m_Position}");
 #endif
 
-            // Find the closest point on the road curve to this block.
-            MathUtils.Distance(curve.m_Bezier.xz, block.m_Position.xz, out float t);
-
-            // Build a perpendicular from the road tangent at that point.
-            // The sign of the dot product tells which side of the road the block is on.
-            Vector2 tangent = GetTangent(curve.m_Bezier.xz, t);
-            Vector2 perpendicular = new(tangent.y, -tangent.x);
-
-            float dot = Vector2.Dot(perpendicular, block.m_Direction);
+            float dot = getBlockCurveDotProduct(block, curve);
 
 #if DEBUG
             Mod.s_Log.Debug($"Dot product: {dot}");
 #endif
 
             return dot;
+        }
+
+        private static float getBlockCurveDotProduct(Block block, Curve curve)
+        {
+            MathUtils.Distance(curve.m_Bezier.xz, block.m_Position.xz, out float t);
+
+            float oneMinusT = 1f - t;
+            float2 tangent =
+                3f * oneMinusT * oneMinusT * (curve.m_Bezier.xz.b - curve.m_Bezier.xz.a) +
+                6f * oneMinusT * t * (curve.m_Bezier.xz.c - curve.m_Bezier.xz.b) +
+                3f * t * t * (curve.m_Bezier.xz.d - curve.m_Bezier.xz.c);
+
+            tangent = math.normalizesafe(tangent);
+            if (math.lengthsq(tangent) <= 1E-07f)
+            {
+                return 0f;
+            }
+
+            float2 perpendicular = new float2(tangent.y, -tangent.x);
+            return math.dot(perpendicular, block.m_Direction);
         }
 
         public static void editBlockSizes(float dotProduct, ZoningInfo newZoningInfo, ValidArea validArea, Block block, Entity entity, EntityCommandBuffer ecb)
@@ -160,18 +189,6 @@ namespace ZoningToolkit.Utils
             }
 
             return false;
-        }
-
-        public static Vector2 GetTangent(Bezier4x2 curve, float t)
-        {
-            // Derivative of the bezier curve at t.
-            // Used to build the side-test perpendicular in blockCurveDotProduct().
-            float2 derivative =
-                3 * math.pow(1 - t, 2) * (curve.b - curve.a) +
-                6 * (1 - t) * t * (curve.c - curve.b) +
-                3 * math.pow(t, 2) * (curve.d - curve.c);
-
-            return new Vector2(derivative.x, derivative.y);
         }
     }
 }
