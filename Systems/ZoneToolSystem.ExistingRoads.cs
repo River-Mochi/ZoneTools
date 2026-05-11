@@ -381,7 +381,7 @@ namespace ZoningToolkit.Systems
             m_ZTToolSystem.activeTool = this;
 
             toolEnabled = true;
-#if DEBUB
+#if DEBUG
             Mod.s_Log.Info($"{Mod.ModTag} ExistingRoads enabled");
 #endif
             return true;
