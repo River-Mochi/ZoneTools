@@ -55,15 +55,15 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● 점유된 셀 보호 (건물 있음)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] 활성화** 시, 건물이 이미 있는 셀의 구역 깊이/범위를 Zone Tools가 바꾸지 않습니다.\n" +
+                    "**[ ✓ ] 활성화** 시, 건물이 있는 도로 쪽 구역 셀을 Zone Tools가 제거하지 않습니다.\n" +
                     "**[   ] 비활성화** 시, 아래 구역을 바꾸면 건물이 철거 판정될 수 있습니다."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 칠해진 구역 셀 보호" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 활성화** 시, 칠해진 RCIO 셀(비어 있거나 점유됨)의 구역 깊이/범위를 Zone Tools가 바꾸지 않습니다.\n" +
-                    "**[   ] 비활성화** 시, 칠해진 구역 셀이 Zone Tools로 덮어써질 수 있습니다."
+                    "**[ ✓ ] 활성화** 시, 칠해진 RCIO 셀(비어 있거나 점유됨)을 Zone Tools가 바꾸지 않습니다.\n" +
+                    "**[   ] 비활성화** 시, 칠해진 구역 블록이 제거될 수 있습니다."
                 },
 
                 // Compatibility

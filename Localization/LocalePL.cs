@@ -55,15 +55,15 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● Chroń zajęte komórki (z budynkami)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru strefy w komórkach, które mają już budynek.\n" +
-                    "**[   ] wyłączone**, budynki mogą zostać wyburzone po zmianie strefy pod nimi."
+                    "**[ ✓ ] włączone**, Zone Tools nie usuwa komórek strefy po stronie drogi z budynkami.\n" +
+                    "**[   ] wyłączone**, budynki mogą zostać skazane po zmianie strefy pod nimi."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Chroń pomalowane komórki stref" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] włączone**, Zone Tools nie zmienia głębokości/obszaru pomalowanych komórek RCIO (pustych lub zajętych).\n" +
-                    "**[   ] wyłączone**, pomalowane komórki stref mogą zostać nadpisane przez Zone Tools."
+                    "**[ ✓ ] włączone**, Zone Tools nie zmienia pomalowanych komórek RCIO (pustych lub zajętych).\n" +
+                    "**[   ] wyłączone**, pomalowane bloki stref mogą zostać usunięte."
                 },
 
                 // Compatibility

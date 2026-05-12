@@ -55,15 +55,15 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● Belegte Zellen schützen (mit Gebäuden)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] aktiviert**, Zone Tools ändert Tiefe/Bereich von Zellen mit bestehenden Gebäuden nicht.\n" +
-                    "**[   ] deaktiviert**, Gebäude könnten beim Ändern der Zonierung darunter aufgegeben werden."
+                    "**[ ✓ ] aktiviert**, Zone Tools entfernt keine Zonenzellen auf der Straßenseite mit Gebäuden.\n" +
+                    "**[   ] deaktiviert**, Gebäude könnten durch Änderungen darunter abbruchreif werden."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Bemalte Zonen-Zellen schützen" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] aktiviert**, Zone Tools ändert Tiefe/Bereich bemalter RCIO-Zellen nicht (leer oder belegt).\n" +
-                    "**[   ] deaktiviert**, bemalte Zonen-Zellen können mit Zone Tools überschrieben werden."
+                    "**[ ✓ ] aktiviert**, Zone Tools ändert bemalte RCIO-Zellen nicht (leer oder belegt).\n" +
+                    "**[   ] deaktiviert**, bemalte Zonenblöcke können entfernt werden."
                 },
 
                 // Compatibility
