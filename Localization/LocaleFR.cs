@@ -55,15 +55,15 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● Protéger les cases occupées (avec bâtiments)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] activé**, Zone Tools ne change pas la profondeur/la zone des cases qui ont déjà un bâtiment.\n" +
-                    "**[   ] désactivé**, des bâtiments peuvent être condamnés en changeant le zonage dessous."
+                    "**[ ✓ ] activé**, Zone Tools ne retire pas les cases de zonage du côté de route avec bâtiments.\n" +
+                    "**[   ] désactivé**, des bâtiments peuvent être condamnés si le zonage dessous change."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protéger les cases déjà zonées mais vides" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protéger les cases zonées peintes" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] activé**, Zone Tools ne change pas la profondeur/la zone des cases déjà zonées (même vides).\n" +
-                    "**[   ] désactivé**, les cases déjà zonées (RCIO peint) peuvent être écrasées avec Zone Tools."
+                    "**[ ✓ ] activé**, Zone Tools ne change pas les cases RCIO peintes (vides ou occupées).\n" +
+                    "**[   ] désactivé**, les blocs de zonage peints peuvent être retirés."
                 },
 
                 // Compatibility

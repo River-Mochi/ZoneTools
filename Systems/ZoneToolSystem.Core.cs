@@ -2,7 +2,7 @@
 // Core zoning application system (new + updated blocks).
 // Applies optional protection rules from Settings:
 // - ProtectOccupiedCells (default ON)
-// - ProtectZonedCells (default OFF)
+// - ProtectZonedCells (default ON)
 
 namespace ZoningToolkit.Systems
 {
@@ -14,18 +14,21 @@ namespace ZoningToolkit.Systems
     using Unity.Collections;       // NativeArray, NativeParallelHashMap
     using Unity.Entities;          // EntityQuery, ComponentLookup, ECB
     using Unity.Jobs;              // JobHandle, IJob, IJobChunk
-    using Unity.Mathematics;       // float2
+    using Unity.Mathematics;       // float2, int2
     using UnityEngine.Scripting;   // Preserve (keep OnUpdate/OnCreate from stripping)
-    using ZoningToolkit.Components; // ZoningInfo, ZoningInfoUpdated, ZoningMode
+    using ZoningToolkit.Components; // ZoningInfo, ZoningInfoUpdated, ZoningMode, ZoningPreviewMode, ZoningRestoreMode
     using ZoningToolkit.Utils;     // BlockUtils (block sizing helpers)
 
     public partial class ZoneToolSystemCore : GameSystemBase
     {
+        // When vanilla UpgradeToolSystem is driving temp road previews, leave those
+        // temp blocks alone so ZT's selected side mode does not bleed into vanilla tools.
+        internal bool suppressTempRoadZoning;
+
         // New blocks: Created/Deleted blocks are observed so initial zone sizing is applied.
         private EntityQuery m_NewBlocksQuery;
         // Updated blocks: blocks tagged with ZoningInfoUpdated are re-applied once.
         private EntityQuery m_UpdateBlocksQuery;
-
         // Chunk access handles (refreshed each frame in OnUpdate).
         private ComponentTypeHandle<Block> m_BlockTypeHandle;
         private EntityTypeHandle m_EntityTypeHandle;
@@ -40,10 +43,18 @@ namespace ZoningToolkit.Systems
         public ComponentLookup<Owner> ownerComponentLookup;
         [ReadOnly] protected ComponentLookup<Curve> curveComponentLookup;
         private ComponentLookup<ZoningInfo> zoningInfoComponentLookup;
+        private ComponentLookup<ZoningPreviewMode> zoningPreviewComponentLookup;
+        private ComponentLookup<ZoningRestoreMode> zoningRestoreComponentLookup;
         private ComponentLookup<Deleted> deletedLookup;
+        private ComponentLookup<Game.Tools.Temp> tempLookup;
         private ComponentLookup<Applied> appliedLookup;
         private ComponentLookup<Updated> updatedLookup;
         private ComponentLookup<ZoningInfoUpdated> zoningInfoUpdatedLookup;
+
+#if DEBUG
+        private int m_DebugUpdateLogTick;
+        private int m_DebugLastUpdateBlockCount;
+#endif
 
         // Barrier providing an ECB that plays back in Modification4B (safe structural changes).
         private ModificationBarrier4B m_ModificationBarrier4B = null!;
@@ -98,12 +109,20 @@ namespace ZoningToolkit.Systems
             ownerComponentLookup = GetComponentLookup<Owner>();
             curveComponentLookup = GetComponentLookup<Curve>(true);
             zoningInfoComponentLookup = GetComponentLookup<ZoningInfo>();
+            zoningPreviewComponentLookup = GetComponentLookup<ZoningPreviewMode>(true);
+            zoningRestoreComponentLookup = GetComponentLookup<ZoningRestoreMode>(true);
             deletedLookup = GetComponentLookup<Deleted>();
+            tempLookup = GetComponentLookup<Game.Tools.Temp>(true);
             appliedLookup = GetComponentLookup<Applied>();
             updatedLookup = GetComponentLookup<Updated>();
             zoningInfoUpdatedLookup = GetComponentLookup<ZoningInfoUpdated>();
 
             m_ModificationBarrier4B = World.GetOrCreateSystemManaged<ModificationBarrier4B>();
+
+#if DEBUG
+            m_DebugUpdateLogTick = 0;
+            m_DebugLastUpdateBlockCount = -1;
+#endif
 
             // System stays idle unless there is work in either query.
             RequireAnyForUpdate(m_NewBlocksQuery, m_UpdateBlocksQuery);
@@ -119,11 +138,14 @@ namespace ZoningToolkit.Systems
             ownerComponentLookup.Update(ref CheckedStateRef);
             curveComponentLookup.Update(ref CheckedStateRef);
             zoningInfoComponentLookup.Update(ref CheckedStateRef);
+            zoningPreviewComponentLookup.Update(ref CheckedStateRef);
+            zoningRestoreComponentLookup.Update(ref CheckedStateRef);
             m_EntityTypeHandle.Update(ref CheckedStateRef);
             m_ValidAreaTypeHandle.Update(ref CheckedStateRef);
             m_DeletedTypeHandle.Update(ref CheckedStateRef);
             ownerTypeHandle.Update(ref CheckedStateRef);
             deletedLookup.Update(ref CheckedStateRef);
+            tempLookup.Update(ref CheckedStateRef);
             cellBufferTypeHandle.Update(ref CheckedStateRef);
             appliedLookup.Update(ref CheckedStateRef);
             updatedLookup.Update(ref CheckedStateRef);
@@ -133,7 +155,7 @@ namespace ZoningToolkit.Systems
             EntityCommandBuffer ecb = m_ModificationBarrier4B.CreateCommandBuffer();
 
             bool protectOccupiedCells = Mod.Settings?.ProtectOccupiedCells ?? true;
-            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? false;
+            bool protectZonedCells = Mod.Settings?.ProtectZonedCells ?? true;
 
             // Hash maps track deleted curves by endpoint so zoning mode can be inherited
             // across split/replace operations (common during road edits).
@@ -174,8 +196,10 @@ namespace ZoningToolkit.Systems
                     ownerComponentLookup = ownerComponentLookup,
                     curveComponentLookup = curveComponentLookup,
                     zoningInfoComponentLookup = zoningInfoComponentLookup,
+                    tempLookup = tempLookup,
                     appliedLookup = appliedLookup,
                     entityCommandBuffer = ecb,
+                    suppressTempRoadZoning = suppressTempRoadZoning,
                     entitiesByStartPoint = deletedByStart,
                     entitiesByEndPoint = deletedByEnd
                 }.Schedule(m_NewBlocksQuery, deps);
@@ -186,6 +210,15 @@ namespace ZoningToolkit.Systems
             // Updated blocks: re-apply sizing once, then remove the marker component.
             if (!m_UpdateBlocksQuery.IsEmptyIgnoreFilter)
             {
+#if DEBUG
+                int updateCount = m_UpdateBlocksQuery.CalculateEntityCount();
+                m_DebugUpdateLogTick++;
+                if (updateCount != m_DebugLastUpdateBlockCount || (m_DebugUpdateLogTick % 30) == 0)
+                {
+                    Mod.s_Log.Info($"{Mod.ModTag} Core update pass blocks={updateCount} (preview/apply markers)");
+                    m_DebugLastUpdateBlockCount = updateCount;
+                }
+#endif
                 JobHandle job = new UpdateZoningInfoJob
                 {
                     zoningMode = zoningMode,
@@ -199,6 +232,8 @@ namespace ZoningToolkit.Systems
                     ownerComponentLookup = ownerComponentLookup,
                     curveComponentLookup = curveComponentLookup,
                     zoningInfoComponentLookup = zoningInfoComponentLookup,
+                    zoningPreviewComponentLookup = zoningPreviewComponentLookup,
+                    zoningRestoreComponentLookup = zoningRestoreComponentLookup,
                     zoningInfoUpdateComponentLookup = zoningInfoUpdatedLookup,
                     entityCommandBuffer = ecb,
                     updatedLookup = updatedLookup
@@ -267,6 +302,8 @@ namespace ZoningToolkit.Systems
             [ReadOnly] public ComponentLookup<Owner> ownerComponentLookup;
             [ReadOnly] public ComponentLookup<Curve> curveComponentLookup;
             [ReadOnly] public ComponentLookup<ZoningInfo> zoningInfoComponentLookup;
+            [ReadOnly] public ComponentLookup<ZoningPreviewMode> zoningPreviewComponentLookup;
+            [ReadOnly] public ComponentLookup<ZoningRestoreMode> zoningRestoreComponentLookup;
 
             public ComponentLookup<ZoningInfoUpdated> zoningInfoUpdateComponentLookup;
             public EntityCommandBuffer entityCommandBuffer;
@@ -290,14 +327,9 @@ namespace ZoningToolkit.Systems
 
                     Owner owner = ownerComponentLookup[entity];
 
-                    // ZoningInfo is stored on the curve/edge owner entity (not the block entity).
-                    if (!zoningInfoComponentLookup.HasComponent(owner.m_Owner))
-                    {
-                        continue;
-                    }
-
                     if (!curveComponentLookup.HasComponent(owner.m_Owner))
                     {
+                        entityCommandBuffer.RemoveComponent<ZoningInfoUpdated>(entity);
                         continue;
                     }
 
@@ -306,16 +338,47 @@ namespace ZoningToolkit.Systems
                     DynamicBuffer<Cell> cells = cellBufs[i];
                     ValidArea validArea = validAreas[i];
 
-                    float dot = BlockUtils.blockCurveDotProduct(block, curve);
-                    ZoningInfo zi = zoningInfoComponentLookup[owner.m_Owner];
+                    bool isLeftSide = BlockUtils.isBlockOnLeft(block, curve);
+                    bool hasPreview = zoningPreviewComponentLookup.TryGetComponent(owner.m_Owner, out ZoningPreviewMode preview);
+                    bool hasRestore = zoningRestoreComponentLookup.TryGetComponent(owner.m_Owner, out ZoningRestoreMode restore);
+                    bool hasZoningInfo = zoningInfoComponentLookup.TryGetComponent(owner.m_Owner, out ZoningInfo zi);
 
-                    bool blocked =
-                        (protectOccupiedCells && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea)) ||
-                        (protectZonedCells && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea));
+                    bool applyDepth = false;
+                    int targetDepth = block.m_Size.y;
 
-                    if (!blocked)
+                    if (hasPreview)
                     {
-                        BlockUtils.editBlockSizes(dot, zi, validArea, block, entity, entityCommandBuffer);
+                        targetDepth = isLeftSide ? preview.depths.x : preview.depths.y;
+                        applyDepth = true;
+                    }
+                    else if (hasRestore)
+                    {
+                        targetDepth = isLeftSide ? restore.depths.x : restore.depths.y;
+                        applyDepth = true;
+                    }
+                    else if (hasZoningInfo)
+                    {
+                        targetDepth = BlockUtils.getDepthForMode(isLeftSide, zi.zoningMode);
+                        applyDepth = true;
+                    }
+
+                    if (applyDepth &&
+                        !BlockUtils.shouldProtectDepthReduction(
+                            targetDepth,
+                            ref cells,
+                            ref block,
+                            ref validArea,
+                            protectOccupiedCells,
+                            protectZonedCells))
+                    {
+                        BlockUtils.applyBlockDepth(targetDepth, ref validArea, ref block);
+                        entityCommandBuffer.SetComponent(entity, validArea);
+                        entityCommandBuffer.SetComponent(entity, block);
+                    }
+
+                    if (hasRestore)
+                    {
+                        entityCommandBuffer.RemoveComponent<ZoningRestoreMode>(owner.m_Owner);
                     }
 
                     // One-shot tag: remove so the block is not reprocessed every frame.
@@ -339,9 +402,11 @@ namespace ZoningToolkit.Systems
             [ReadOnly] public ComponentLookup<Owner> ownerComponentLookup;
             [ReadOnly] public ComponentLookup<Curve> curveComponentLookup;
             [ReadOnly] public ComponentLookup<ZoningInfo> zoningInfoComponentLookup;
+            [ReadOnly] public ComponentLookup<Game.Tools.Temp> tempLookup;
             [ReadOnly] public ComponentLookup<Applied> appliedLookup;
 
             public EntityCommandBuffer entityCommandBuffer;
+            [ReadOnly] public bool suppressTempRoadZoning;
             [ReadOnly] public NativeParallelHashMap<float2, Entity> entitiesByStartPoint;
             [ReadOnly] public NativeParallelHashMap<float2, Entity> entitiesByEndPoint;
 
@@ -375,6 +440,11 @@ namespace ZoningToolkit.Systems
                     }
 
                     Curve curve = curveComponentLookup[owner.m_Owner];
+
+                    if (suppressTempRoadZoning && tempLookup.HasComponent(owner.m_Owner))
+                    {
+                        continue;
+                    }
 
                     // Default: use current UI mode for brand new curves.
                     ZoningInfo zi = new ZoningInfo { zoningMode = zoningMode };
@@ -432,20 +502,23 @@ namespace ZoningToolkit.Systems
                     DynamicBuffer<Cell> cells = cellBufs[i];
                     ValidArea validArea = validAreas[i];
 
-                    float dot = BlockUtils.blockCurveDotProduct(block, curve);
+                    bool isLeftSide = BlockUtils.isBlockOnLeft(block, curve);
+                    int targetDepth = BlockUtils.getDepthForMode(isLeftSide, zi.zoningMode);
 
-                    // Protection options prevent resizing zones in certain scenarios.
-                    if (protectOccupiedCells && BlockUtils.isAnyCellOccupied(ref cells, ref block, ref validArea))
+                    if (BlockUtils.shouldProtectDepthReduction(
+                            targetDepth,
+                            ref cells,
+                            ref block,
+                            ref validArea,
+                            protectOccupiedCells,
+                            protectZonedCells))
                     {
                         continue;
                     }
 
-                    if (protectZonedCells && BlockUtils.isAnyCellZoned(ref cells, ref block, ref validArea))
-                    {
-                        continue;
-                    }
-
-                    BlockUtils.editBlockSizes(dot, zi, validArea, block, entity, entityCommandBuffer);
+                    BlockUtils.applyBlockDepth(targetDepth, ref validArea, ref block);
+                    entityCommandBuffer.SetComponent(entity, validArea);
+                    entityCommandBuffer.SetComponent(entity, block);
 
                     // ZoningInfo is persisted on the owner (curve/edge entity) so future blocks inherit it.
                     AddOrSetZoningInfo(entityCommandBuffer, zoningInfoComponentLookup, owner.m_Owner, zi);

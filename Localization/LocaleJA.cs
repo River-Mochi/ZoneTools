@@ -55,15 +55,15 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● 使用中セルを保護（建物あり）" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] 有効** の場合、建物があるセルのゾーン深さ/範囲を Zone Tools は変更しません。\n" +
-                    "**[   ] 無効** の場合、その下のゾーン変更で建物が廃墟化する可能性があります。"
+                    "**[ ✓ ] 有効** の場合、建物がある道路側のゾーンセルを Zone Tools は削除しません。\n" +
+                    "**[   ] 無効** の場合、下のゾーン変更で建物が廃墟化する可能性があります。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● すでにゾーン済みの空セルを保護" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 塗り分け済みゾーンセルを保護" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 有効** の場合、すでにゾーン済みのセル（空でも）を Zone Tools は変更しません。\n" +
-                    "**[   ] 無効** の場合、すでにゾーン済みのセル（塗った RCIO）が Zone Tools で上書きされる可能性があります。"
+                    "**[ ✓ ] 有効** の場合、塗り分け済み RCIO セル（空き/使用中）を Zone Tools は変更しません。\n" +
+                    "**[   ] 無効** の場合、塗り分け済みゾーンブロックが削除される可能性があります。"
                 },
 
                 // Compatibility

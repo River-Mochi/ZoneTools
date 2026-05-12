@@ -73,12 +73,18 @@ function getPanelLocationClass(panelLocation: string | undefined): string {
 
 export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUIState>> {
     private handleZoneModeSelect(zoningMode: ZoningMode): void {
+        const currentMode = getModeFromString(this.props.zoningMode ?? "Default");
+        const nextMode =
+            currentMode === zoningMode && zoningMode !== ZoningMode.NONE
+                ? ZoningMode.NONE
+                : zoningMode;
+
         if (this.props.updateZoningMode) {
-            this.props.updateZoningMode(zoningMode.toString());
+            this.props.updateZoningMode(nextMode.toString());
             return;
         }
 
-        useModUIStore.getState().updateZoningMode(zoningMode.toString());
+        useModUIStore.getState().updateZoningMode(nextMode.toString());
     }
 
     private handleZoneToolSelect(enabled: boolean): void {

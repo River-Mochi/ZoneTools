@@ -9,47 +9,24 @@
 
 namespace ZoningToolkit.Utils
 {
-    using Colossal.Mathematics;     // Bezier4x2, MathUtils
+    using Colossal.Mathematics;     // MathUtils
     using Game.Net;                 // Curve
     using Game.Zones;               // Block, Cell, ValidArea
     using Unity.Entities;           // Entity
     using Unity.Mathematics;        // float2
-    using UnityEngine;              // Vector2
-    using ZoningToolkit.Components; // ZoningInfo
+    using ZoningToolkit.Components; // ZoningInfo, ZoningMode
 
     internal static class BlockUtils
     {
-        public static float blockCurveDotProduct(Block block, Curve curve)
-        {
-#if DEBUG
-            Mod.s_Log.Debug($"Block direction {block.m_Direction}");
-            Mod.s_Log.Debug($"Block position {block.m_Position}");
-#endif
+        private const float SideEpsilon = 0.01f;
 
-            // Find the closest point on the road curve to this block.
-            MathUtils.Distance(curve.m_Bezier.xz, block.m_Position.xz, out float t);
-
-            // Build a perpendicular from the road tangent at that point.
-            // The sign of the dot product tells which side of the road the block is on.
-            Vector2 tangent = GetTangent(curve.m_Bezier.xz, t);
-            Vector2 perpendicular = new(tangent.y, -tangent.x);
-
-            float dot = Vector2.Dot(perpendicular, block.m_Direction);
-
-#if DEBUG
-            Mod.s_Log.Debug($"Dot product: {dot}");
-#endif
-
-            return dot;
-        }
-
-        public static void editBlockSizes(float dotProduct, ZoningInfo newZoningInfo, ValidArea validArea, Block block, Entity entity, EntityCommandBuffer ecb)
+        public static void applyBlockSizes(float dotProduct, ZoningMode zoningMode, ref ValidArea validArea, ref Block block)
         {
             // Set zone depth to 0 to disable zoning on that side.
             // Set zone depth to 6 to keep or restore normal zoning on that side.
             if (dotProduct > 0)
             {
-                if (newZoningInfo.zoningMode == ZoningMode.Right || newZoningInfo.zoningMode == ZoningMode.None)
+                if (zoningMode == ZoningMode.Right || zoningMode == ZoningMode.None)
                 {
                     validArea.m_Area.w = 0;
                     block.m_Size.y = 0;
@@ -62,7 +39,7 @@ namespace ZoningToolkit.Utils
             }
             else
             {
-                if (newZoningInfo.zoningMode == ZoningMode.Left || newZoningInfo.zoningMode == ZoningMode.None)
+                if (zoningMode == ZoningMode.Left || zoningMode == ZoningMode.None)
                 {
                     validArea.m_Area.w = 0;
                     block.m_Size.y = 0;
@@ -73,6 +50,103 @@ namespace ZoningToolkit.Utils
                     block.m_Size.y = 6;
                 }
             }
+        }
+
+        public static void applyBlockDepth(int depth, ref ValidArea validArea, ref Block block)
+        {
+            validArea.m_Area.w = depth;
+            block.m_Size.y = depth;
+        }
+
+        public static void applyPreviewDepths(bool isLeftSide, int2 depths, ref ValidArea validArea, ref Block block)
+        {
+            int depth = isLeftSide ? depths.x : depths.y;
+            applyBlockDepth(depth, ref validArea, ref block);
+        }
+
+        public static int getDepthForMode(bool isLeftSide, ZoningMode zoningMode)
+        {
+            bool disabled = isLeftSide
+                ? zoningMode == ZoningMode.Right || zoningMode == ZoningMode.None
+                : zoningMode == ZoningMode.Left || zoningMode == ZoningMode.None;
+
+            return disabled ? 0 : 6;
+        }
+
+        public static bool shouldProtectDepthReduction(
+            int targetDepth,
+            ref DynamicBuffer<Cell> cells,
+            ref Block block,
+            ref ValidArea validArea,
+            bool protectOccupiedCells,
+            bool protectZonedCells)
+        {
+            int currentDepth = math.max(block.m_Size.y, validArea.m_Area.w);
+            if (targetDepth >= currentDepth)
+            {
+                return false;
+            }
+
+            return
+                (protectOccupiedCells && isAnyCellOccupied(ref cells, ref block, ref validArea)) ||
+                (protectZonedCells && isAnyCellZoned(ref cells, ref block, ref validArea));
+        }
+
+        public static bool isBlockOnLeft(Block block, Curve curve)
+        {
+            float dot = blockCurveDotProduct(block, curve);
+            if (dot > SideEpsilon)
+            {
+                return true;
+            }
+
+            if (dot < -SideEpsilon)
+            {
+                return false;
+            }
+
+            return math.dot(new float2(1f, 1f), block.m_Direction) < 0f;
+        }
+
+        public static float blockCurveDotProduct(Block block, Curve curve)
+        {
+#if DEBUG
+            Mod.s_Log.Debug($"Block direction {block.m_Direction}");
+            Mod.s_Log.Debug($"Block position {block.m_Position}");
+#endif
+
+            float dot = getBlockCurveDotProduct(block, curve);
+
+#if DEBUG
+            Mod.s_Log.Debug($"Dot product: {dot}");
+#endif
+
+            return dot;
+        }
+
+        private static float getBlockCurveDotProduct(Block block, Curve curve)
+        {
+            MathUtils.Distance(curve.m_Bezier.xz, block.m_Position.xz, out float t);
+
+            float oneMinusT = 1f - t;
+            float2 tangent =
+                3f * oneMinusT * oneMinusT * (curve.m_Bezier.xz.b - curve.m_Bezier.xz.a) +
+                6f * oneMinusT * t * (curve.m_Bezier.xz.c - curve.m_Bezier.xz.b) +
+                3f * t * t * (curve.m_Bezier.xz.d - curve.m_Bezier.xz.c);
+
+            tangent = math.normalizesafe(tangent);
+            if (math.lengthsq(tangent) <= 1E-07f)
+            {
+                return 0f;
+            }
+
+            float2 perpendicular = new float2(tangent.y, -tangent.x);
+            return math.dot(perpendicular, block.m_Direction);
+        }
+
+        public static void editBlockSizes(float dotProduct, ZoningInfo newZoningInfo, ValidArea validArea, Block block, Entity entity, EntityCommandBuffer ecb)
+        {
+            applyBlockSizes(dotProduct, newZoningInfo.zoningMode, ref validArea, ref block);
 
             ecb.SetComponent(entity, validArea);
             ecb.SetComponent(entity, block);
@@ -123,7 +197,8 @@ namespace ZoningToolkit.Utils
             }
 
             // Scan only the active zone area.
-            // Any painted zone blocks the edit when the protection option is enabled.
+            // Painted-zone protection follows the CS2 lot model: a grown building
+            // still sits on painted RCIO zoning, so this protects both empty and occupied painted cells.
             for (int z = validArea.m_Area.z; z < validArea.m_Area.w; z++)
             {
                 for (int x = validArea.m_Area.x; x < validArea.m_Area.y; x++)
@@ -143,18 +218,6 @@ namespace ZoningToolkit.Utils
             }
 
             return false;
-        }
-
-        public static Vector2 GetTangent(Bezier4x2 curve, float t)
-        {
-            // Derivative of the bezier curve at t.
-            // Used to build the side-test perpendicular in blockCurveDotProduct().
-            float2 derivative =
-                3 * math.pow(1 - t, 2) * (curve.b - curve.a) +
-                6 * (1 - t) * t * (curve.c - curve.b) +
-                3 * math.pow(t, 2) * (curve.d - curve.c);
-
-            return new Vector2(derivative.x, derivative.y);
         }
     }
 }

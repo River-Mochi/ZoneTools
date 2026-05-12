@@ -55,15 +55,15 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● 保護已占用格子（有建築）" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] 已啟用**，Zone Tools 不會修改已有建築格子的分區深度/範圍。\n" +
+                    "**[ ✓ ] 已啟用**，Zone Tools 不會移除有建築道路一側的分區格子。\n" +
                     "**[   ] 已關閉**，更改建築下方分區時，建築可能會被判定為需拆除。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 保護已分區但為空的格子" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● 保護已塗刷的分區格子" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] 已啟用**，Zone Tools 不會修改已分區格子（即使是空的）的分區深度/範圍。\n" +
-                    "**[   ] 已關閉**，已分區格子（已塗上的 RCIO）可能會被 Zone Tools 覆蓋。"
+                    "**[ ✓ ] 已啟用**，Zone Tools 不會修改已塗刷 RCIO 格子（空置或已占用）。\n" +
+                    "**[   ] 已關閉**，已塗刷的分區塊可能會被移除。"
                 },
 
                 // Compatibility

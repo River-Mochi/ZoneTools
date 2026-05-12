@@ -55,15 +55,15 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● Proteggi celle occupate (con edifici)" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] attivo**, Zone Tools non cambia profondità/area delle celle che hanno già un edificio.\n" +
-                    "**[   ] disattivo**, gli edifici potrebbero essere condannati cambiando la zonizzazione sotto."
+                    "**[ ✓ ] attivo**, Zone Tools non rimuove celle di zona sul lato strada con edifici.\n" +
+                    "**[   ] disattivo**, gli edifici potrebbero essere condannati cambiando la zona sotto."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Proteggi celle già zonizzate ma vuote" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Proteggi celle zonizzate dipinte" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
-                    "**[ ✓ ] attivo**, Zone Tools non cambia profondità/area delle celle già zonizzate (anche se vuote).\n" +
-                    "**[   ] disattivo**, le celle già zonizzate (RCIO dipinto) potrebbero essere sovrascritte con Zone Tools."
+                    "**[ ✓ ] attivo**, Zone Tools non cambia celle RCIO dipinte (vuote o occupate).\n" +
+                    "**[   ] disattivo**, i blocchi di zona dipinti potrebbero essere rimossi."
                 },
 
                 // Compatibility

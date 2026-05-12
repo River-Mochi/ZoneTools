@@ -11,7 +11,7 @@ namespace ZoningToolkit.Systems
     using Game.Tools;                // RaycastHit
     using Game.Zones;
     using Unity.Entities;            // Entity, EntityCommandBuffer, DynamicBuffer
-    using ZoningToolkit.Components;  // ZoningInfo, ZoningInfoUpdated, ZoningMode
+    using ZoningToolkit.Components;  // ZoningInfo, ZoningInfoUpdated, ZoningMode, ZoningPreviewMode, ZoningRestoreMode
 
     internal sealed partial class ZoneToolSystemExistingRoads
     {
@@ -28,6 +28,10 @@ namespace ZoningToolkit.Systems
             };
 
             m_UISystem.SetZoningModeFromTool(next);
+
+#if DEBUG
+            Mod.s_Log.Info($"{Mod.ModTag} UER cycle mode {current} -> {next}; hovered={m_Hovered}; previewRoad={m_PreviewRoad}; previewCommitted={m_PreviewCurrent}; previewDesired={m_PreviewDesired}");
+#endif
         }
 
         private void UpdateHover( )
@@ -75,10 +79,11 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
-            ZoningMode desired = m_UISystem.CurrentZoningMode;
+            ZoningMode requested = m_UISystem.CurrentZoningMode;
 
             // Only create an ECB if at least one entity actually needs changes.
             bool didWork = false;
+            bool clearPreviewState = false;
             EntityCommandBuffer ecb = default;
 
             foreach (Entity roadEntity in m_Selected)
@@ -88,10 +93,14 @@ namespace ZoningToolkit.Systems
                     continue;
                 }
 
-                ZoningMode current = GetEffectiveRoadZoningMode(roadEntity);
+                ZoningMode current = GetToolRoadZoningMode(roadEntity);
+                ZoningMode desired = ConstrainModeForProtectedCells(roadEntity, current, requested);
 
                 if (current == desired)
                 {
+#if DEBUG
+                    Mod.s_Log.Info($"{Mod.ModTag} UER apply skipped road={roadEntity}; requested={requested}; effective={desired}; {DescribeRoadForDebug(roadEntity)}");
+#endif
                     continue;
                 }
 
@@ -103,10 +112,30 @@ namespace ZoningToolkit.Systems
 
                 AddOrSetZoningInfo(ecb, roadEntity, desired);
                 SyncVanillaZoneFlags(ecb, roadEntity, desired);
+                TagRoadForUpdate(ecb, roadEntity);
                 TagSubBlocksForUpdate(ecb, roadEntity);
+                ClearQueuedRoadPreview(ecb, roadEntity);
+
+#if DEBUG
+                Mod.s_Log.Info($"{Mod.ModTag} UER apply road={roadEntity}; current={current}; requested={requested}; effective={desired}; {DescribeRoadForDebug(roadEntity)}");
+#endif
+
+                if (roadEntity == m_PreviewRoad)
+                {
+                    clearPreviewState = true;
+                }
+
             }
 
             ClearSelection();
+
+            if (clearPreviewState)
+            {
+                m_PreviewRoad = Entity.Null;
+                m_PreviewCurrent = ZoningMode.Default;
+                m_PreviewDesired = ZoningMode.Default;
+                ClearVanillaRemovalPreviewImmediate();
+            }
 
             if (didWork)
             {
@@ -188,6 +217,27 @@ namespace ZoningToolkit.Systems
                     ecb.AddComponent<Updated>(blockEntity);
                 }
             }
+        }
+
+        private void TagRoadForUpdate(EntityCommandBuffer ecb, Entity roadEntity)
+        {
+            if (roadEntity == Entity.Null || !EntityManager.Exists(roadEntity))
+            {
+                return;
+            }
+
+            if (!EntityManager.HasComponent<Updated>(roadEntity))
+            {
+                ecb.AddComponent<Updated>(roadEntity);
+            }
+        }
+
+        private void ClearQueuedRoadPreview(EntityCommandBuffer ecb, Entity roadEntity)
+        {
+            // Remove unconditionally so an apply in the same frame as a hover-preview add
+            // still clears the transient road payload when the ECBs play back.
+            ecb.RemoveComponent<ZoningPreviewMode>(roadEntity);
+            ecb.RemoveComponent<ZoningRestoreMode>(roadEntity);
         }
     }
 }

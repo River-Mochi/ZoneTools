@@ -12,6 +12,7 @@ namespace ZoningToolkit.Components
     using Colossal.Serialization.Entities;
     using System;
     using Unity.Entities;
+    using Unity.Mathematics;
 
     public enum ZoningMode : uint
     {
@@ -49,5 +50,21 @@ namespace ZoningToolkit.Components
     // Added to block entities to trigger the one-shot update pass for existing roads.
     public struct ZoningInfoUpdated : IComponentData, IQueryTypeParameter
     {
+    }
+
+    // Hover preview payload.
+    // Added to road entities while the Existing Roads tool is previewing a road.
+    // Each side stores the preview depth we want visible on hover:
+    // x = left side depth, y = right side depth.
+    public struct ZoningPreviewMode : IComponentData, IQueryTypeParameter
+    {
+        public int2 depths;
+    }
+
+    // One-shot restore payload.
+    // Added to road entities when a preview ends and blocks need to return to committed depths.
+    public struct ZoningRestoreMode : IComponentData, IQueryTypeParameter
+    {
+        public int2 depths;
     }
 }
