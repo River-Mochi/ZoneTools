@@ -92,9 +92,10 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
-- added Preview when cycling all 4 choices with right click: both, left, right, none. quality of life improvement to see the zoning change before applying it with left click.
-- fixed Protection toggles not working for painted zoned cells
-- fixed Protection toggle for occupied cells with buildings.
+    - added Preview when cycling all 4 choices with right click: both, left, right, none. quality of life improvement to see the zoning change before applying it with left click.
+    - fixed Protection toggles not working for painted zoned cells
+    - fixed Protection toggle for occupied cells with buildings.
+    - added option to toggle any of 3 icons off (left, right, both) which switches any of them to none. None button is no longer needed but kept for legacy/habit reasons.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />

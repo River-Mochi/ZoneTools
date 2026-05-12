@@ -54,25 +54,25 @@ namespace ZoningToolkit
                 // Actions toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectOccupiedCells)), "● Protect occupied cells (has buildings)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectOccupiedCells)),
-                    "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on cells that already have a building.\n" +
+                    "**[ ✓ ] enabled**, zone tools does not remove zoning cells on side of the road segment that already has a building.\n" +
                     "**[   ] disabled**, buildings could be condemned when changing the zoning under them."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ProtectZonedCells)), "● Protect painted zoned cells" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ProtectZonedCells)),
                     "**[ ✓ ] enabled**, Zone Tools does not change zoning depth/area on painted RCIO cells (empty or occupied).\n" +
-                    "**[   ] disabled**, painted zone cells could be overwritten when using Zone Tools."
+                    "**[   ] disabled**, painted zone blocks could be removed."
                 },
 
                 // Compatibility
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Contour button" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "● Make Contour terrain lines viewable even when no road tool is open.\n" +
+                    "● Contour terrain lines are viewable even when no road tool is open.\n" +
                     "Compatibility option\n" +
                     "**[ ] disable** this if another mod is used to show terrain lines (or to make the panel smaller).\n" +
-                    "**[ ✓ ] enabled** shows the Contour button in the Zone Tools panel.\n\n" +
+                    "**[ ✓ ] enabled** shows the Contour button in the Zone Tools panel box.\n\n" +
                     "● Note: when you enable the **Update Road** icon, then the Topography button appears in the bottom-left vanilla location.\n" +
-                    "   - When this is disabled, then contour is still available while **Update Road** is ON since that activates the game's vanilla tool."
+                    "   - When this [ ] option is disabled, then contour is still available while **Update Road** is ON since that activates the game's own vanilla tool for terrain lines view."
                 },
 
                 // UI
