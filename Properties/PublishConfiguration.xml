@@ -94,7 +94,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <ChangeLog>
 - Improved panel styling
 - Moved Top Left location so it does not overlap mods like network tools.
-- New installs default the ZT panel to bottom left (change it in Options menu).
+- New installs default the ZT panel to bottom left (can change to top or bottom in Options menu).
 - Internal: cleaned panel UI to avoid vanilla class selectors.
 - improved compatibility with vanilla CS2 road zoning tool
 </ChangeLog>
