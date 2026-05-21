@@ -9,7 +9,7 @@
 // Notes:
 // - Uses React Draggable, not cs2/ui draggable.
 // - Dragging is restricted to the title bar only.
-// - grid={[5, 5]} is drag snap in JS; it is NOT CSS grid.
+// - grid={[1, 1]} is drag snap in JS; it is NOT CSS grid.
 // - Vanilla ToolButton still handles hover/selected/tooltip visuals.
 // - Title bar tooltip is explicit; locale entry alone does not make a tooltip appear.
 // - bottomRowLeft is the current default; includes option to Swap to bottomRowRight later.
