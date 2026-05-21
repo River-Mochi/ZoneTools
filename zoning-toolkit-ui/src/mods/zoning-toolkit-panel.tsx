@@ -8,7 +8,7 @@
 //
 // Notes:
 // - Uses React Draggable, not cs2/ui draggable.
-// - Dragging is restricted to the title bar only.
+// - Dragging is restricted to the owned title bar.
 // - grid={[1, 1]} is drag snap in JS; it is NOT CSS grid.
 // - Vanilla ToolButton still handles hover/selected/tooltip visuals.
 // - Title bar tooltip is explicit; locale entry alone does not make a tooltip appear.
@@ -37,6 +37,8 @@ const kLocale_Tooltip_ModeLeft = "ZoneTools.UI.Tooltip.ModeLeft";
 const kLocale_Tooltip_ModeRight = "ZoneTools.UI.Tooltip.ModeRight";
 const kLocale_Tooltip_ModeNone = "ZoneTools.UI.Tooltip.ModeNone";
 const kLocale_Tooltip_Contour = "ZoneTools.UI.Tooltip.Contour";
+
+const kDragHandleClass = "zt-panel-drag-handle";
 
 function translate(id: string, fallback: string): string {
     try {
@@ -117,7 +119,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const uiVisible = this.props.uiVisible === true;
         const photomodeActive = this.props.photomodeActive === true;
         const draggableKey = `${panelLocation}-${uiVisible ? "open" : "closed"}`;
-        const dragHandleSelector = `.${panelStyles.dragHandle}`;
+        const dragHandleSelector = `.${kDragHandleClass}`;
 
         const panelStyle = {
             display: !uiVisible || photomodeActive ? "none" : undefined,
@@ -185,16 +187,16 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                     className={panelClassName}
                     style={panelStyle}
                 >
-                    <DescriptionTooltip
-                        title={titleText}
-                        description={titleBarTooltip}
-                    >
-                        <div className={`${panelStyles.titleTooltipAnchor} ${panelStyles.dragHandle}`}>
-                            <div className={panelStyles.header}>
+                    <div className={`${panelStyles.header} ${panelStyles.dragHandle} ${kDragHandleClass}`}>
+                        <DescriptionTooltip
+                            title={titleText}
+                            description={titleBarTooltip}
+                        >
+                            <div className={panelStyles.titleTooltipAnchor}>
                                 <div className={panelStyles.headerText}>{titleText}</div>
                             </div>
-                        </div>
-                    </DescriptionTooltip>
+                        </DescriptionTooltip>
+                    </div>
 
                     <div className={panelStyles.body}>
                         <div className={panelStyles.rowBlock}>
