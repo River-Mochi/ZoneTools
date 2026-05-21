@@ -32,10 +32,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "关于" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "操作" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "保护" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "按键绑定" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp),  "兼容性" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "界面" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kUsageGrp),          "使用说明" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "关于" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "链接" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
@@ -67,6 +68,9 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ContourIconText)), "等高线" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ContourIconText)), "" },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● 等高线按钮" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
@@ -101,6 +105,25 @@ namespace ZoningToolkit
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
                     "**键盘** 快捷键，用于显示或隐藏 Zone Tools 面板（与点击左上角图标相同）。"
                 },
+
+                // Usage toggle + multiline block
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "Show Instructions" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)), "Show or hide the usage instructions below." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)),
+                    "<Open panel>\n" +
+                    "1. Click the Zone Tools button in the top-left game menu, or press <Shift+X>, to open or close the panel.\n" +
+                    "2. Drag the panel by its title bar if you want it somewhere else.\n\n" +
+                    "<Existing roads>\n" +
+                    "1. Turn <Update Road> on in the Zone Tools panel.\n" +
+                    "2. Choose the zoning mode: Both, Left, Right, or None.\n" +
+                    "3. Hover a road to preview which zoning cells will change.\n" +
+                    "4. <LMB> applies the change. Hold and drag <LMB> across road sections, then release to apply.\n" +
+                    "5. <RMB> cycles modes quickly while using the tool.\n\n" +
+                    "<Protection>\n" +
+                    "Protection options help avoid removing zoning under buildings or already painted zone cells.\n\n" +
+                    "<Contour Lines>\n" +
+                    "The Contour button shows terrain elevation lines from the Zone Tools panel." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },
 
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – 切换面板" },

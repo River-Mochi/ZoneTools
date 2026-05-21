@@ -32,10 +32,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "Info" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Azioni" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Protezione" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "Scorciatoie da tastiera" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp),  "Compatibilità" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "UI" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kUsageGrp),          "USO" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "Info" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Link" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
@@ -67,6 +68,9 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ContourIconText)), "Linee di contorno" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ContourIconText)), "" },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Pulsante contour" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
@@ -101,6 +105,25 @@ namespace ZoningToolkit
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
                     "**Scorciatoia da tastiera** per mostrare o nascondere il pannello Zone Tools (come cliccare l'icona in alto a sinistra)."
                 },
+
+                // Usage toggle + multiline block
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "Show Instructions" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)), "Show or hide the usage instructions below." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)),
+                    "<Open panel>\n" +
+                    "1. Click the Zone Tools button in the top-left game menu, or press <Shift+X>, to open or close the panel.\n" +
+                    "2. Drag the panel by its title bar if you want it somewhere else.\n\n" +
+                    "<Existing roads>\n" +
+                    "1. Turn <Update Road> on in the Zone Tools panel.\n" +
+                    "2. Choose the zoning mode: Both, Left, Right, or None.\n" +
+                    "3. Hover a road to preview which zoning cells will change.\n" +
+                    "4. <LMB> applies the change. Hold and drag <LMB> across road sections, then release to apply.\n" +
+                    "5. <RMB> cycles modes quickly while using the tool.\n\n" +
+                    "<Protection>\n" +
+                    "Protection options help avoid removing zoning under buildings or already painted zone cells.\n\n" +
+                    "<Contour Lines>\n" +
+                    "The Contour button shows terrain elevation lines from the Zone Tools panel." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },
 
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Mostra/Nascondi pannello" },

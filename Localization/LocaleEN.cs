@@ -32,10 +32,11 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionTabLocaleID(Setting.kAboutTab),   "About" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Actions" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kActionsGrp),        "Protection" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kBindingsGrp),       "Key bindings" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kCompatibilityGrp),  "Compatibility" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kUiGrp),             "Visual Options" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kUsageGrp),          "USAGE" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutGrp),          "About" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kAboutLinksGrp),     "Links" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kDebugGrp),          "DEBUG" },
@@ -65,7 +66,10 @@ namespace ZoningToolkit
                 },
 
                 // Compatibility
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● Contour button" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ContourIconText)), "Contour Lines" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ContourIconText)), "" },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "Show button" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
                     "● Contour terrain lines are viewable even when no road tool is open.\n" +
                     "Compatibility option\n" +
@@ -92,12 +96,34 @@ namespace ZoningToolkit
                 { m_Setting.GetEnumValueLocaleID(Setting.PanelLocation.ScreenBottomRight), "Bottom Right" },
                 
                 // Keybinding option (Options → Mods)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "● Keybind, toggle panel" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TogglePanelBinding)), "Open/Close panel" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.TogglePanelBinding)),
                     "**Keyboard** shortcut to show or hide the Zone Tools panel\n" +
                     "This is the same as clicking the top-left menu icon to open the ZT panel.\n"+
                     "Reset to what you prefer."
                 },
+
+                // Usage toggle + multiline block
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "Show Instructions" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)),
+                    "Show or hide the **usage instructions** below." },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)),
+                    "<Open panel>\n" +
+                    "1. Click the Zone Tools button in the top-left game menu, or press <Shift+X>, to open or close the panel.\n" +
+                    "2. Drag the panel by its title bar if you want it somewhere else.\n\n" +
+                    "<Existing roads>\n" +
+                    "1. Turn <Update Road> on in the Zone Tools panel.\n" +
+                    "2. Choose the zoning mode: Both, Left, Right, or None.\n" +
+                    "3. Hover a road to preview which zoning cells will change.\n" +
+                    "4. <LMB> applies the change. Hold and drag <LMB> across road sections, then release to apply.\n" +
+                    "5. <RMB> cycles modes quickly while using the tool.\n\n" +
+                    "<Protection>\n" +
+                    "Protection options help avoid removing zoning under buildings or already painted zone cells.\n\n" +
+                    "<Contour Lines>\n" +
+                    "The Contour button shows terrain elevation lines from the Zone Tools panel."
+                },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },
 
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Toggle panel" },

@@ -2,7 +2,7 @@
 // Purpose: Entry point for Zone Tools.
 // - Registers settings + localization
 // - Registers ECS systems (core logic, UI bridge, tools)
-// - Creates the rebindable Shift+X hotkey via CO InputManager
+// - Registers the rebindable Shift+X hotkey via CO InputManager
 // - Keeps release logs clean; verbose logs stay in DEBUG-only paths
 
 namespace ZoningToolkit
@@ -13,7 +13,6 @@ namespace ZoningToolkit
     using Colossal.Logging;               // ILog, LogManager, Level
     using CS2HonuShared;                  // LogUtils
     using Game;                           // UpdateSystem, SystemUpdatePhase
-    using Game.Input;                     // ProxyAction
     using Game.Modding;                   // IMod
     using Game.SceneFlow;                 // GameManager
     using System;                         // Exception
@@ -55,14 +54,6 @@ namespace ZoningToolkit
         // Active settings instance (Options UI).
         // Used from systems via Mod.Settings.
         public static Setting? Settings
-        {
-            get;
-            private set;
-        }
-
-        // ProxyAction resolved from settings keybinding registration.
-        // ZoneToolSystemKeybind reads this and checks for presses.
-        public static ProxyAction? TogglePanelAction
         {
             get;
             private set;
@@ -144,25 +135,8 @@ namespace ZoningToolkit
             try
             {
                 // Register key actions and default keyboard binding (Shift+X by default).
+                // ZoneToolSystemKeybind resolves/enables the action where it is used.
                 setting.RegisterKeyBindings();
-
-                // Resolve the action by name so systems can read it without duplicating input code.
-                TogglePanelAction = setting.GetAction(kTogglePanelActionName);
-                if (TogglePanelAction != null)
-                {
-                    TogglePanelAction.shouldBeEnabled = true;
-                    LogUtils.TryLog(
-                        s_Log,
-                        Level.Info,
-                        ( ) => $"{ModTag} Keybinding '{kTogglePanelActionName}' enabled (default Shift+X).");
-                }
-                else
-                {
-                    LogUtils.TryLog(
-                        s_Log,
-                        Level.Warn,
-                        ( ) => $"{ModTag} Keybinding action '{kTogglePanelActionName}' not found.");
-                }
             }
             catch (Exception ex)
             {
@@ -191,13 +165,6 @@ namespace ZoningToolkit
         public void OnDispose( )
         {
             DebugLog("OnDispose");
-
-            // Disable action so it stops consuming input when mod unloads.
-            if (TogglePanelAction != null)
-            {
-                TogglePanelAction.shouldBeEnabled = false;
-                TogglePanelAction = null;
-            }
 
             // Unregister Options UI and release settings reference.
             if (Settings != null)

@@ -1,5 +1,9 @@
 // File: Systems/ZoneToolSystem.Keybind.cs
 // Purpose: Handles Zone Tools keybinding (Shift+X by default) via CO InputManager.
+// Notes:
+//   - actual keybind is defined in Setting.cs.
+//   - this system gets/enables the ProxyAction because this is where it is used.
+//   - release-edge handling acts like a normal click and avoids held-key repeats.
 
 namespace ZoningToolkit.Systems
 {
@@ -16,6 +20,7 @@ namespace ZoningToolkit.Systems
     public sealed partial class ZoneToolSystemKeybind : GameSystemBase
     {
         private ZoneToolBridgeUI? m_UISystem;
+        private ProxyAction? m_TogglePanelAction;
         private bool m_LoggedMissingAction;
         private bool m_LoggedMissingUISystem;
 
@@ -24,6 +29,7 @@ namespace ZoningToolkit.Systems
             base.OnCreate();
 
             m_UISystem = World.GetOrCreateSystemManaged<ZoneToolBridgeUI>();
+            m_TogglePanelAction = GetTogglePanelAction();
 
 #if DEBUG
             LogUtils.TryLog(Mod.s_Log, Colossal.Logging.Level.Info,
@@ -47,7 +53,12 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
-            ProxyAction? togglePanelAction = Mod.TogglePanelAction;
+            if (m_TogglePanelAction == null)
+            {
+                m_TogglePanelAction = GetTogglePanelAction();
+            }
+
+            ProxyAction? togglePanelAction = m_TogglePanelAction;
             if (togglePanelAction == null)
             {
                 if (!m_LoggedMissingAction)
@@ -62,14 +73,31 @@ namespace ZoningToolkit.Systems
                 return;
             }
 
-            if (togglePanelAction.WasPressedThisFrame())
+            if (togglePanelAction.WasReleasedThisFrame())
             {
 #if DEBUG
                 LogUtils.TryLog(Mod.s_Log, Colossal.Logging.Level.Info,
-                    () => $"{Mod.ModTag} ZoneToolSystemKeybind: toggle pressed -> toggling panel.");
+                    () => $"{Mod.ModTag} ZoneToolSystemKeybind: toggle released -> toggling panel.");
 #endif
                 m_UISystem.TogglePanelFromHotkey();
             }
+        }
+
+        private static ProxyAction? GetTogglePanelAction( )
+        {
+            Setting? settings = Mod.Settings;
+            if (settings == null)
+            {
+                return null;
+            }
+
+            ProxyAction? action = settings.GetAction(Mod.kTogglePanelActionName);
+            if (action != null)
+            {
+                action.shouldBeEnabled = true;
+            }
+
+            return action;
         }
     }
 }
