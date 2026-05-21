@@ -47,6 +47,7 @@ For a different UI style with static in-panel icons, see **Easy Zoning**.
   - **Glass** = clearer translucent panel
   - **Vanilla gray** = darker vanilla-style panel
 - ✅ Change keybind: default **Shift+X** (rebindable in the Options menu)
+- ✅ Optional usage instructions in the Options menu
 
 ## Why use it
 
