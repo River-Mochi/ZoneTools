@@ -26,12 +26,6 @@
     user-select: none;
     border-radius: 4rem;
     overflow: hidden;
-    /* Kill vanilla shell fills so custom wrapper styling shows through */
-    --menuPanel1: transparent;
-    --menuPanel2: transparent;
-    --panelColorDark: transparent;
-    --panelColorNormal: transparent;
-    --sectionHeaderColor: transparent;
     background-color: transparent;
 }
 /* bigger left = move right, smaller left = move left */
@@ -59,78 +53,23 @@
     left: auto;
 }
 
-/* Shared wrapper for Glass + Gray panel Header where Title lives */
-.panel > div[class*="header_"] {
-    width: 100% !important;
-    height: 24rem !important;
-    min-height: 24rem !important;
-    max-height: 24rem !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background-image: none !important;
-}
-
-    .panel > div[class*="header_"] > div[class*="title-bar_"] {
-        width: 100% !important;
-        height: 24rem !important;
-        min-height: 24rem !important;
-        max-height: 24rem !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        cursor: move;
-        display: flex;
-        align-items: center;
-    }
-
-        .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"],
-        .panel > div[class*="header_"] > div[class*="title-bar_"] > div[class*="title_"] > div[class*="titleTooltipAnchor_"] {
-            display: block;
-            width: 100% !important;
-            height: 24rem !important;
-            min-height: 24rem !important;
-            max-height: 24rem !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-   
-    .panel > div[class*="content_"] {
-        background-image: none !important;
-    }
-
-/* Glass style: clearer translucent tint, no blur filter */
-.panelGlass > div[class*="header_"] {
-    background-color: rgba(40, 58, 74, 0.32) !important;
-}
-
-.panelGlass > div[class*="content_"] {
-    background-color: rgba(255, 255, 255, 0.10) !important;
-}
-
-/* Vanilla style: darker gray panel, still a little translucent, no blur */
-.panelVanilla > div[class*="header_"] {
-    background-color: rgba(16, 19, 29, 0.70) !important;
-}
-
-.panelVanilla > div[class*="content_"] {
-    background-image: linear-gradient( to bottom, rgba(45, 79, 92, 0.88), rgba(39, 55, 78, 0.70) ) !important;
-    background-color: transparent !important;
-}
-
 /* Tooltip anchor for title bar */
 .titleTooltipAnchor {
     display: block;
     width: 100%;
 }
 
-/* Inner drag-handle content inside the vanilla title strip */
+.dragHandle {
+    cursor: move;
+}
+
+/* Inner drag-handle content */
 .header {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     height: 24rem; /* lower = shorter title bar - where words are and not whole header */
-    background-color: transparent;
-    cursor: move;
 }
 
 /* Title text */
@@ -144,14 +83,30 @@
     background-image: none;
 }
 
-/* Inner body stays transparent
-   Real tint lives on the OUTER content wrapper above. */
 .body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: transparent;
     padding: 5rem 0rem 5rem 0rem;
+}
+
+/* Glass style: clearer translucent tint, no blur filter */
+.panelGlass .header {
+    background-color: rgba(40, 58, 74, 0.32);
+}
+
+.panelGlass .body {
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+/* Vanilla style: darker gray panel, still a little translucent, no blur */
+.panelVanilla .header {
+    background-color: rgba(16, 19, 29, 0.70);
+}
+
+.panelVanilla .body {
+    background-image: linear-gradient(to bottom, rgba(45, 79, 92, 0.88), rgba(39, 55, 78, 0.70));
+    background-color: transparent;
 }
 
 /* Shared inner width for both rows */

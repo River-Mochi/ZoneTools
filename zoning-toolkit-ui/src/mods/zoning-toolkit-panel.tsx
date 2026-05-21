@@ -16,7 +16,6 @@
 
 import React from "react";
 import Draggable from "react-draggable";
-import { Panel } from "cs2/ui";
 import engine from "cohtml/cohtml";
 
 import updateToolIcon from "../../assets/icons/replace_tool_icon.svg";
@@ -118,6 +117,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
         const uiVisible = this.props.uiVisible === true;
         const photomodeActive = this.props.photomodeActive === true;
         const draggableKey = `${panelLocation}-${uiVisible ? "open" : "closed"}`;
+        const dragHandleSelector = `.${panelStyles.dragHandle}`;
 
         const panelStyle = {
             display: !uiVisible || photomodeActive ? "none" : undefined,
@@ -179,24 +179,23 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                 bounds="parent"
                 grid={[1, 1]}
                 enableUserSelectHack={false}
-                handle='[class*="title-bar_"]'
+                handle={dragHandleSelector}
             >
-                <Panel
+                <div
                     className={panelClassName}
                     style={panelStyle}
-                    header={
-                        <DescriptionTooltip
-                            title={titleText}
-                            description={titleBarTooltip}
-                        >
-                            <div className={panelStyles.titleTooltipAnchor}>
-                                <div className={panelStyles.header}>
-                                    <div className={panelStyles.headerText}>{titleText}</div>
-                                </div>
-                            </div>
-                        </DescriptionTooltip>
-                    }
                 >
+                    <DescriptionTooltip
+                        title={titleText}
+                        description={titleBarTooltip}
+                    >
+                        <div className={`${panelStyles.titleTooltipAnchor} ${panelStyles.dragHandle}`}>
+                            <div className={panelStyles.header}>
+                                <div className={panelStyles.headerText}>{titleText}</div>
+                            </div>
+                        </div>
+                    </DescriptionTooltip>
+
                     <div className={panelStyles.body}>
                         <div className={panelStyles.rowBlock}>
                             <div className={panelStyles.topRow}>
@@ -233,7 +232,7 @@ export class ZoningToolkitPanelInternal extends React.Component<Partial<ModUISta
                             </div>
                         </div>
                     </div>
-                </Panel>
+                </div>
             </Draggable>
         );
     }
