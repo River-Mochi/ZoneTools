@@ -94,12 +94,10 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 <ChangeLog>
 - Improved panel styling
 - Moved Top Left location so it does not overlap mods like network tools.
-- New installs default the main ZT panel to Bottom Left (change in Options menu).
-- Added Show instructions in Options menu.
-- All translation files updated
-- internal: better hotkey handling, toggle on key release.
+- New installs default the ZT panel to bottom left (change it in Options menu).
+- Internal: better hotkey handling, toggle on key release.
+- cleaned panel UI to avoid vanilla class selectors.
 - improved compatibility with vanilla CS2 road zoning tool
-- cleaned up panel UI styling to avoid any fragile vanilla/generated class selectors.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />
