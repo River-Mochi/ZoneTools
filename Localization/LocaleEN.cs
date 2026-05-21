@@ -110,18 +110,18 @@ namespace ZoningToolkit
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)),
                     "<Open panel>\n" +
-                    "1. Click the Zone Tools button in the top-left game menu, or press <Shift+X>, to open or close the panel.\n" +
+                    "1. Click the Zone Tools button in the city top-left, or press <Shift+X>, to open or close the panel.\n" +
                     "2. Drag the panel by its title bar if you want it somewhere else.\n\n" +
                     "<Existing roads>\n" +
-                    "1. Turn <Update Road> on in the Zone Tools panel.\n" +
-                    "2. Choose the zoning mode: Both, Left, Right, or None.\n" +
+                    "1. Turn ON <Update Road> icon in the panel.\n" +
+                    "2. Choose: Both, Left, Right, or None.\n" +
                     "3. Hover a road to preview which zoning cells will change.\n" +
                     "4. <LMB> applies the change. Hold and drag <LMB> across road sections, then release to apply.\n" +
                     "5. <RMB> cycles modes quickly while using the tool.\n\n" +
                     "<Protection>\n" +
                     "Protection options help avoid removing zoning under buildings or already painted zone cells.\n\n" +
                     "<Contour Lines>\n" +
-                    "The Contour button shows terrain elevation lines from the Zone Tools panel."
+                    "Contour button shows terrain elevation lines from the same Zone Tool panel."
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },
 
