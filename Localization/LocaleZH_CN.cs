@@ -74,12 +74,12 @@ namespace ZoningToolkit
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowContourButton)), "● 等高线按钮" },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowContourButton)),
-                    "**[ ✓ ] 已启用**，在 Zone Tools 面板中显示 Contour 按钮。\n\n" +
+                    "**[ ✓ ] 已启用**，在 Zone Tools 面板中显示等高线按钮。\n\n" +
                     "● 即使没有打开原版道路工具，也能开启地形等高线。\n" +
-                    "● **Update Road** 开启时，原版 **Topography** 按钮会显示在左下角原版位置。\n" +
-                    "[ ] 如果想要更小的面板，或使用其他模组处理地形线，可关闭此项。\n" +
-                    "关闭后，只有在 **Update Road** 为 ON 时才能使用 Contour。"
-                },
+                    "● **更新道路** 开启时，原版 **地形** 按钮会显示在左下角原版位置。\n" +
+                    "[ ] 如果想要更小的面板，或使用其他模组处理地形等高线，可关闭此项。\n" +
+                    "关闭后，只有在 **更新道路** 为 ON 时才能使用等高线。"
+                },               
 
                 // UI
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UseGlassPanel)), "◉ 玻璃面板样式" },
