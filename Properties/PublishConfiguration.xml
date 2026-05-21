@@ -95,7 +95,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 - Improved panel styling
 - Moved Top Left location so it does not overlap mods like network tools. 
 - Added usage instructions in Options menu.
-- Updated all translation with new sections.
+- all translation are updated with new sections.
 - Internal: better hotkey handling, toggle on key release.
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
