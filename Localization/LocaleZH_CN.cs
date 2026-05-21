@@ -107,22 +107,25 @@ namespace ZoningToolkit
                 },
 
                 // Usage toggle + multiline block
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "Show Instructions" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)), "Show or hide the usage instructions below." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "显示说明" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)),
+                    "显示或隐藏下面的**使用说明**。" },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)),
-                    "<Open panel>\n" +
-                    "1. Click the Zone Tools button in the top-left game menu, or press <Shift+X>, to open or close the panel.\n" +
-                    "2. Drag the panel by its title bar if you want it somewhere else.\n\n" +
-                    "<Existing roads>\n" +
-                    "1. Turn <Update Road> on in the Zone Tools panel.\n" +
-                    "2. Choose the zoning mode: Both, Left, Right, or None.\n" +
-                    "3. Hover a road to preview which zoning cells will change.\n" +
-                    "4. <LMB> applies the change. Hold and drag <LMB> across road sections, then release to apply.\n" +
-                    "5. <RMB> cycles modes quickly while using the tool.\n\n" +
-                    "<Protection>\n" +
-                    "Protection options help avoid removing zoning under buildings or already painted zone cells.\n\n" +
-                    "<Contour Lines>\n" +
-                    "The Contour button shows terrain elevation lines from the Zone Tools panel." },
+                    "<打开面板>\n" +
+                    "1. 点击城市左上角的 Zone Tools 按钮，或按 <Shift+X>，打开或关闭面板。\n" +
+                    "2. 如果想放到别的位置，可以拖动面板标题栏。\n\n" +
+                    "<现有道路>\n" +
+                    "1. 在面板中开启 <更新道路> 图标。\n" +
+                    "2. 选择：两侧、左侧、右侧或无。\n" +
+                    "3. 将鼠标悬停在道路上，预览哪些分区格子会被更改。\n" +
+                    "4. <LMB> 应用更改。按住并拖动 <LMB> 穿过道路路段，然后松开以应用。\n" +
+                    "5. 使用工具时，<RMB> 可快速循环切换模式。\n\n" +
+                    "<保护>\n" +
+                    "保护选项有助于避免移除建筑下方或已涂刷分区格子的分区。\n\n" +
+                    "<地形等高线>\n" +
+                    "等高线按钮会在同一个 Zone Tools 面板中显示地图上的地形高度线。"
+                },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },
 
                 // Keybinding action name (Options → Keybindings)

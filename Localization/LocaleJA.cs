@@ -107,22 +107,25 @@ namespace ZoningToolkit
                 },
 
                 // Usage toggle + multiline block
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "Show Instructions" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)), "Show or hide the usage instructions below." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "説明を表示" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)),
+                    "下の**使い方の説明**を表示または非表示にします。" },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)),
-                    "<Open panel>\n" +
-                    "1. Click the Zone Tools button in the top-left game menu, or press <Shift+X>, to open or close the panel.\n" +
-                    "2. Drag the panel by its title bar if you want it somewhere else.\n\n" +
-                    "<Existing roads>\n" +
-                    "1. Turn <Update Road> on in the Zone Tools panel.\n" +
-                    "2. Choose the zoning mode: Both, Left, Right, or None.\n" +
-                    "3. Hover a road to preview which zoning cells will change.\n" +
-                    "4. <LMB> applies the change. Hold and drag <LMB> across road sections, then release to apply.\n" +
-                    "5. <RMB> cycles modes quickly while using the tool.\n\n" +
-                    "<Protection>\n" +
-                    "Protection options help avoid removing zoning under buildings or already painted zone cells.\n\n" +
-                    "<Contour Lines>\n" +
-                    "The Contour button shows terrain elevation lines from the Zone Tools panel." },
+                    "<パネルを開く>\n" +
+                    "1. 都市画面の左上にある Zone Tools ボタンをクリックするか、<Shift+X> を押して、パネルを開閉します。\n" +
+                    "2. 別の場所に置きたい場合は、タイトルバーをドラッグしてパネルを移動します。\n\n" +
+                    "<既存の道路>\n" +
+                    "1. パネル内の <Update Road> アイコンを ON にします。\n" +
+                    "2. 選択：両側、左、右、なし。\n" +
+                    "3. 道路にカーソルを合わせると、変更されるゾーニングセルをプレビューできます。\n" +
+                    "4. <LMB> で変更を適用します。道路区間の上で <LMB> を押したままドラッグし、離すと適用されます。\n" +
+                    "5. ツール使用中は <RMB> でモードを素早く切り替えられます。\n\n" +
+                    "<保護>\n" +
+                    "保護オプションは、建物の下や既に塗られたゾーンセルのゾーニングを削除しないようにします。\n\n" +
+                    "<等高線>\n" +
+                    "Contour ボタンは、同じ Zone Tools パネルから地形の標高線を表示します。"
+                },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },
 
                 // Keybinding action name (Options → Keybindings)

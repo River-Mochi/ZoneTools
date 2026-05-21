@@ -107,23 +107,26 @@ namespace ZoningToolkit
                 },
 
                 // Usage toggle + multiline block
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "Show Instructions" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)), "Show or hide the usage instructions below." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "Mostrar instrucciones" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)),
+                    "Muestra u oculta las **instrucciones de uso** de abajo." },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)),
-                    "<Open panel>\n" +
-                    "1. Click the Zone Tools button in the top-left game menu, or press <Shift+X>, to open or close the panel.\n" +
-                    "2. Drag the panel by its title bar if you want it somewhere else.\n\n" +
-                    "<Existing roads>\n" +
-                    "1. Turn <Update Road> on in the Zone Tools panel.\n" +
-                    "2. Choose the zoning mode: Both, Left, Right, or None.\n" +
-                    "3. Hover a road to preview which zoning cells will change.\n" +
-                    "4. <LMB> applies the change. Hold and drag <LMB> across road sections, then release to apply.\n" +
-                    "5. <RMB> cycles modes quickly while using the tool.\n\n" +
-                    "<Protection>\n" +
-                    "Protection options help avoid removing zoning under buildings or already painted zone cells.\n\n" +
-                    "<Contour Lines>\n" +
-                    "The Contour button shows terrain elevation lines from the Zone Tools panel." },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },
+                    "<Abrir panel>\n" +
+                    "1. Haz clic en el botón Zone Tools en la parte superior izquierda de la ciudad, o pulsa <Shift+X>, para abrir o cerrar el panel.\n" +
+                    "2. Arrastra el panel desde la barra de título si quieres ponerlo en otro lugar.\n\n" +
+                    "<Carreteras existentes>\n" +
+                    "1. Activa el icono <Update Road> en el panel.\n" +
+                    "2. Elige: Ambos lados, Izquierda, Derecha o Ninguno.\n" +
+                    "3. Pasa el cursor sobre una carretera para previsualizar qué celdas de zonificación cambiarán.\n" +
+                    "4. <LMB> aplica el cambio. Mantén y arrastra <LMB> por secciones de carretera, luego suelta para aplicar.\n" +
+                    "5. <RMB> cambia rápidamente entre modos mientras usas la herramienta.\n\n" +
+                    "<Protección>\n" +
+                    "Las opciones de protección ayudan a evitar quitar zonificación bajo edificios o celdas de zona ya pintadas.\n\n" +
+                    "<Líneas de contorno>\n" +
+                    "El botón Contour muestra las líneas de elevación del terreno desde el mismo panel de Zone Tools."
+                },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },              
 
                 // Keybinding action name (Options → Keybindings)
                 { m_Setting.GetBindingKeyLocaleID(Mod.kTogglePanelActionName), "Zone Tools – Mostrar/Ocultar panel" },

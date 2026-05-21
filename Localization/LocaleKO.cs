@@ -107,22 +107,25 @@ namespace ZoningToolkit
                 },
 
                 // Usage toggle + multiline block
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "Show Instructions" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)), "Show or hide the usage instructions below." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ShowUsage)), "설명 표시" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ShowUsage)),
+                    "아래의 **사용 설명**을 표시하거나 숨깁니다." },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)),
-                    "<Open panel>\n" +
-                    "1. Click the Zone Tools button in the top-left game menu, or press <Shift+X>, to open or close the panel.\n" +
-                    "2. Drag the panel by its title bar if you want it somewhere else.\n\n" +
-                    "<Existing roads>\n" +
-                    "1. Turn <Update Road> on in the Zone Tools panel.\n" +
-                    "2. Choose the zoning mode: Both, Left, Right, or None.\n" +
-                    "3. Hover a road to preview which zoning cells will change.\n" +
-                    "4. <LMB> applies the change. Hold and drag <LMB> across road sections, then release to apply.\n" +
-                    "5. <RMB> cycles modes quickly while using the tool.\n\n" +
-                    "<Protection>\n" +
-                    "Protection options help avoid removing zoning under buildings or already painted zone cells.\n\n" +
-                    "<Contour Lines>\n" +
-                    "The Contour button shows terrain elevation lines from the Zone Tools panel." },
+                    "<패널 열기>\n" +
+                    "1. 도시 화면 왼쪽 위의 Zone Tools 버튼을 클릭하거나 <Shift+X>를 눌러 패널을 열거나 닫습니다.\n" +
+                    "2. 다른 위치에 두고 싶으면 제목 표시줄을 드래그해서 패널을 이동합니다.\n\n" +
+                    "<기존 도로>\n" +
+                    "1. 패널에서 <Update Road> 아이콘을 ON으로 켭니다.\n" +
+                    "2. 선택: 양쪽, 왼쪽, 오른쪽, 없음.\n" +
+                    "3. 도로에 마우스를 올리면 변경될 구역 셀을 미리 볼 수 있습니다.\n" +
+                    "4. <LMB>로 변경을 적용합니다. 도로 구간 위에서 <LMB>를 누른 채 드래그한 뒤 놓으면 적용됩니다.\n" +
+                    "5. 도구 사용 중 <RMB>로 모드를 빠르게 전환할 수 있습니다.\n\n" +
+                    "<보호>\n" +
+                    "보호 옵션은 건물 아래나 이미 칠해진 구역 셀의 구역이 제거되는 것을 방지하는 데 도움이 됩니다.\n\n" +
+                    "<등고선>\n" +
+                    "Contour 버튼은 같은 Zone Tools 패널에서 지형 고도선을 표시합니다."
+                },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)), "" },
 
                 // Keybinding action name (Options → Keybindings)
