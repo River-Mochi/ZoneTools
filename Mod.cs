@@ -120,6 +120,7 @@ namespace ZoningToolkit
             AddLocaleSource("ko-KR", new LocaleKO(setting));
             AddLocaleSource("pl-PL", new LocalePL(setting));
             AddLocaleSource("pt-BR", new LocalePT_BR(setting));
+            AddLocaleSource("tr-TR", new LocaleTR(setting));
             AddLocaleSource("zh-HANS", new LocaleZH_CN(setting));   // Simplified Chinese
             AddLocaleSource("zh-HANT", new LocaleZH_HANT(setting)); // Traditional Chinese
 

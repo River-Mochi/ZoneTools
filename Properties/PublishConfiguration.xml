@@ -57,11 +57,11 @@ Main goal of the contour button is to show terrain lines while updating Existing
 Contour enables what is safe to do without overriding the game's vanilla system (e.g avoids Harmony patch).
 - Glass panel does not use blur (heavier work); uses a lighter plain transparent + tint (works in normal + Legacy mode).
 
-### 11 Languages
+### 12 Languages
 
 - English, Français French, Deutsch German, Español Spanish, Italiano Italian
 - 한국어 Korean, 日本語 Japanese, 简体中文 Simplified Chinese
-- 繁體中文 Traditional Chinese, Português Brasil, Polski Polish
+- 繁體中文 Traditional Chinese, Português Brasil, Polski Polish, Turkish
 
 ### Credits
 
@@ -92,11 +92,7 @@ Contour enables what is safe to do without overriding the game's vanilla system 
 	<Dependency Id="" />
 <!--Changelog for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
-- Improved panel styling
-- Moved Top Left location so it does not overlap mods like network tools.
-- New installs default the ZT panel to bottom left (can change to top or bottom in Options menu).
-- Internal: cleaned panel UI to avoid vanilla class selectors.
-- improved compatibility with vanilla zoning tool
+- Add Turkish language
 </ChangeLog>
 <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
 <ExternalLink Type="github" Url="https://github.com/River-Mochi/ZoneTools" />
